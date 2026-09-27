@@ -1,62 +1,51 @@
 @echo off
 chcp 65001 >nul
-title 玄機天象 - 一鍵推送至 GitHub
+title 玄機天象 - 一鍵推送至 GitHub (自動線上部署)
 echo ========================================================
-echo    玄機天象 (紫微斗數八字互動式解盤系統) - 一鍵推送
+echo    玄機天象 (紫微斗數八字互動式解盤系統) - 一鍵推送部署
 echo ========================================================
 echo.
 
 cd /d "%~dp0"
 
-echo [1/3] 正在驗證建置狀態...
+echo [1/3] 正在編譯最新版本 (npm run build)...
 call npm run build
 if errorlevel 1 goto BUILD_ERROR
 
 echo.
-echo [2/3] 正在檢查 Git 狀態...
+echo [2/3] 正在同步原始碼至 main 分支...
 git add -A
 git diff-index --quiet HEAD --
 if errorlevel 1 (
     echo 發現未儲存變更，正在自動提交...
     git commit -m "chore: auto-commit before push"
 )
-
-echo.
-echo [3/3] 正在檢查遠端儲存庫...
-git remote get-url origin >nul 2>&1
-if errorlevel 1 goto NEED_REMOTE
-
-:DO_PUSH
-echo 正在推送到 GitHub main 分支...
-git push -u origin main
+git push origin main
 if errorlevel 1 goto PUSH_ERROR
 
 echo.
+echo [3/3] 正在發布最新建置至 gh-pages 線上部署分支...
+for /f "tokens=*" %%u in ('git remote get-url origin') do set REPO_URL=%%u
+cd /d "%~dp0dist"
+if not exist ".git" (
+    git init -b gh-pages
+    git config user.name "Antigravity"
+    git config user.email "xuanji@local.dev"
+    git remote add origin %REPO_URL%
+)
+git add -A
+git commit -m "deploy: GitHub Pages production release" --allow-empty
+git push -f origin gh-pages
+cd /d "%~dp0"
+
+echo.
 echo ========================================================
-echo  [成功] 最新版本已成功推送至 GitHub！
-echo  GitHub Actions 正在為您自動發布至 GitHub Pages。
+echo  [成功] 恭喜！最新版本已成功同步推送至 GitHub！
+echo  線上網址: https://rxcoderapp-bit.github.io/xuanji-astrology/
 echo ========================================================
 echo.
 pause
 exit /b 0
-
-:NEED_REMOTE
-echo.
-echo [設定] 尚未綁定 GitHub 遠端儲存庫！
-echo 請在下方貼上您的 GitHub 儲存庫網址：
-echo 範例: https://github.com/rxcoderapp-bit/xuanji-astrology.git
-set /p REPO_URL="請貼上網址並按 Enter: "
-if "%REPO_URL%"=="" goto NO_URL
-git remote add origin %REPO_URL%
-echo 已成功綁定遠端儲存庫: %REPO_URL%
-echo.
-goto DO_PUSH
-
-:NO_URL
-echo.
-echo 未輸入網址，已取消推送。
-pause
-exit /b 1
 
 :BUILD_ERROR
 echo.
