@@ -182,15 +182,15 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         </span>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b text-xs font-bold overflow-x-auto scrollbar-none
-        bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733]">
+      {/* Navigation Tabs (5-column responsive grid: never cuts off or overflows on mobile) */}
+      <div className="grid grid-cols-5 border-b text-[11px] sm:text-xs font-bold
+        bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733] select-none">
         {[
-          { id: 'palace', label: '【選宮精批】' },
-          { id: 'horoscope', label: '【時運走勢】' },
-          { id: 'natal', label: '【原局格局】' },
-          { id: 'bazi', label: '【八字印證】' },
-          { id: 'ai', label: '✦ AI大師精批' },
+          { id: 'palace', label: '選宮精批', fullLabel: '【選宮精批】' },
+          { id: 'horoscope', label: '時運走勢', fullLabel: '【時運走勢】' },
+          { id: 'natal', label: '原局格局', fullLabel: '【原局格局】' },
+          { id: 'bazi', label: '八字印證', fullLabel: '【八字印證】' },
+          { id: 'ai', label: '✦ AI精批', fullLabel: '✦ AI大師精批' },
         ].map(tab => {
           const isActive = activeTab === tab.id;
           const isAI = tab.id === 'ai';
@@ -198,14 +198,15 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-2 sm:py-2.5 px-2 sm:px-2.5 whitespace-nowrap transition border-b-2
+              className={`py-2 sm:py-2.5 px-0.5 sm:px-2 transition border-b-2 text-center flex items-center justify-center
                 ${isActive
-                  ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#16171f]'
+                  ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#16171f] font-black'
                   : isAI
                     ? 'border-transparent text-[#96551b] dark:text-[#f59e0b] hover:text-[#8d271c] font-bold'
                     : 'border-transparent text-[#666055] dark:text-[#a09b91] hover:text-[#222] dark:hover:text-white'}`}
             >
-              {tab.label}
+              <span className="sm:hidden">{tab.label}</span>
+              <span className="hidden sm:inline">{tab.fullLabel}</span>
             </button>
           );
         })}
@@ -420,33 +421,37 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         {activeTab === 'horoscope' && (
           <div className="space-y-4 sm:space-y-5">
             
-            {/* Sub-navigation for Horoscope layers */}
-            <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-lg border bg-[#f3ede0] dark:bg-[#1b1c24] border-[#ded5c3] dark:border-[#272938] overflow-x-auto scrollbar-none">
+            {/* Sub-navigation for Horoscope layers: 2x2 grid on mobile, 4 columns on sm+ (never cut off, no swiping needed) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1.5 rounded-xl border bg-[#f3ede0] dark:bg-[#1b1c24] border-[#ded5c3] dark:border-[#272938]">
               {[
-                { id: 'yearly', label: '🌟 流年歲君 (1400字)' },
-                { id: 'monthly', label: '🌙 流月節律 (1200字)' },
-                { id: 'decadal', label: '🪐 大限十年 (1200字)' },
-                { id: 'all', label: '📜 時運全景合覽' },
+                { id: 'yearly', icon: '🌟', title: '流年歲君', wordCount: '1400字' },
+                { id: 'monthly', icon: '🌙', title: '流月節律', wordCount: '1200字' },
+                { id: 'decadal', icon: '🪐', title: '大限十年', wordCount: '1200字' },
+                { id: 'all', icon: '📜', title: '時運全景', wordCount: '總合覽' },
               ].map(sub => {
                 const isSubActive = horoscopeSubTab === sub.id;
                 return (
                   <button
                     key={sub.id}
                     onClick={() => setHoroscopeSubTab(sub.id as any)}
-                    className={`px-2.5 py-1 text-[11px] sm:text-xs font-bold rounded-md whitespace-nowrap transition
+                    className={`py-1.5 px-2 text-[11px] sm:text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 text-center shadow-2xs
                       ${isSubActive
                         ? 'bg-[#8d271c] dark:bg-[#b9382b] text-white shadow-xs'
-                        : 'text-[#655d51] dark:text-[#a59d90] hover:text-[#222] dark:hover:text-white hover:bg-[#eae2d3] dark:hover:bg-[#252733]'}`}
+                        : 'bg-[#faf7f0] dark:bg-[#15161c] text-[#655d51] dark:text-[#a59d90] hover:text-[#222] dark:hover:text-white hover:bg-[#eee6d7] dark:hover:bg-[#20222d] border border-[#e5dccb] dark:border-[#2b2d3d]'}`}
                   >
-                    {sub.label}
+                    <span>{sub.icon}</span>
+                    <span>{sub.title}</span>
+                    <span className={`text-[10px] ${isSubActive ? 'text-[#ffdddb]' : 'text-[#8c8273] dark:text-[#888]'}`}>
+                      ({sub.wordCount})
+                    </span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="text-[11px] text-[#786f62] dark:text-[#9e9688] flex items-center justify-between px-1">
+            <div className="text-[11px] text-[#786f62] dark:text-[#9e9688] flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-1">
               <span>✦ 當前時運聚焦：{horoscope.activeLayer === 'monthly' ? '流月' : horoscope.activeLayer === 'yearly' ? '流年' : horoscope.activeLayer === 'decadal' ? '大限' : '原局'}視角</span>
-              <span>切換上方「時運羅盤」可即時變更年月日時</span>
+              <span className="text-[10px] sm:text-[11px] opacity-80">切換上方「時運羅盤」可即時變更年月日時</span>
             </div>
 
             {/* 1. Yearly Master Reading */}
