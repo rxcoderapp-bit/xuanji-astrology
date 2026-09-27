@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode (.dark on html/body) in Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #a63a2b; /* 暗紅色 (from 五術論命) */
+  --color-bg-light: #f4efe6; /* 米色底 (from 五術論命) */
+  --color-bg-dark: #1a1a1a;
+  --color-text-light: #333333;
+  --color-text-dark: #e0e0e0;
+}
+
+/* Base custom styles */
+@layer base {
+  body {
+    @apply bg-bg-light text-text-light dark:bg-bg-dark dark:text-text-dark transition-colors duration-200 font-serif;
+  }
+
+  /* Remove default spinner arrows from number inputs */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}

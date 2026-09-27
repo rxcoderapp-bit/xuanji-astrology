@@ -1,0 +1,19 @@
+{
+  "name": "玄機天象 - 紫微斗數八字互動式解盤系統",
+  "short_name": "玄機天象",
+  "description": "專業紫微斗數排盤、八字論命、六十星曜吉凶評估、流年流月流日大限排盤、AI大師解盤與神諭占卜系統",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#121318",
+  "theme_color": "#8b2318",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
