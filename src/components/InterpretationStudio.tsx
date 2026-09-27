@@ -248,7 +248,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               {/* Sub-block B: 現代社會場景投影 */}
               <div className="space-y-1 pt-2 border-t border-[#f2ece1] dark:border-[#252735]">
                 <div className="font-bold text-xs text-[#b85d18] dark:text-[#e58a44] flex items-center gap-1">
-                  <span>✦ 現代世俗顯化·大耕老師「祿隨忌走」心理閉環·欽天門因果樞紐：</span>
+                  <span>✦ 現代世俗顯化 ·「祿隨忌走」心理動力閉環 · 命理因果樞紐：</span>
                 </div>
                 <p className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
                   {dynamicPalaceReading.modernManifestation}
@@ -258,7 +258,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               {/* Sub-block C: 陰影與盲點剖析 */}
               <div className="space-y-1 pt-2 border-t border-[#f2ece1] dark:border-[#252735]">
                 <div className="font-bold text-xs text-[#991b1b] dark:text-[#f87171] flex items-center gap-1">
-                  <span>✦ 六吉輔弼護航 ✕ 大耕老師「六煞星是前進引擎」逆境轉化：</span>
+                  <span>✦ 六吉輔弼護航 ✕「六煞星是前進引擎」逆境昇華轉化：</span>
                 </div>
                 <p className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
                   {dynamicPalaceReading.shadowAndLight}
@@ -268,7 +268,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               {/* Sub-block D: 現代實戰指南 */}
               <div className="p-3 rounded-lg bg-[#f7f4ec] dark:bg-[#20222d] border border-[#e8dfcf] dark:border-[#313444] text-xs space-y-1.5">
                 <span className="font-bold text-[#8d271c] dark:text-[#df756b] block">
-                  ✦ 三方四正照妖鏡全息網絡 ✕ 大耕老師落地行道修煉錦囊：
+                  ✦ 三方四正全息照會網絡 ✕ 現代落地修煉錦囊：
                 </span>
                 <p className="text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
                   {dynamicPalaceReading.actionGuidance}
