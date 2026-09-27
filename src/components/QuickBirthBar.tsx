@@ -259,7 +259,7 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
 
         {/* Bottom: The 12 Chinese Hours (時辰) Selectors */}
         {isExpanded && (
-          <div className="mt-2 sm:mt-2.5 pt-2 border-t border-[#ede3d1] dark:border-[#242633] flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none overscroll-x-contain touch-pan-x">
+          <div className="mt-2 sm:mt-2.5 pt-2 border-t border-[#ede3d1] dark:border-[#242633] flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             <span className="text-xs font-bold text-[#8d271c] dark:text-[#df756b] whitespace-nowrap flex items-center gap-1 shrink-0">
               出生時辰排盤：
             </span>

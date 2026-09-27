@@ -164,7 +164,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
   };
 
   return (
-    <aside className="w-full lg:w-[500px] xl:w-[540px] shrink-0 flex flex-col font-serif rounded-2xl border shadow-lg overflow-hidden transition-all duration-200
+    <aside id="interpretation-studio" className="w-full lg:w-[500px] xl:w-[540px] shrink-0 flex flex-col font-serif rounded-2xl border shadow-lg overflow-hidden transition-all duration-200
       bg-[#fcfbf7] dark:bg-[#16171f] border-[#dcd3c1] dark:border-[#2b2d3b] text-[#222] dark:text-[#eee]">
       
       {/* Studio Header */}
@@ -183,7 +183,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b text-xs font-bold overflow-x-auto scrollbar-none overscroll-x-contain touch-pan-x
+      <div className="flex border-b text-xs font-bold overflow-x-auto scrollbar-none
         bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733]">
         {[
           { id: 'palace', label: '【選宮精批】' },
@@ -211,8 +211,8 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         })}
       </div>
 
-      {/* Scrollable Content Workspace */}
-      <div className="flex-1 p-3 sm:p-5 overflow-y-auto space-y-4 sm:space-y-6 text-xs sm:text-sm leading-relaxed max-h-[600px] sm:max-h-[750px] scrollbar-thin">
+      {/* Scrollable Content Workspace (Natural scroll on mobile, contained scroll on desktop) */}
+      <div className="flex-1 p-3 sm:p-5 space-y-4 sm:space-y-6 text-xs sm:text-sm leading-relaxed lg:max-h-[780px] lg:overflow-y-auto scrollbar-thin">
         
         {/* ==================== TAB 1: 選宮精批 (深度離線內容) ==================== */}
         {activeTab === 'palace' && (
@@ -421,7 +421,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
           <div className="space-y-4 sm:space-y-5">
             
             {/* Sub-navigation for Horoscope layers */}
-            <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-lg border bg-[#f3ede0] dark:bg-[#1b1c24] border-[#ded5c3] dark:border-[#272938] overflow-x-auto scrollbar-none overscroll-x-contain touch-pan-x">
+            <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-lg border bg-[#f3ede0] dark:bg-[#1b1c24] border-[#ded5c3] dark:border-[#272938] overflow-x-auto scrollbar-none">
               {[
                 { id: 'yearly', label: '🌟 流年歲君 (1400字)' },
                 { id: 'monthly', label: '🌙 流月節律 (1200字)' },

@@ -61,6 +61,17 @@ export default function App() {
   // PWA Auto-Update state
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
+  // Mobile fast-jump state
+  const [isScrolledToStudio, setIsScrolledToStudio] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolledToStudio(window.scrollY > 380);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Initialize PWA and Firebase Cloud Sync on mount
   useEffect(() => {
     // 1. Register PWA Service Worker
@@ -373,6 +384,31 @@ export default function App() {
         isOpen={isCloudSyncModalOpen}
         onClose={() => setIsCloudSyncModalOpen(false)}
       />
+
+      {/* 10. Mobile Floating Fast-Jump between Chart Board and Interpretation Studio */}
+      <div className="lg:hidden fixed bottom-5 right-4 z-40">
+        <button
+          onClick={() => {
+            if (isScrolledToStudio) {
+              const board = document.getElementById('chart-board');
+              if (board) board.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              else window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              const studio = document.getElementById('interpretation-studio');
+              if (studio) studio.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full shadow-xl border text-xs font-bold font-serif transition active:scale-95
+            bg-[#8d271c] dark:bg-[#c0392b] text-white border-[#691c13] dark:border-[#8f281e] hover:bg-[#782017]"
+          title={isScrolledToStudio ? '一鍵滑動回到命盤' : '一鍵滑動前往解盤室'}
+        >
+          {isScrolledToStudio ? (
+            <span>↑ 回到命盤</span>
+          ) : (
+            <span>看解盤 ↓</span>
+          )}
+        </button>
+      </div>
 
     </div>
   );

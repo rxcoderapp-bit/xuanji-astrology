@@ -13,8 +13,15 @@
 
 /* Base custom styles */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-bg-light text-text-light dark:bg-bg-dark dark:text-text-dark transition-colors duration-200 font-serif;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
   }
 
   /* Remove default spinner arrows from number inputs */
@@ -26,4 +33,13 @@
   input[type="number"] {
     -moz-appearance: textfield;
   }
+}
+
+/* Hide scrollbar across modern and legacy browsers */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

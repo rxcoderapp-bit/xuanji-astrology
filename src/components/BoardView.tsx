@@ -77,7 +77,7 @@ export const BoardView: React.FC<BoardViewProps> = ({
   const laiYinPalace = palaces[laiYinIndex];
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center overflow-x-auto pb-2 scrollbar-none touch-pan-x">
+    <div id="chart-board" className="w-full flex-1 flex flex-col items-center overflow-x-auto pb-2 scrollbar-none">
       {/* 4x4 Grid Container */}
       <div className="w-full min-w-[340px] max-w-[1080px] grid grid-cols-4 grid-rows-4 gap-1 sm:gap-2.5 p-1 sm:p-3 rounded-xl sm:rounded-2xl border shadow-xl
         bg-[#f5f1e8]/90 dark:bg-[#111217]/90 border-[#dcd3bf] dark:border-[#272935]">
