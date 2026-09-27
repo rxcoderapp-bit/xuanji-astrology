@@ -217,13 +217,13 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
           </div>
 
           {/* Right: Database & Toggle Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             
             {/* Save Current Chart to Database Button */}
             <button
               type="button"
               onClick={onSaveCurrentAsCase}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs border
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition shadow-xs border
                 bg-white dark:bg-[#1e2029] text-[#2a5d7c] dark:text-[#64b5f6] border-[#cbd8e2] dark:border-[#2f3f50] hover:bg-[#f0f6fa] dark:hover:bg-[#253342]"
               title="將當前排盤存入命例庫"
             >
@@ -235,19 +235,19 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
             <button
               type="button"
               onClick={onOpenDatabase}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs border
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition shadow-xs border
                 bg-[#8d271c] text-white border-[#701e15] hover:bg-[#782017]"
               title="開啟命例庫資料庫（查閱、增刪修）"
             >
               <FolderOpen className="w-3.5 h-3.5 text-white" />
-              <span>命例資料庫</span>
+              <span>命例庫</span>
             </button>
 
             {/* Collapse/Expand Toggle */}
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1.5 rounded-lg border text-[#666] dark:text-[#aaa] border-[#d6ccb8] dark:border-[#353746] hover:bg-[#ede5d4] dark:hover:bg-[#252733]"
+              className="p-1 sm:p-1.5 rounded-lg border text-[#666] dark:text-[#aaa] border-[#d6ccb8] dark:border-[#353746] hover:bg-[#ede5d4] dark:hover:bg-[#252733]"
               title={isExpanded ? '收合時辰列' : '展開時辰列'}
             >
               {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -259,7 +259,7 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
 
         {/* Bottom: The 12 Chinese Hours (時辰) Selectors */}
         {isExpanded && (
-          <div className="mt-2.5 pt-2 border-t border-[#ede3d1] dark:border-[#242633] flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <div className="mt-2 sm:mt-2.5 pt-2 border-t border-[#ede3d1] dark:border-[#242633] flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none overscroll-x-contain touch-pan-x">
             <span className="text-xs font-bold text-[#8d271c] dark:text-[#df756b] whitespace-nowrap flex items-center gap-1 shrink-0">
               出生時辰排盤：
             </span>
@@ -271,7 +271,7 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
                     key={ch.branch}
                     type="button"
                     onClick={() => handleHourSelect(ch.hour, ch.minute)}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition border flex flex-col items-center justify-center whitespace-nowrap min-w-[62px] shadow-2xs
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs transition border flex flex-col items-center justify-center whitespace-nowrap min-w-[56px] sm:min-w-[62px] shadow-2xs
                       ${isActive
                         ? 'bg-[#8d271c] text-white border-[#691c13] font-bold shadow-sm ring-1 ring-[#8d271c]'
                         : 'bg-white dark:bg-[#1a1b22] text-[#443f38] dark:text-[#ccc] border-[#ded4c1] dark:border-[#313340] hover:bg-[#ede3d1] dark:hover:bg-[#282a36]'}`}

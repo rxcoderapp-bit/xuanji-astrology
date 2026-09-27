@@ -38,13 +38,13 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
       <div className="max-w-[1600px] mx-auto space-y-3">
         
         {/* Layer Tabs & Action Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-2">
           
           {/* Layer Selector */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            <span className="text-xs font-bold text-[#80251c] dark:text-[#df756b] flex items-center gap-1 mr-1">
+          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none overscroll-x-contain touch-pan-x">
+            <span className="text-xs font-bold text-[#80251c] dark:text-[#df756b] flex items-center gap-1 mr-1 shrink-0">
               <Compass className="w-3.5 h-3.5" />
-              流運視角：
+              <span className="hidden sm:inline">流運視角：</span>
             </span>
 
             {[
@@ -61,7 +61,7 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => onSelectLayer(tab.id as LayerType)}
-                  className={`px-3 py-1 rounded-md text-xs font-bold transition whitespace-nowrap border
+                  className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition whitespace-nowrap border shrink-0
                     ${isActive
                       ? 'bg-[#9c2e22] text-white border-[#7a2218] shadow-sm'
                       : 'bg-[#ffffff] dark:bg-[#1f2029] text-[#554e44] dark:text-[#b4aea4] border-[#ded4c2] dark:border-[#353746] hover:bg-[#ede5d4] dark:hover:bg-[#2b2d3a]'}`}
@@ -73,15 +73,16 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
           </div>
 
           {/* Quick "Now" and status button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={onResetToNow}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition border
+              className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-md text-xs font-bold transition border shrink-0
                 bg-white dark:bg-[#20222b] text-[#2a5d7c] dark:text-[#64b5f6] border-[#cfdbe3] dark:border-[#2f4050] hover:bg-[#f0f6fa] dark:hover:bg-[#253240]"
               title="一鍵定位至當前真實年月日時"
             >
               <RotateCcw className="w-3 h-3" />
-              回到此時此刻 (Now)
+              <span className="hidden sm:inline">回到此時此刻 (Now)</span>
+              <span className="sm:hidden font-mono">Now</span>
             </button>
           </div>
 
@@ -92,7 +93,7 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
           <div className="pt-2 border-t border-[#e8dfcf] dark:border-[#262833] space-y-2.5">
             
             {/* 1. Decadal Selector Row */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none overscroll-x-contain touch-pan-x">
               <span className="font-bold text-[#6b6255] dark:text-[#a8a195] whitespace-nowrap min-w-[50px]">
                 大限軌道:
               </span>
@@ -118,7 +119,7 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
 
             {/* 2. Yearly Selector Row */}
             {['yearly', 'monthly', 'daily', 'hourly'].includes(horoscope.activeLayer) && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none overscroll-x-contain touch-pan-x">
                 <span className="font-bold text-[#6b6255] dark:text-[#a8a195] whitespace-nowrap min-w-[50px]">
                   流年歲次:
                 </span>
@@ -144,7 +145,7 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
 
             {/* 3. Monthly Selector Row */}
             {['monthly', 'daily', 'hourly'].includes(horoscope.activeLayer) && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none overscroll-x-contain touch-pan-x">
                 <span className="font-bold text-[#6b6255] dark:text-[#a8a195] whitespace-nowrap min-w-[50px]">
                   流月節律:
                 </span>
@@ -171,7 +172,7 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
 
             {/* 4. Daily Selector Row */}
             {['daily', 'hourly'].includes(horoscope.activeLayer) && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none overscroll-x-contain touch-pan-x">
                 <span className="font-bold text-[#6b6255] dark:text-[#a8a195] whitespace-nowrap min-w-[50px]">
                   流日輪值:
                 </span>
@@ -197,7 +198,7 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
 
             {/* 5. Hourly Selector Row */}
             {horoscope.activeLayer === 'hourly' && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none overscroll-x-contain touch-pan-x">
                 <span className="font-bold text-[#6b6255] dark:text-[#a8a195] whitespace-nowrap min-w-[50px]">
                   時辰輪轉:
                 </span>

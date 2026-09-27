@@ -295,7 +295,7 @@ export default function App() {
       />
 
       {/* 4. Main Workspace: 4x4 Grid Chart + Deep Interpretation Studio */}
-      <main className="flex-1 w-full max-w-[1680px] mx-auto p-3 sm:p-5 lg:p-6 flex flex-col lg:flex-row gap-5 items-start justify-center">
+      <main className="flex-1 w-full max-w-[1680px] mx-auto p-2 sm:p-5 lg:p-6 flex flex-col lg:flex-row gap-3.5 sm:gap-5 items-start justify-center">
         
         {/* Left / Center: Traditional 4x4 Chart Board */}
         <BoardView

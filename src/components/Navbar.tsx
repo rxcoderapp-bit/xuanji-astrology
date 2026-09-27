@@ -68,44 +68,44 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       )}
 
-      <div className="max-w-[1680px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[1680px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 overflow-hidden">
         
         {/* Logo & Title */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center font-serif text-xl font-bold shadow-sm transition
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-serif text-base sm:text-xl font-bold shadow-sm transition shrink-0
             bg-[#9c2e22] text-[#f8f5ee] border border-[#7a2218] dark:bg-[#af3426] dark:text-white">
             玄
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-serif font-bold tracking-wider text-[#211f1d] dark:text-[#f2efe9]">
-                玄璣紫微 · 八字互動解盤
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="text-base sm:text-xl font-serif font-bold tracking-tight sm:tracking-wider whitespace-nowrap text-[#211f1d] dark:text-[#f2efe9]">
+                玄璣紫微<span className="hidden sm:inline"> · 八字互動解盤</span>
               </h1>
-              <span className="hidden md:inline-flex items-center text-xs px-2 py-0.5 rounded-full font-serif border
+              <span className="hidden lg:inline-flex items-center text-xs px-2 py-0.5 rounded-full font-serif border
                 bg-[#f1ebe0] text-[#78261e] border-[#d9ceb9] dark:bg-[#201d1c] dark:text-[#df756b] dark:border-[#422d2a]">
                 中州三合 · 欽天四化 · 命例庫
               </span>
               {/* Version & PWA Badge (Click to Bust Cache) */}
               <button
                 onClick={handleVersionClick}
-                className={`text-[10px] font-mono px-1.5 py-0.5 rounded border transition cursor-pointer ${
+                className={`hidden md:inline-flex text-[10px] font-mono px-1.5 py-0.5 rounded border transition cursor-pointer ${
                   isUpdateAvailable
                     ? 'bg-amber-100 text-amber-900 border-amber-400 dark:bg-amber-950 dark:text-amber-300 animate-pulse'
                     : 'bg-black/5 dark:bg-white/5 text-[#787166] dark:text-[#959187] border-transparent hover:border-[#9c2e22]'
                 }`}
-                title={isUpdateAvailable ? '有新版本可更新！點擊立即套用' : 'PWA v1.2.0 (點擊可強制清除快取並重整)'}
+                title={isUpdateAvailable ? '有新版本可更新！點擊立即套用' : 'PWA v1.2.1 (點擊可強制清除快取並重整)'}
               >
-                {isUpdateAvailable ? '✨ 新版本就緒' : 'v1.2.0 PWA'}
+                {isUpdateAvailable ? '✨ 新版本就緒' : 'v1.2.1 PWA'}
               </button>
             </div>
-            <p className="text-xs text-[#706a62] dark:text-[#99948c] font-sans">
+            <p className="hidden md:block text-xs text-[#706a62] dark:text-[#99948c] font-sans truncate">
               全維度星象解讀 · 六層流限時空疊盤
             </p>
           </div>
         </div>
 
         {/* User summary chip & controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           
           {/* Quick birth info badge */}
           <button
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenCloudSync && (
             <button
               onClick={onOpenCloudSync}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-serif font-bold transition border shadow-xs ${
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs font-serif font-bold transition border shadow-xs flex items-center gap-1.5 ${
                 currentUser
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
                   : 'bg-white dark:bg-[#1a1c22] text-[#3d3934] dark:text-[#d4cfc5] border-[#d8d0bf] dark:border-[#31333d] hover:border-[#9c2e22]'
@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 <Cloud className={`w-3.5 h-3.5 ${currentUser ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-500'}`} />
               )}
-              <span className="hidden sm:inline">
+              <span className="hidden md:inline">
                 {currentUser ? '雲端同步' : 'Google 同步'}
               </span>
               {currentUser && (
@@ -159,12 +159,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenDivination && (
             <button
               onClick={onOpenDivination}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-serif font-bold transition border shadow-xs
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-serif font-bold transition border shadow-xs flex items-center gap-1.5
                 bg-[#96551b] hover:bg-[#804715] text-[#fff7ed] border-[#7d4414]"
               title="開啟紫微斗數一事一占 · 神卦問事"
             >
               <Compass className="w-3.5 h-3.5 text-[#fed7aa]" />
-              <span className="hidden xs:inline">紫微占卜</span>
+              <span className="hidden md:inline">紫微占卜</span>
             </button>
           )}
 
@@ -172,7 +172,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenDatabase && (
             <button
               onClick={onOpenDatabase}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-serif font-bold transition border
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-serif font-bold transition border flex items-center gap-1.5
                 bg-[#8d271c] text-white hover:bg-[#782017] border-[#701e15]"
               title="開啟命例庫資料庫"
             >
@@ -185,7 +185,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenAISettings && (
             <button
               onClick={onOpenAISettings}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-serif font-bold transition border shadow-xs
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs font-serif font-bold transition border shadow-xs flex items-center gap-1.5
                 bg-[#24334a] hover:bg-[#1c293c] text-[#e0e7ff] border-[#1a2536] dark:bg-[#1e2a3c] dark:hover:bg-[#283850]"
               title="設定 Gemini / OpenRouter API Key 與模型"
             >
@@ -197,8 +197,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Change Birth Button for mobile */}
           <button
             onClick={onOpenBirthModal}
-            className="xl:hidden p-2 rounded-lg border text-[#3d3934] dark:text-[#d4cfc5]
-              bg-[#ffffff] dark:bg-[#1a1b22] border-[#d8d0bf] dark:border-[#31333d]"
+            className="xl:hidden p-1.5 sm:p-2 rounded-lg border text-[#3d3934] dark:text-[#d4cfc5]
+              bg-[#ffffff] dark:bg-[#1a1b22] border-[#d8d0bf] dark:border-[#31333d] hover:bg-[#f6f2e9] dark:hover:bg-[#22242d]"
             title="輸入生辰"
           >
             <Calendar className="w-4 h-4 text-[#9c2e22] dark:text-[#df756b]" />
@@ -207,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Dark Mode Toggle */}
           <button
             onClick={onToggleDarkMode}
-            className="p-2 rounded-lg border transition duration-200
+            className="p-1.5 sm:p-2 rounded-lg border transition duration-200
               bg-[#ffffff] dark:bg-[#1a1b22] hover:bg-[#f6f2e9] dark:hover:bg-[#22242d]
               text-[#555048] dark:text-[#c4bfb5] border-[#d8d0bf] dark:border-[#31333d]"
             title={darkMode ? '切換至宣紙明朗模式' : '切換至曜石星幕模式'}

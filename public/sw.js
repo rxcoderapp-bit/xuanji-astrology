@@ -3,7 +3,7 @@
  * Offline-First Service Worker with Instant Update
  */
 
-const CACHE_NAME = 'xuanji-v1.0.0';
+const CACHE_NAME = 'xuanji-v1.2.1-mobile-fix';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

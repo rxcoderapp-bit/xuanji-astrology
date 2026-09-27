@@ -145,22 +145,22 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
       bg-[#fcfbf7] dark:bg-[#16171f] border-[#dcd3c1] dark:border-[#2b2d3b] text-[#222] dark:text-[#eee]">
       
       {/* Studio Header */}
-      <div className="px-5 py-3.5 border-b flex items-center justify-between
+      <div className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-b flex items-center justify-between
         bg-[#f6f2e8] dark:bg-[#1b1c24] border-[#e2d9c8] dark:border-[#2a2c3a]">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <BookOpen className="w-4 h-4 text-[#8d271c] dark:text-[#df756b]" />
-          <h2 className="font-bold text-base tracking-wide text-[#2b2723] dark:text-[#f2efe9]">
+          <h2 className="font-bold text-sm sm:text-base tracking-wide text-[#2b2723] dark:text-[#f2efe9]">
             玄璣動態智能解盤室
           </h2>
         </div>
-        <span className="text-xs px-2 py-0.5 rounded border text-[#8d271c] dark:text-[#df756b] font-semibold
+        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded border text-[#8d271c] dark:text-[#df756b] font-semibold
           bg-[#f8edea] dark:bg-[#281c1b] border-[#e8cdc6] dark:border-[#422924]">
           當前聚焦：{selectedPalace.name} ({selectedPalace.heavenlyStem}{selectedPalace.earthlyBranch})
         </span>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b text-xs font-bold overflow-x-auto scrollbar-none
+      <div className="flex border-b text-xs font-bold overflow-x-auto scrollbar-none overscroll-x-contain touch-pan-x
         bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733]">
         {[
           { id: 'palace', label: '【選宮精批】' },
@@ -175,7 +175,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-2.5 px-2.5 whitespace-nowrap transition border-b-2
+              className={`flex-1 py-2 sm:py-2.5 px-2 sm:px-2.5 whitespace-nowrap transition border-b-2
                 ${isActive
                   ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#16171f]'
                   : isAI
@@ -189,7 +189,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
       </div>
 
       {/* Scrollable Content Workspace */}
-      <div className="flex-1 p-5 overflow-y-auto space-y-6 text-sm leading-relaxed max-h-[750px] scrollbar-thin">
+      <div className="flex-1 p-3 sm:p-5 overflow-y-auto space-y-4 sm:space-y-6 text-xs sm:text-sm leading-relaxed max-h-[600px] sm:max-h-[750px] scrollbar-thin">
         
         {/* ==================== TAB 1: 選宮精批 (深度離線內容) ==================== */}
         {activeTab === 'palace' && (
