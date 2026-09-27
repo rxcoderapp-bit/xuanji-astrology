@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Sparkles, Compass, 
   Briefcase, DollarSign, 
@@ -13,9 +13,10 @@ import {
   MUTAGEN_MEANINGS 
 } from '../lib/interpreter';
 import { 
-  PALACE_DEEP_ESSENCE, 
+  generatePalaceDynamicDeepReading,
   getDecadalDeepReading, 
   getYearlyDeepReading, 
+  getMonthlyDeepReading,
   getNatalPatternDeepReading, 
   getBaziCrossDeepReading 
 } from '../lib/deepAnalysisEngine';
@@ -61,11 +62,33 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
   const [aiError, setAiError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [horoscopeSubTab, setHoroscopeSubTab] = useState<'yearly' | 'monthly' | 'decadal' | 'all'>('yearly');
+
+  // Synchronize sub-tab when user changes activeLayer from horoscope time wheel or board
+  useEffect(() => {
+    if (horoscope.activeLayer === 'monthly') {
+      setHoroscopeSubTab('monthly');
+    } else if (horoscope.activeLayer === 'decadal') {
+      setHoroscopeSubTab('decadal');
+    } else if (horoscope.activeLayer === 'yearly') {
+      setHoroscopeSubTab('yearly');
+    }
+  }, [horoscope.activeLayer]);
+
   // Standard Palace Analysis Object
   const analysis = generatePalaceAnalysis(selectedPalace, allPalaces, sanFang, horoscope);
   
-  // 1000-word Deep Essence for selected palace
-  const deepEssence = PALACE_DEEP_ESSENCE[selectedPalace.name] || PALACE_DEEP_ESSENCE['命宮'];
+  // 宗師級動態深批：針對當前所選宮位之坐宮主星、亮度、四化、自化、煞吉星及三方四正進行即時演化 (~1200字)
+  const dynamicPalaceReading = useMemo(() => {
+    return generatePalaceDynamicDeepReading(
+      selectedPalace,
+      allPalaces,
+      sanFang,
+      horoscope,
+      bazi,
+      laiYinIndex
+    );
+  }, [selectedPalace, allPalaces, sanFang, horoscope, bazi, laiYinIndex]);
 
   // AI Prompt & Call Handlers
   const handleGenerateAIReading = async () => {
@@ -200,50 +223,55 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
                 <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b] flex items-center gap-1.5">
                   <Compass className="w-4 h-4" />
-                  【{selectedPalace.name}】之世俗哲學與深度意涵 (千字精解)
+                  【{selectedPalace.name}】宗師級天道哲學與深度意涵 (千字精解)
                 </h3>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#f4efe4] dark:bg-[#252835] text-[#706456] dark:text-[#a0a8be]">
-                  大限 {selectedPalace.decadalRange[0]}~{selectedPalace.decadalRange[1]} 歲
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#f4efe4] dark:bg-[#252835] text-[#8d271c] dark:text-[#df756b] font-bold">
+                    {dynamicPalaceReading.totalWords} 字全息解析
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#f4efe4] dark:bg-[#252835] text-[#706456] dark:text-[#a0a8be]">
+                    大限 {selectedPalace.decadalRange[0]}~{selectedPalace.decadalRange[1]} 歲
+                  </span>
+                </div>
               </div>
 
               {/* Sub-block A: 哲學本質 */}
               <div className="space-y-1">
                 <div className="font-bold text-xs text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1">
-                  <span>✦ 命理天道與太極定位：</span>
+                  <span>✦ 命理天道與太極定位（坐宮星曜·廟旺利陷·雙星格局·空宮借鏡）：</span>
                 </div>
                 <p className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
-                  {deepEssence.philosophy}
+                  {dynamicPalaceReading.philosophy}
                 </p>
               </div>
 
               {/* Sub-block B: 現代社會場景投影 */}
               <div className="space-y-1 pt-2 border-t border-[#f2ece1] dark:border-[#252735]">
                 <div className="font-bold text-xs text-[#b85d18] dark:text-[#e58a44] flex items-center gap-1">
-                  <span>✦ 現代世俗場景顯化與現實考驗：</span>
+                  <span>✦ 現代世俗顯化·大耕老師「祿隨忌走」心理閉環·欽天門因果樞紐：</span>
                 </div>
                 <p className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
-                  {deepEssence.modernManifestation}
+                  {dynamicPalaceReading.modernManifestation}
                 </p>
               </div>
 
               {/* Sub-block C: 陰影與盲點剖析 */}
               <div className="space-y-1 pt-2 border-t border-[#f2ece1] dark:border-[#252735]">
                 <div className="font-bold text-xs text-[#991b1b] dark:text-[#f87171] flex items-center gap-1">
-                  <span>✦ 陰影陷阱與潛意識盲點：</span>
+                  <span>✦ 六吉輔弼護航 ✕ 大耕老師「六煞星是前進引擎」逆境轉化：</span>
                 </div>
                 <p className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
-                  {deepEssence.shadowAndLight}
+                  {dynamicPalaceReading.shadowAndLight}
                 </p>
               </div>
 
               {/* Sub-block D: 現代實戰指南 */}
               <div className="p-3 rounded-lg bg-[#f7f4ec] dark:bg-[#20222d] border border-[#e8dfcf] dark:border-[#313444] text-xs space-y-1.5">
                 <span className="font-bold text-[#8d271c] dark:text-[#df756b] block">
-                  ✦ 落地行道指南與自我修煉：
+                  ✦ 三方四正照妖鏡全息網絡 ✕ 大耕老師落地行道修煉錦囊：
                 </span>
-                <p className="text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line">
-                  {deepEssence.actionGuidance}
+                <p className="text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify">
+                  {dynamicPalaceReading.actionGuidance}
                 </p>
               </div>
             </div>
@@ -390,41 +418,93 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
 
         {/* ==================== TAB 2: 時運走勢 (深度千字解析) ==================== */}
         {activeTab === 'horoscope' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-5">
             
-            {/* Decade 10-Year Master Reading */}
-            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
-              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
-                <h3 className="font-bold text-sm text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  大限十年人生主軸破譯 (千字精解)
-                </h3>
-                <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
-                  {horoscope.decadalInfo?.stem}{horoscope.decadalInfo?.branch}大限
-                </span>
-              </div>
-
-              <div className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify space-y-2">
-                {getDecadalDeepReading(horoscope)}
-              </div>
+            {/* Sub-navigation for Horoscope layers */}
+            <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-lg border bg-[#f3ede0] dark:bg-[#1b1c24] border-[#ded5c3] dark:border-[#272938] overflow-x-auto scrollbar-none overscroll-x-contain touch-pan-x">
+              {[
+                { id: 'yearly', label: '🌟 流年歲君 (1400字)' },
+                { id: 'monthly', label: '🌙 流月節律 (1200字)' },
+                { id: 'decadal', label: '🪐 大限十年 (1200字)' },
+                { id: 'all', label: '📜 時運全景合覽' },
+              ].map(sub => {
+                const isSubActive = horoscopeSubTab === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    onClick={() => setHoroscopeSubTab(sub.id as any)}
+                    className={`px-2.5 py-1 text-[11px] sm:text-xs font-bold rounded-md whitespace-nowrap transition
+                      ${isSubActive
+                        ? 'bg-[#8d271c] dark:bg-[#b9382b] text-white shadow-xs'
+                        : 'text-[#655d51] dark:text-[#a59d90] hover:text-[#222] dark:hover:text-white hover:bg-[#eae2d3] dark:hover:bg-[#252733]'}`}
+                  >
+                    {sub.label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Yearly Master Reading */}
-            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
-              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
-                <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b] flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" />
-                  流年歲君重點引動破譯 (千字精解)
-                </h3>
-                <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
-                  {horoscope.yearlyInfo?.stem}{horoscope.yearlyInfo?.branch}年 (虛歲 {horoscope.yearlyInfo?.nominalAge}歲)
-                </span>
-              </div>
-
-              <div className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify space-y-2">
-                {getYearlyDeepReading(horoscope)}
-              </div>
+            <div className="text-[11px] text-[#786f62] dark:text-[#9e9688] flex items-center justify-between px-1">
+              <span>✦ 當前時運聚焦：{horoscope.activeLayer === 'monthly' ? '流月' : horoscope.activeLayer === 'yearly' ? '流年' : horoscope.activeLayer === 'decadal' ? '大限' : '原局'}視角</span>
+              <span>切換上方「時運羅盤」可即時變更年月日時</span>
             </div>
+
+            {/* 1. Yearly Master Reading */}
+            {(horoscopeSubTab === 'yearly' || horoscopeSubTab === 'all') && (
+              <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+                <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                  <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b] flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    流年歲君重點引動破譯 (千字精解 · 疊宮與四化)
+                  </h3>
+                  <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
+                    {horoscope.yearlyInfo?.year}年 · {horoscope.yearlyInfo?.stem}{horoscope.yearlyInfo?.branch}歲君 (虛歲 {horoscope.yearlyInfo?.nominalAge}歲)
+                  </span>
+                </div>
+
+                <div className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify space-y-2">
+                  {getYearlyDeepReading(horoscope, allPalaces)}
+                </div>
+              </div>
+            )}
+
+            {/* 2. Monthly Master Reading (NEW!) */}
+            {(horoscopeSubTab === 'monthly' || horoscopeSubTab === 'all') && (
+              <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+                <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                  <h3 className="font-bold text-sm text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    流月節律重點破譯 (千字精解 · 斗君氣候顯微鏡)
+                  </h3>
+                  <span className="text-xs font-mono font-bold text-[#2a5d7c] dark:text-[#64b5f6]">
+                    {horoscope.monthlyInfo?.stem}{horoscope.monthlyInfo?.branch}月 (農曆{horoscope.monthlyInfo?.month}月)
+                  </span>
+                </div>
+
+                <div className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify space-y-2">
+                  {getMonthlyDeepReading(horoscope, allPalaces)}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Decade 10-Year Master Reading */}
+            {(horoscopeSubTab === 'decadal' || horoscopeSubTab === 'all') && (
+              <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+                <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                  <h3 className="font-bold text-sm text-[#79287c] dark:text-[#ce7fe2] flex items-center gap-1.5">
+                    <Compass className="w-4 h-4" />
+                    大限十年人生主軸破譯 (千字精解 · 本命大限交疊)
+                  </h3>
+                  <span className="text-xs font-mono font-bold text-[#79287c] dark:text-[#ce7fe2]">
+                    {horoscope.decadalInfo?.stem}{horoscope.decadalInfo?.branch}大限 ({horoscope.decadalInfo?.ageRange[0]}~{horoscope.decadalInfo?.ageRange[1]}歲)
+                  </span>
+                </div>
+
+                <div className="text-xs text-[#443e37] dark:text-[#c4beb4] leading-relaxed whitespace-pre-line text-justify space-y-2">
+                  {getDecadalDeepReading(horoscope, allPalaces)}
+                </div>
+              </div>
+            )}
 
           </div>
         )}

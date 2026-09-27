@@ -222,14 +222,19 @@ export function computeHoroscopeDetails(
     mutagen: MUTAGEN_LABELS[idx]
   }));
 
+  const monthlyMutagens = (h.monthly?.mutagen || []).map((star, idx) => ({
+    star,
+    mutagen: MUTAGEN_LABELS[idx]
+  }));
+
   return {
     activeLayer: 'yearly',
     targetDate: dateFormatted,
     targetTimeIndex: timeIdx,
     selectedDecadeIndex: activeDecadeIndex >= 0 ? activeDecadeIndex : 0,
     selectedYear: today.getFullYear(),
-    selectedMonth: 1,
-    selectedDay: 1,
+    selectedMonth: today.getMonth() + 1,
+    selectedDay: today.getDate(),
     selectedHourIndex: timeIdx,
 
     decadalInfo: h.decadal ? {
@@ -254,10 +259,11 @@ export function computeHoroscopeDetails(
     } : undefined,
 
     monthlyInfo: h.monthly ? {
-      month: 1,
+      month: today.getMonth() + 1,
       stem: h.monthly.heavenlyStem,
       branch: h.monthly.earthlyBranch,
-      palaceIndex: h.monthly.index
+      palaceIndex: h.monthly.index,
+      mutagens: monthlyMutagens
     } : undefined,
 
     dailyInfo: h.daily ? {

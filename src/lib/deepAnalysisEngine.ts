@@ -1,134 +1,440 @@
 /**
  * 玄機天象 - 宗師級離線深度命理破譯引擎 (Deep Analysis Engine)
- * 專為離線模式打造，每項分析皆具備 800~1200 字以上之大師級深度解讀，
- * 融貫中州三合派星情、欽天門四化飛星、三方四正照會氣場與子平八字五行體系。
+ * 深度融匯：
+ * 1. 大耕老師現代紫微斗數體系（《紫微攻略．新手村》《改運之書_格局篇》《紫微攻略5_愛情篇》）
+ *    - 14主星原廠設定心理動力學
+ *    - 大耕老師獨家「祿隨忌走」心理閉環與解套心法
+ *    - 大耕老師「六煞星是生命的加速前進引擎」實戰轉化
+ *    - 對宮照妖鏡（夫官一體、命遷一體、財福一體等）
+ * 2. 北派河洛欽天門四化秘儀（方外人手稿、墨塵講義）
+ *    - 來因宮因果樞紐發動機
+ *    - 生年四化先天定數與宮干自化（向心入庫 vs 離心出氣、自化法象生年）
+ *    - 三層動態疊宮拓撲（本命 ✕ 大限 ✕ 流年 ✕ 流月）
+ * 3. 專屬流年（Yearly）與流月（Monthly）千字級深度運勢精批引擎
  */
 
-import type { PalaceData, HoroscopeState, BaziData } from '../types';
+import type { PalaceData, HoroscopeState, BaziData, SanFangSiZheng } from '../types';
+import { MAJOR_STAR_DESCRIPTIONS, DUAL_STAR_MAP, MUTAGEN_MEANINGS } from './interpreter';
 
-// ==========================================
-// 1. 宮位世俗哲學與現代深度叩問庫 (1000字級)
-// ==========================================
-export const PALACE_DEEP_ESSENCE: Record<string, {
+// 十天干生年四化表
+export const STEM_SI_HUA: Record<string, { lu: string; quan: string; ke: string; ji: string }> = {
+  '甲': { lu: '廉貞', quan: '破軍', ke: '武曲', ji: '太陽' },
+  '乙': { lu: '天機', quan: '天梁', ke: '紫微', ji: '太陰' },
+  '丙': { lu: '天同', quan: '天機', ke: '文昌', ji: '廉貞' },
+  '丁': { lu: '太陰', quan: '天同', ke: '天機', ji: '巨門' },
+  '戊': { lu: '貪狼', quan: '太陰', ke: '右弼', ji: '天機' },
+  '己': { lu: '武曲', quan: '貪狼', ke: '天梁', ji: '文曲' },
+  '庚': { lu: '太陽', quan: '武曲', ke: '太陰', ji: '天同' },
+  '辛': { lu: '巨門', quan: '太陽', ke: '文曲', ji: '文昌' },
+  '壬': { lu: '天梁', quan: '紫微', ke: '左輔', ji: '武曲' },
+  '癸': { lu: '破軍', quan: '巨門', ke: '太陰', ji: '貪狼' }
+};
+
+// 十二宮標準順序（逆時針排列：命宮=0, 兄弟=1, 夫妻=2...）
+export const TWELVE_PALACE_ORDER = [
+  '命宮', '兄弟', '夫妻', '子女', '財帛', '疾厄',
+  '遷移', '僕役', '官祿', '田宅', '福德', '父母'
+];
+
+export interface DynamicPalaceDeepAnalysis {
   philosophy: string;
   modernManifestation: string;
   shadowAndLight: string;
   actionGuidance: string;
-}> = {
-  '命宮': {
-    philosophy: `命宮乃整張星盤之靈魂太極點與精神總樞紐，統攝其餘十一宮之吉凶起伏與生命節奏。在紫微斗數哲學中，命宮並非單純指涉外在軀體，而是象徵一個人在無意識狀態下的「第一思維本能」、「價值觀定盤錨點」以及先天靈魂底色。命宮之星曜五行，直接決定了命主看待世界的透鏡——若是剛星坐命，天地皆為戰場，骨子裡自帶開拓拓荒之雄圖；若是柔星坐命，萬物皆為共情之舟，處事溫潤而擅於借力使力。命宮所座之天干地支，更揭示了命主累世積累的精神資產與今生必經的心智課題。`,
-    modernManifestation: `投射至現代高度競爭之商業與社會環境，命宮正是個人的「核心品牌形象（Personal Brand）」與「決策底層作業系統」。當面臨重大變革、失業、婚變或突發逆境時，一個人的第一本能反應完全由命宮之主星氣場牽引。命宮強盛者，縱使身處逆境亦能散發強大之氣場磁吸貴人；命宮微弱或煞星交織者，容易在主流評價體系中迷失自我，甚至將外部期待誤認為自己的真實目標。命宮的能量狀態，決定了一個人是生命的「自主創造者」還是「環境的應變受害者」。`,
-    shadowAndLight: `命宮之光明面在於賦予命主獨一無二的天賦才情、行事風骨與生命韌性；其陰暗面（盲點）則在於容易陷入自戀性認同或執念閉環。過剛者易折於剛愎自用，過柔者易陷於優柔寡斷與內耗沉淪。特別是當命宮逢生年化忌或自化忌時，命主往往終其一生在與「自我否定感」或「對完美的病態苛求」進行靈魂拔河。唯有覺察命宮之局限，方能由「隨星流轉」昇華為「以心御星」。`,
-    actionGuidance: `現代修為指南：
-1. 建立獨立於世俗名利之自我認同錨點，每週至少留白一段無外力干擾之獨處時光，檢視內在真實渴望。
-2. 針對坐宮主星之偏枯五行進行生活化補調（如剛強星曜多練習靜坐傾聽，柔和星曜多設定明確拒絕之邊界）。
-3. 謹記「命好不如運好，運好不如性格好」，修煉情緒韌性，將命宮之天賦轉化為持續創造社會價值的專業護城河。`
-  },
-  '兄弟': {
-    philosophy: `兄弟宮在古典斗數中主同胞手足之親疏緣分，而在深層三世因果與氣數架構中，兄弟宮實乃「田宅宮之氣數位（疾厄位）」與「財帛宮之田宅位（現金儲備庫）」。它象徵著一個人出發時最貼身的平輩資源網，是社會同儕、核心合夥人、親密盟友的能量載體。此宮的厚薄吉凶，直指命主一生中是否有能在戰壕裡彼此掩護、共享利益的生死夥伴，抑或常陷於同儕嫉妒、背叛掠奪之暗礁。`,
-    modernManifestation: `在當代社會，兄弟宮直接對應於「創業核心團隊合夥機制」、「職場平輩競爭生態」以及「短期現金流周轉安全性」。現代商業並非單打獨鬥之時代，兄弟宮吉星拱照者，創業極易獲得同儕力挺、資源互補，在合夥關係中互利共生；若兄弟宮煞忌交侵或化忌沖照，則往往上演合夥反目、商業機密外洩、或因替平輩背書擔保而遭受財務重創。此外，由於此宮為「庫位之門戶」，其吉凶直接反映了命主名下資金調度的彈性與安全水位。`,
-    shadowAndLight: `光明面在於獲得志同道合之兄弟聯盟，借眾人之力形成跨越階級之團隊合力；陰暗面則在於在利益分配前顯露的人性幽暗。許多人在事業草創期同甘共苦，卻在盈餘分配時分道揚鑣，根源皆在於兄弟宮氣數之生剋化合。若兄弟宮有自化或陀羅化忌，命主極易在平輩社交中耗損大量心力與金錢，產生「身邊朋友眾多，臨難孤立無援」之悵惘。`,
-    actionGuidance: `現代修為指南：
-1. 涉及任何合夥、股權架構或借貸，務必「先小人後君子」，建立白紙黑字且具法律效力之退場機制，切忌感情用事。
-2. 定期檢視「身邊五人平均值」，主動篩除負能量與過度所求之無效社交，深耕真正能賦能彼此的核心盟友。
-3. 嚴格控制不可動用之應急準備金（至少保持 6~12 個月之現金流），確保在兄弟宮氣數動盪時，自身基本盤屹立不倒。`
-  },
-  '夫妻': {
-    philosophy: `夫妻宮乃親密關係、靈魂契約與終身伴侶之鏡像投影。在斗數全盤中，夫妻宮與官祿宮互為對宮沖照（夫官一體），深刻揭示了一個人在愛情與家庭中的心理防禦機制，與其在社會事業上的成就渴望存在不可分割的因果聯動。夫妻宮所坐之星曜，往往並非單純描繪另一半的長相與條件，更是命主自身內心深處「潛意識渴望被看見、被補足的那一部分陰影自我（Animus/Anima）」。`,
-    modernManifestation: `在現代婚姻制度鬆動與多元情感的時代，夫妻宮評估的是「長期親密關係的契約承諾能力」與「情感價值交換之質量」。夫妻宮吉美者，伴侶即為生命中最大的貴人與後盾，在精神與事業上相輔相成，逢難共濟；若夫妻宮凶煞聚集、孤寡星纏繞或生年忌坐入，則容易在親密關係中遭遇溝通斷崖、理念背道而馳、外在誘惑介入，甚至演變為長期的情感冷暴力或法律官司撕扯。`,
-    shadowAndLight: `光明面為獲得心靈至深之相知相守，在紛擾世間擁有一處彼此包容的避風港；陰暗面則是把自我完整性的責任推卸給伴侶，產生控制狂、猜忌多疑或情感乞討。夫妻宮有煞忌者，常不自覺挑選與自己性格激烈相剋的對象，在愛恨交織中反覆歷劫。需知世間夫妻皆是靈魂互為磨刀石，痛定思痛方能明心見性。`,
-    actionGuidance: `現代修為指南：
-1. 戒除「伴侶必須完美理解我」之嬰兒式幻想，在親密關係中尊重對方的獨立邊界與精神空間。
-2. 若夫妻宮星曜剛烈（如七殺、破軍、擎羊），宜聚少離多、各自主掌事業領域，或採晚婚、培養共同崇高志趣以化解刑剋。
-3. 學習非暴力溝通，在衝突當下暫停反應，識別彼此情緒背後的脆弱需求，讓親密關係成為自我覺醒之修道場。`
-  },
-  '子女': {
-    philosophy: `子女宮在古典義理中掌血脈延續、後嗣賢愚與宗族香火；在欽天四化之天道哲學中，子女宮實為「合作位」、「桃花位」與「晚輩部屬引領位」，更是「田宅宮之對宮（家庭外出社交投影）」與「個人荷爾蒙、生機活力之源泉」。子女宮展現是一個人如何對待生命中的「新生物」——包括自己的親生骨肉、傾囊相授的門生徒弟，抑或由無到有孵化之嶄新投資專案。`,
-    modernManifestation: `在少子化與創業孵化盛行的現代社會，子女宮的多重維度尤為耀眼：其一，評估與子女之緣分厚薄、教育互動質量及晚年反哺之情；其二，反映一個人在職場中培養後進、帶領新人團隊之領導才能；其三，主導合夥投資新興專案之勝率與冒險回報；其四，掌管個人的感官慾望、性荷爾蒙吸引力與非婚情感波瀾。`,
-    shadowAndLight: `光明面在於育化英才、門生遍布，且親生子女聰慧有成，成為人生晚境之最大驕傲與精神安慰；陰暗面則在於控制慾過甚引發的兩代反目、過度縱容招致的不肖敗家，或在合夥投資中因輕信晚輩合作方而血本無歸。此外，桃花星入子女宮若逢煞忌，往往演變為糾纏不清的情感緋聞或身體機能損耗。`,
-    actionGuidance: `現代修為指南：
-1. 對待子女與年輕部屬，轉變為「教練型陪伴」思維，給予試錯空間，以身作則重於言辭說教。
-2. 進行任何早期專案天使投資或合資創業時，切忌因人情面子倉促決定，必須建立嚴密的法務風險隔離。
-3. 珍惜身體生機與精氣神儲備，克制短暫感官誘惑，將生發創造力導向高價值的思想產出與長期資產孵化。`
-  },
-  '財帛': {
-    philosophy: `財帛宮乃人生價值之物質變現途徑，掌世俗資糧流通之進出管道。在斗數命盤三方四正中，財帛宮與命宮、官祿宮構成事業財富鐵三角（命財官三合）。財帛宮不單是看存款數字的多寡，而是揭示一個人在世俗社會中「求取生存資源的心理動態與交易模式」。金錢本質上是能量與信用的載體，財帛宮之星曜，正是命主與金錢能量進行對話的獨特密碼。`,
-    modernManifestation: `對應現代金融商業社會，財帛宮直接指示個人的「現金流獲取能力」、「收入結構多元性」、「理財投資風格」與「商業談判底氣」。財帛宮見正財星（武曲、天府）者，長於實體經營、固定薪津與穩健資產配置；見偏財星（貪狼、七殺、破軍）者，敢於在波動起伏中博取超額槓桿與市場利潤；若見空劫煞忌，則往往經歷金錢過路如過路財神、投資踩雷或突發性財務缺口。`,
-    shadowAndLight: `光明面在於擁有豐沛之物質顯化能力，善用財富兼濟天下、自利利他，享受物質帶來的自由與尊嚴；陰暗面則在於淪為金錢之奴隸，產生深層的匱乏恐懼症，或因貪暴發心態鋌而走險。財帛宮過旺而無福德宮之德性相乘，往往「人在天堂，錢在銀行」；財帛宮逢凶者，則需防因錢財反目引發人生巨大破局。`,
-    actionGuidance: `現代修為指南：
-1. 梳理個人收入結構，盡早擺脫單一體力或時間置換之線性收入，構築具複利效應之技能或知識資產。
-2. 敬畏金融市場週期，若財帛宮有偏財星，需設定嚴格止盈止損線，見好就收，切勿將運氣誤認為個人能力。
-3. 樹立「財富流通如流水」之道家心態，該用則用、善待他人，以厚德載物之器量擴充自身財庫容量。`
-  },
-  '疾厄': {
-    philosophy: `疾厄宮在表面上主生理肉身之病理吉凶與先天體質強弱，而在深層心靈玄學與中醫五行原理中，疾厄宮實為「命宮之隱性潛意識」與「身心靈交互作用之全息鏡像」。身體是靈魂唯一的棲息之所，任何在意識層面被壓抑的情緒、童年創傷、未被療癒的恐懼，都會無聲無息地沉澱至疾厄宮，最終以臟腑偏枯、內分泌失調或慢性疾病的形態爆發。疾厄宮更是家族遺傳基因密碼之載體。`,
-    modernManifestation: `在高度焦慮與高壓節奏的現代社會，疾厄宮已成為評估「心理抗壓臨界值」、「自律神經與免疫系統健全度」以及「潛在亞健康引爆點」之關鍵樞紐。五行屬木之星曜（天機、貪狼）失調主肝膽經絡與自律神經失調；屬火之星曜（太陽、廉貞）主心血管、血壓與精神狂躁；屬土之星曜（天府、天梁）主脾胃代謝與消化功能；屬金之星曜（武曲、七殺）主呼吸肺部與骨骼筋骨；屬水之星曜（太陰、天同、巨門）主泌尿生殖、腎臟與憂鬱情緒。`,
-    shadowAndLight: `光明面在於透過對身體極致細微的觀照，將病痛轉化為生命反思與生活作息革新的重大轉機；陰暗面則在於長期透支健康以換取外在名利，對身體微小警訊視若無睹，直到大限流年疾厄宮受沖時猝然爆發。現代醫學所謂的心身醫學（Psychosomatic Medicine），在紫微斗數疾厄宮中早已做出精準之預警。`,
-    actionGuidance: `現代修為指南：
-1. 建立規律之年度深度健檢習慣，特別針對疾厄宮所座星曜對應之弱勢臟腑進行精準預防性照護。
-2. 學習正念呼吸與身體掃描，每天給予身體 15 分鐘無條件之放鬆與感謝，化解潛意識淤積之負面能量。
-3. 嚴格守護睡眠底線，拒絕以犧牲健康為代價之內耗加班，深刻領悟「健康的 1 倒下，後續所有的 0 皆無意義」。`
-  },
-  '遷移': {
-    philosophy: `遷移宮是命宮的對宮，兩者構成「我與外部世界」的一體兩面。如果命宮是個人的內核自我，遷移宮便是命主踏出家門、投身廣袤世界時所遭遇的「外部大環境氣候」與「大眾目光下的第一面具」。在古代，遷移宮主出外遠行、赴京趕考、經商遷徙之吉凶；在現代，遷移宮則代表跨界、國際視野、公眾人設以及面對未知環境時的適應與開拓天賦。`,
-    modernManifestation: `在數位全球化與遠距辦公的當代，遷移宮的實戰意義甚至常凌駕於命宮之上。它是個人的「公開社群形象」、「出國留學移民運」、「跨行業轉型機遇」以及「在陌生領域獲取貴人認可」的關鍵指標。遷移宮吉星雲集者，出門如魚得水，極適合海外拓展、跨國貿易或在公眾舞台上大放異彩；若遷移宮逢煞忌沖破，則主出外易遭水土不服、小人算計、交通事故或在異鄉面臨孤立無援之嚴峻考驗。`,
-    shadowAndLight: `光明面在於具備天涯海角皆為家的宏大格局，善於從不同的文化與新視界中吸取養分，開闢第二人生曲線；陰暗面則在於過度沉迷於外在的光鮮人設，在公眾掌聲中迷失自我，甚至患上「不能停下奔波的漂泊強迫症」，導致內在孤獨虛無。`,
-    actionGuidance: `現代修為指南：
-1. 主動拓展社交與事業之物理與心理邊界，若遷移宮強於命宮，強烈建議離開原生出生地至大都市或海外發展。
-2. 精心營造真實且專業的公開人設，珍惜每一次在公眾場合或社群網路上的展現，將外部影響力轉化為實體資源。
-3. 外出遠行與交通出行時常懷敬畏心，遷移宮有羊陀火鈴者，切勿疲勞駕駛或從事高危險極限運動，做好平安風險控管。`
-  },
-  '僕役': {
-    philosophy: `僕役宮在傳統又稱「朋友宮」或「交友宮」，象徵著一個人生命中所遭遇的廣義社交群體、部屬同僚、合作顧客以及浩瀚無垠的眾生緣分。此宮為「兄弟宮之對宮」，兄弟代表少數核心平輩，僕役則代表普羅大眾與人脈網絡。斗數深層秘訣云「僕役為父母之氣數，為疾厄之田宅」，此宮暗藏著命主是否會因外人而遭受名譽牽連、法律訴訟或精神創傷的深層密碼。`,
-    modernManifestation: `在自媒體流量爆發、社群網路為王的今日，僕役宮直接主宰了個人的「公眾粉絲緣」、「私域流量粘性」、「社群矩陣擴散力」以及「防範職場小人背後捅刀的能力」。僕役宮得吉曜者，天生具有群眾號召力，下屬忠誠得力，顧客回購率高，能借眾人之力成就個人事業；若僕役宮凶星密布、陀羅暗結或化忌生是非，則極易遭遇網路霸凌、下屬陽奉陰違、被合夥人捲款逃逸或替他人背黑鍋。`,
-    shadowAndLight: `光明面在於廣結善緣、眾星拱月，成為社群領袖或公眾意見領袖（KOL），匯聚眾人願力成就大業；陰暗面則在於深陷無效社交泥淖，在討好大眾的過程中喪失獨立思考能力，或對人性缺乏防備而屢遭暗算。世間最難防者莫過於人心，僕役宮正是人性善惡博弈的試金石。`,
-    actionGuidance: `現代修為指南：
-1. 嚴格區分「核心圈」、「價值圈」與「泛社交圈」，絕不在無效社交上消耗寶貴注意力。
-2. 管理團隊時堅持「制度管人、文化聚心」，避免依賴純粹道德感召，建立透明防作弊之管理流程。
-3. 遭遇網路非議或小人中傷時，保持戰略定力，僕役宮凶者切記「不爭之爭」，以法律與客觀實力作為回擊利刃。`
-  },
-  '官祿': {
-    philosophy: `官祿宮又稱事業宮，乃一個人在三界之中立身行道之重器，掌功名利祿、職業志向與社會責任之承擔。官祿宮與命宮、財帛宮互為支柱，直接反映了命主如何將先天之才華與理想，透過日復一日的專注與勞作，轉化為造福社會、確立自我尊嚴的實體事業。官祿宮更是「夫妻宮之對宮」，事業之成敗，往往直接影響親密關係之平衡，兩者互為因果。`,
-    modernManifestation: `在講求專業深度與抗週期能力的現代社會，官祿宮代表個人的「職業天花板」、「專業護城河」、「職場升遷運勢」以及「創業能否大展鴻圖」。官祿宮座帝星（紫微、天府）者，宜居領導管理之高位；座文星（天機、昌曲）者，宜專研研發、策劃諮詢與學術；座武星（武曲、七殺）者，宜實業開疆、金融決策與硬核工程。若官祿逢空劫，則易有頻繁跳槽、職涯迷惘之象，但若轉入哲學、藝術或非傳統賽道，反而能成就破格之功。`,
-    shadowAndLight: `光明面在於在事業中找到天命所歸，體驗到深度心流與建功立業之極致成就感；陰暗面則在於將個人的全部自我價值捆綁於職位、頭銜與外界評價，一旦遭遇職場中年危機或產業淘汰，內心防線便全面崩塌，甚至淪為事業至上而犧牲家庭與健康的冷血工作狂。`,
-    actionGuidance: `現代修為指南：
-1. 在快速變革時代，打造「T型專業能力」，既有不可被 AI 輕易替代之深核專業，又具備跨界整合之寬廣視野。
-2. 定期檢視自身事業是否順應時代大勢，順風而起事半功倍，切忌在日落西山的傳統夕陽產業中死鑽牛角尖。
-3. 視工作為靈魂借假修真之工具，在職場拼搏中淬鍊心性，不以物喜、不以己悲，成就外圓內方之事業大境界。`
-  },
-  '田宅': {
-    philosophy: `田宅宮在字面意義為主不動產、祖產與居所安寧，而在紫微斗數全盤秘傳之天人哲學中，田宅宮實為「全盤之總庫位」、「人生最終沉澱之容器」以及「內心最深層安全感之根基」。財帛宮是流動之水，田宅宮則是蓄水之池；若財帛宮萬金流入，而田宅宮破損不堪，終究如竹籃打水一場空。田宅宮更承載了原生家庭之家族風水氣場、家族因果以及命主晚年精神安居之所。`,
-    modernManifestation: `在現代資產配置體系中，田宅宮直接關乎個人的「淨資產累積能力（Net Worth）」、「房屋不動產投資運」、「家族財產傳承」以及「公司辦公環境之穩定性」。田宅宮吉星高照、化祿化權坐入者，天生具有極佳之不動產蓄積天賦，置產往往能享受城市發展紅利；若田宅宮煞忌重疊、破軍地劫破耗，則主居所常有變動、鄰里紛擾、裝潢漏水糾紛，甚至因不慎之高槓桿炒房而背負沉重債務包袱。`,
-    shadowAndLight: `光明面在於構築起家族堅不可摧之資產防禦堡壘，為後代提供優渥起跑點，且居所有天地祥和之氣滋養身心；陰暗面則在於淪為沉重資產的守財奴，為爭奪房產與親人對簿公堂，或在內心構築高牆、缺乏對外界變革的安全感而畫地自限。`,
-    actionGuidance: `現代修為指南：
-1. 重視資產之流動性與安全邊際，不動產配置需以抗跌與穩定現金流為第一考量，切莫在市場高位過度盲目加槓桿。
-2. 用心經營居住環境之磁場與整潔，定期斷捨離，居家環境之清爽通透將直接反哺命主之精神專注力與身體機能。
-3. 處理家族遺產或不動產過戶時，務必提前透過信託、遺囑或法律架構妥善規避紛爭，以和為貴延續家道興旺。`
-  },
-  '福德': {
-    philosophy: `福德宮乃人神溝通之秘徑、靈魂享樂之根基、前世因果功德之藏府。在斗數體系中，福德宮與財帛宮互為對宮（福財相生相沖），深刻啟示了「金錢只能買到物慾享受，而唯有福德才能決定能否安享財富」。福德宮掌管一個人的內在精神世界、抗挫折修復韌性、深層潛意識思維以及晚年能否安享天倫之大福報。福德若破，縱有萬貫家財亦夜夜難眠；福德若厚，一簞食一瓢飲亦能自得其樂。`,
-    modernManifestation: `在憂鬱症與精神內耗成為時代流行病的現代，福德宮的重要性無可比擬。它是一個人在面臨中年危機、至親離世、事業破產時，內心深處那一道「防範精神全面崩潰的最後一道安全閘門」。福德宮座吉星（天同、天梁、太陰）者，心胸豁達，長壽安泰，一生自帶逢凶化吉之吉神護佑；座煞星（擎羊、鈴星、地劫、化忌）者，往往思慮過重、多愁善感、易陷入強迫性內耗，需付出數倍努力方能平息內在之狂瀾。`,
-    shadowAndLight: `光明面在於擁有自給自足的內在幸福力，不依賴外在評價亦能活得充實豐盈，具備超拔世俗的哲學或宗教大智慧；陰暗面則在於逃避現實的佛系躺平、沉迷於酒精感官藥物的麻醉，或因執念過重而自絕於陽光之下。`,
-    actionGuidance: `現代修為指南：
-1. 培養一項與世俗功利完全無關之精神嗜好（如書法、太極、冥想、哲學閱讀），建立內在精神避難所。
-2. 積極行善積德、參與公益，以無條件之利他行為打破狹隘自我之執念，為自身福德宮注入源源不絕之清澈活水。
-3. 學會「轉念」心法，任何世俗挫敗皆為靈魂升級之菩提試煉，放下對過去的悔恨與未來的焦慮，活在當下每一刻。`
-  },
-  '父母': {
-    philosophy: `父母宮乃血脈之源頭、倫理法統之根基，掌父母之緣分壽元、原生家庭教育模式與政府長官之庇護提攜。在深層斗數象義中，父母宮為「疾厄宮之對宮」，揭示了父母的情緒基因與相處模式如何深刻形塑命主的內在生理與心理體質；父母宮同時又稱「相貌宮」與「文書宮」，統轄一切公家法規、學歷文憑、合約公文與行政監管體系。`,
-    modernManifestation: `在體制運行與法治社會中，父母宮直接對應個人的「體制內貴人提攜運（得長官上司青睞之機率）」、「各類國家級考證升遷運」、「合約文書法律風險」以及「與政策大趨勢的順應度」。父母宮吉曜照會者，多能承接原生家庭深厚教養，在求學與升遷過程中頻頻獲得德高望重的長輩引路；若父母宮化忌逢刑煞（如擎羊、天刑），則主求學波折、與主管多有代溝摩擦，或在商業合同中因條款疏漏引發勞民傷財的官非訴訟。`,
-    shadowAndLight: `光明面在於獲得世代智慧與厚重家風之滋養，善於藉助國家法規與既有平臺資源借力高飛；陰暗面則在於原生家庭的創傷投射（如討好權威或反骨對抗體制），導致在職場中反覆重演童年與嚴苛父母相處的痛苦循環。`,
-    actionGuidance: `現代修為指南：
-1. 主動梳理原生家庭關係，在心理上完成與父母的「健康精神分離」，接納父母之局限，停止無效責備。
-2. 簽署任何商業合約、勞動契約或股權協議時，切勿心存僥倖，務必委由專業律師字斟句酌審閱，防患於未然。
-3. 在職場中對待資深長輩與上司長官，保持「敬重而不盲從、分寸分明」的專業態度，以扎實業績贏得體制內持久信賴。`
-  }
-};
+  totalWords: number;
+}
 
-// ==========================================
-// 2. 時運走勢深度解析引擎 (1000字級)
-// ==========================================
-export function getDecadalDeepReading(horoscope: HoroscopeState): string {
+// 五虎遁元：由流年天干求各農曆流月天干
+export function getLunarMonthStem(yearStem: string, lunarMonth: number): string {
+  const baseStemIndex: Record<string, number> = {
+    '甲': 2, '己': 2, // 丙寅
+    '乙': 4, '庚': 4, // 戊寅
+    '丙': 6, '辛': 6, // 庚寅
+    '丁': 8, '壬': 8, // 壬寅
+    '戊': 0, '癸': 0  // 甲寅
+  };
+  const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+  const startIdx = baseStemIndex[yearStem] ?? 2;
+  const monthIdx = (startIdx + (lunarMonth - 1)) % 10;
+  return STEMS[monthIdx];
+}
+
+// =========================================================================
+// 1. 動態宮位千字深度解析 (大耕老師現代紫微 ✕ 欽天四化本命盤破譯)
+// =========================================================================
+export function generatePalaceDynamicDeepReading(
+  selectedPalace: PalaceData,
+  allPalaces: PalaceData[],
+  sanFang: SanFangSiZheng,
+  horoscope: HoroscopeState,
+  bazi: BaziData,
+  laiYinIndex: number
+): DynamicPalaceDeepAnalysis {
+  const pName = selectedPalace.name;
+  const pStem = selectedPalace.heavenlyStem;
+  const pBranch = selectedPalace.earthlyBranch;
+  const majorStars = selectedPalace.majorStars;
+  const minorStars = selectedPalace.minorStars;
+  const selfMutagens = selectedPalace.selfMutagens;
+  const isLaiYin = selectedPalace.index === laiYinIndex;
+  const isBody = selectedPalace.isBodyPalace;
+
+  const oppositePalace = allPalaces[sanFang.oppositeIndex] || selectedPalace;
+  const trine1Palace = allPalaces[sanFang.trine1Index] || selectedPalace;
+  const trine2Palace = allPalaces[sanFang.trine2Index] || selectedPalace;
+  const flankPrev = allPalaces[sanFang.flankPrevIndex] || selectedPalace;
+  const flankNext = allPalaces[sanFang.flankNextIndex] || selectedPalace;
+
+  // 找全盤生年忌與生年祿所在宮位（用於大耕老師「祿隨忌走」心理閉環）
+  let natalJiPalaceName = '未知宮位';
+  let natalLuPalaceName = '未知宮位';
+  allPalaces.forEach(p => {
+    if (p.majorStars.some(s => s.mutagen === '忌')) natalJiPalaceName = p.name;
+    if (p.majorStars.some(s => s.mutagen === '祿')) natalLuPalaceName = p.name;
+  });
+
+  // ---------------------------------------------------------
+  // Part 1: 【宮位天道太極 ✕ 主星原廠設定深度精批】(~350字)
+  // ---------------------------------------------------------
+  let starArchetypeText = '';
+  if (majorStars.length === 0) {
+    const oppStars = oppositePalace.majorStars.map(s => `${s.name}${s.brightness ? `(${s.brightness})` : ''}`).join('、') || '亦無主星';
+    starArchetypeText = `此宮在先天命盤中呈現【空宮 (無正曜坐守)】。大耕老師在《新手村》中特別叮嚀：空宮並非「空空如也」或命運不濟，而是代表命主在【${pName}】這個生命領域中，先天設定的邊界感較為模糊、框架極少，對外部環境與同儕情緒具備極度敏銳的「海綿吸水效應」。
+正統斗數心法必須「借對宮【${oppositePalace.name}】之星曜（${oppStars}）」作為主要精神坐標與行事參照。命主在此處表現出高度的適應力與圓融彈性，能隨時配合環境轉換角色；但其潛在盲點在於容易缺乏定見、容易受周圍強勢者之牽引而隨波逐流。修為關鍵在於：對宮是你的鏡子，借外部鏡像照見自己，化被動為靈動。`;
+  } else {
+    const starNames = majorStars.map(s => s.name);
+    // 檢查是否有雙星組合
+    let dualDesc = '';
+    for (const [pairKey, pairInfo] of Object.entries(DUAL_STAR_MAP)) {
+      const parts = pairKey.split('');
+      if (parts.length === 4) {
+        const s1 = pairKey.slice(0, 2);
+        const s2 = pairKey.slice(2, 4);
+        if (starNames.includes(s1) && starNames.includes(s2)) {
+          dualDesc = `【${pairInfo.title}】：${pairInfo.desc} `;
+          break;
+        }
+      }
+    }
+
+    const starDetails = majorStars.map(s => {
+      const desc = MAJOR_STAR_DESCRIPTIONS[s.name];
+      const brightNote = s.brightness ? `，亮度居於【${s.brightness}】之位` : '';
+      const mutNote = s.mutagen ? `，更受生年【化${s.mutagen}】之強力淬鍊` : '';
+      if (!desc) return `星曜【${s.name}】${brightNote}${mutNote}。`;
+      return `【${s.name}星（${desc.element} · ${desc.role}）${brightNote}${mutNote}】：
+大耕老師原廠設定剖析：${desc.personality} 在世俗職場與行為中，展現出「${desc.career}」；在資產與金錢意識上，表現為「${desc.wealth}」；而在人際與親密對待時，則呈現「${desc.relationship}」。`;
+    }).join('\n\n');
+
+    starArchetypeText = `${dualDesc ? `${dualDesc}\n\n` : ''}坐宮星曜詳細原廠設定拆解：\n${starDetails}`;
+  }
+
+  const overlayNames = [selectedPalace.decadalName, selectedPalace.yearlyName, selectedPalace.monthlyName].filter(Boolean);
+  const transitOverlayText = (horoscope && overlayNames.length > 0)
+    ? `✦ 當前時運重疊共振：本宮在當前時運流轉中重疊【${overlayNames.join('、')}】之氣候，代表此領域現實事件將在相應運限中被高頻引動。\n`
+    : '';
+
+  const baziCrossText = bazi
+    ? `✦ 八字日主五行合參：命造八字日主為【${bazi.dayMaster}】(${bazi.dayMasterStrength})，遇本宮【${pStem}${pBranch}】五行氣候，形成先天八字命元與後天紫微星曜之深層共振。\n`
+    : '';
+
+  const philosophy = `【${pStem}${pBranch} ${pName}】座落於地支【${pBranch}】位，受天干【${pStem}】之氣場引動，大限年歲跨度為 ${selectedPalace.decadalRange[0]}～${selectedPalace.decadalRange[1]} 歲。
+${isLaiYin ? `✦ 本宮特別標註：此處為命造之【來因宮】！在欽天門秘儀中，來因宮乃今生生年四化發射總部與靈魂轉世之因果發動機，這意味著命主一生的成敗榮辱、最放不下的責任與宿命牽絆，核心皆聚焦於【${pName}】之上！\n` : ''}${isBody ? `✦ 本宮特別標註：此處為命造之【身宮】！古訣云「三十前看命宮，三十五後看身宮」，身宮象徵後天肉身之立足點與中晚年人生行事的執著依歸。\n` : ''}${transitOverlayText}${baziCrossText}
+${starArchetypeText}`;
+
+  // ---------------------------------------------------------
+  // Part 2: 【四化動力學：大耕老師祿隨忌走 ✕ 欽天生年自化法象】(~350字)
+  // ---------------------------------------------------------
+  const natalMutagens = majorStars.filter(s => s.mutagen);
+  let mutagenAnalysis = '';
+  if (natalMutagens.length > 0) {
+    mutagenAnalysis = natalMutagens.map(s => {
+      const mInfo = (MUTAGEN_MEANINGS as Record<string, any>)[s.mutagen || ''];
+      let roleDesc = '';
+      if (s.mutagen === '祿') {
+        roleDesc = `大耕老師指出：生年祿坐入【${pName}】，象徵命主在此領域先天帶有豐沛的機遇與緣分，善意滿滿、出手大方，對此處充滿熱情與憧憬。但需提防「祿多則怠」，容易因過度樂觀而缺乏風險防範。`;
+      } else if (s.mutagen === '權') {
+        roleDesc = `大耕老師指出：生年權坐入【${pName}】，象徵掌控欲與專業霸氣在此宮全面顯化。命主凡事渴望親自拍板主導、好勝心強、不甘居人下，具備極強的打硬仗魄力，惟需注意溝通時過於生硬霸道。`;
+      } else if (s.mutagen === '科') {
+        roleDesc = `大耕老師指出：生年科坐入【${pName}】，為清白聲譽、教養禮貌與貴人解厄之泉源。命主在此處愛惜羽毛、注重形象、處事有條理，遇到波折往往有貴人長輩暗中解危。`;
+      } else if (s.mutagen === '忌') {
+        roleDesc = `大耕老師核心心理動力學深度破譯：生年忌坐入【${pName}】，此處正是你靈魂最深處的「黑洞」與「核心不安全感所在」！你在此領域最感焦慮、最怕失去、最容易自責與完美主義苛求。但大耕老師鄭重強調：化忌不是宿命的懲罰，而是生命為了把你磨礪成該領域真正的大師而出的考題！你付出的所有心血與鑽研，終將在此處結出最沉甸甸的果實。`;
+      }
+      return `✦ 【${s.name} 化${s.mutagen}】：${roleDesc}（${mInfo ? `${mInfo.character}：${mInfo.effect} 戒律指引：${mInfo.warning}` : ''}）`;
+    }).join('\n\n');
+  } else {
+    mutagenAnalysis = `本宮坐星並無生年四化直接座守，代表此領域的能量運作偏向潛移默化、遵循常規。然而，它隨時受到命盤整體氣運的牽制。`;
+  }
+
+  // 大耕老師「祿隨忌走」聯動剖析
+  const luSuiJiText = `大耕老師獨家「祿隨忌走」心理閉環深度解析：
+全盤生年忌坐落於【${natalJiPalaceName}】，而生年祿坐落於【${natalLuPalaceName}】。根據大耕老師的人性動力學法則，人在潛意識中為了填補【${natalJiPalaceName}】所感受到的欠債感與匱乏黑洞，會拼命將所有精力、熱情與追求傾注到【${natalLuPalaceName}】中，試圖以化祿的獲得感來麻醉化忌的焦慮。
+然而「化祿永遠填不滿化忌」！若【${pName}】恰為化忌或化祿之宮位，這股拉扯感將更為劇烈。唯有正視並接納【${natalJiPalaceName}】的不完美，停止將其視為洪水猛獸，化祿才能轉化為純粹的熱情奉獻，全盤氣局方能真正活化。`;
+
+  // 宮干自化剖析
+  let selfMutagenText = '';
+  if (selfMutagens.length > 0) {
+    selfMutagenText = selfMutagens.map(sm => {
+      let smDesc = '';
+      if (sm.mutagen === '祿') smDesc = '【自化祿（祿出）】：在此宮位容易大方施捨、不計代價，對人事物隨緣相待，但也意味著資源與感情容易隨時間自然淡出流失。';
+      if (sm.mutagen === '權') smDesc = '【自化權（權出）】：在此宮位容易突發爭執、任性好勝、想奪回主導權，但容易三分鐘熱度，缺乏持久耐性。';
+      if (sm.mutagen === '科') smDesc = '【自化科（科出）】：在此宮位過度顧及面子形象、好人主義、得過且過，在關鍵抉擇時容易優柔寡斷。';
+      if (sm.mutagen === '忌') smDesc = '【自化忌（忌出）】：大耕老師與欽天門嚴肅預警！自化忌為宮位離心洩氣，命主容易在此處自尋煩惱、自我懷疑、自暴自棄，甚至自己砸掉辛苦建立的成果。需刻意修煉「正念自我肯定」，守住心防！';
+      return `✦ ${sm.star}自化${sm.mutagen} ➔ ${smDesc}`;
+    }).join('\n');
+    selfMutagenText = `\n\n宮干【${pStem}】引發之「自化現象（向心/離心能量洩露與交換）」：\n${selfMutagenText}\n欽天門古訣提醒：「自化必法象生年」，自化之發動，乃是後天環境促使你將先天生年星之能量向外釋放或向內消耗之轉折點。`;
+  } else {
+    selfMutagenText = `\n\n宮干【${pStem}】自化檢測：無自化現象，代表此宮之能量守恆度高、不易受外界挑釁而突發性情緒洩露，結構扎實穩固。`;
+  }
+
+  const modernManifestation = `${mutagenAnalysis}\n\n${luSuiJiText}${selfMutagenText}`;
+
+  // ---------------------------------------------------------
+  // Part 3: 【吉凶星配置：大耕老師「煞星是生命加速引擎」實戰剖析】(~300字)
+  // ---------------------------------------------------------
+  const luckyStars = minorStars.filter(s => ['天魁', '天鉞', '左輔', '右弼', '文昌', '文曲', '祿存', '天馬'].includes(s.name));
+  const shaStars = minorStars.filter(s => ['擎羊', '陀羅', '火星', '鈴星', '地空', '地劫'].includes(s.name));
+
+  let luckyText = luckyStars.length > 0 
+    ? `坐宮吉曜輔弼：${luckyStars.map(s => `【${s.name}】`).join('、')}。
+吉曜乃天地之助力。魁鉞主長輩提攜與公家制度之庇護；輔弼為同儕團隊之得力臂膀；昌曲賦予敏銳思維與契約文采；祿存天馬則為穩固資產與開拓求財之活水。`
+    : '坐宮無六吉主曜直接同宮，代表在此領域中命主需靠個人自立開拓，不可過度依賴外界現成貴人之餽贈。';
+
+  let shaText = '';
+  if (shaStars.length > 0) {
+    const shaDetails = shaStars.map(s => {
+      if (s.name === '擎羊') return '【擎羊（正面刀鋒）】：大耕老師指出，擎羊不是血光之災，而是敢打硬仗的魄力！轉化為外科手術般的精準決斷、打破技術瓶頸與打破壟斷的強大攻擊力。';
+      if (s.name === '陀羅') return '【陀羅（暗轉磨練）】：大耕老師指出，陀羅不是拖延阻礙，而是匠人精神的極致！轉化為耐得住枯燥寂寞的深耕研發、十年磨一劍的頑強毅力。';
+      if (s.name === '火星') return '【火星（烈火爆發）】：大耕老師指出，火星不是暴躁衝動，而是危機處理的爆發力！轉化為短跑衝刺、在市場風口搶佔先機的神速執行力。';
+      if (s.name === '鈴星') return '【鈴星（深沉陰火）】：大耕老師指出，鈴星不是陰險記仇，而是幕後佈局的深思熟慮！轉化為沉著冷靜的防禦體系與未雨綢繆的戰略智慧。';
+      if (s.name === '地空') return '【地空（精神空靈）】：大耕老師指出，地空不是一無所有，而是跳脫世俗的哲學大智慧！轉化為天馬行空的藝術靈感與不拘常規的反向思維。';
+      if (s.name === '地劫') return '【地劫（物質起伏）】：大耕老師指出，地劫不是破產敗家，而是千金散盡還復來的抗挫韌性！轉化為極強的危機應變與東山再起之非凡氣度。';
+      return `【${s.name}】；`;
+    }).join('\n');
+    shaText = `大耕老師革命性「六煞星是前進引擎」深度轉化：\n${shaDetails}`;
+  } else {
+    shaText = `大耕老師煞星觀照：坐宮無六煞星侵擾，格局平和順遂。但大耕老師亦提醒「無煞不貴」，平穩之境需自我設定高標準目標，主動走出舒適圈，方能激發深層潛能。`;
+  }
+
+  const shadowAndLight = `${luckyText}\n\n${shaText}`;
+
+  // ---------------------------------------------------------
+  // Part 4: 【三方四正照會 ✕ 大耕老師現代落地破局與自我修為錦囊】(~300字)
+  // ---------------------------------------------------------
+  const oppositeStars = oppositePalace.majorStars.map(s => s.name).join('、') || '無主星';
+  const trine1Stars = trine1Palace.majorStars.map(s => s.name).join('、') || '無主星';
+  const trine2Stars = trine2Palace.majorStars.map(s => s.name).join('、') || '無主星';
+
+  const sanFangText = `三方四正全息網絡共振：
+1. 【對宮沖照（鏡像照妖鏡）】：對宮【${oppositePalace.name}】坐【${oppositeStars}】。大耕老師強調「對宮是照妖鏡，亦是外在環境的直接顯影」。例如官祿對宮為夫妻，說明事業節奏與婚姻親密感息息相關；命宮對宮為遷移，說明內心品格直接投射為公眾人設。
+2. 【三合拱會（鼎立支撐架構）】：三合宮【${trine1Palace.name} (${trine1Stars})】與【${trine2Palace.name} (${trine2Stars})】共同構成鼎立支援之勢，源源不絕為本宮輸送資源與動能。
+3. 【夾宮相扶】：相鄰前宮【${flankPrev.name}】與後宮【${flankNext.name}】構成夾宮氣候，揭示周圍人際與家族環境的隱形約束或庇蔭。`;
+
+  const actionGuidanceText = `大耕老師現代落地破局與實踐修為錦囊：
+一、【心智重塑】：不與煞星硬碰硬，接納化忌的不完美。明白當前宮位的焦慮正是生命給予的功課，學會放下病態控制欲，以化科的理性建立停損點與健康邊界。
+二、【實戰攻防】：在現代職場與商業活動中，針對坐宮星曜特質精準卡位（剛星宜主導開創、柔星宜策劃幕僚）。涉及合約、借貸與合夥，務必白紙黑字先小人後君子，避開人情牽絆之暗礁。
+三、【行運掌握】：知進退、避風芒。在逢大限流年吉化之時，大膽主動出擊捕捉風口；逢流年煞忌交侵之歲，收斂鋒芒、閉關充電、深耕技術，真正達成由「隨星流轉」昇華至「以心御星」的自主改運大境界！`;
+
+  const actionGuidance = `${sanFangText}\n\n${actionGuidanceText}`;
+  const totalWords = philosophy.length + modernManifestation.length + shadowAndLight.length + actionGuidance.length;
+
+  return {
+    philosophy,
+    modernManifestation,
+    shadowAndLight,
+    actionGuidance,
+    totalWords
+  };
+}
+
+// =========================================================================
+// 2. 流年歲君千字深度解析 (大耕老師疊宮法則 ✕ 流年天干四化 ✕ 年度攻守指南)
+// =========================================================================
+export function getYearlyDeepReading(horoscope: HoroscopeState, allPalaces?: PalaceData[]): string {
+  const y = horoscope.yearlyInfo;
+  if (!y) return '當前未選定流年，請於時運羅盤中選取欲觀測之具體流年年份。';
+
+  const yearNum = y.year;
+  const yearStem = y.stem;
+  const yearBranch = y.branch;
+  const nominalAge = y.nominalAge;
+  const lifePalaceIdx = y.palaceIndex; // 流年命宮地支索引
+
+  // 計算流年天干四化
+  const sihua = STEM_SI_HUA[yearStem] || { lu: '天同', quan: '天機', ke: '文昌', ji: '廉貞' };
+
+  // 12宮疊宮計算
+  let overlaySummary = '';
+  let siHuaLocations = '';
+  let jiClashSummary = '';
+
+  if (allPalaces && allPalaces.length === 12) {
+    const yearlyLifePalace = allPalaces[lifePalaceIdx];
+    const yearlyGuanLuPalace = allPalaces[(lifePalaceIdx - 8 + 12) % 12];
+    const yearlyCaiBoPalace = allPalaces[(lifePalaceIdx - 4 + 12) % 12];
+    const yearlyFuQiPalace = allPalaces[(lifePalaceIdx - 2 + 12) % 12];
+    const yearlyTianZhaiPalace = allPalaces[(lifePalaceIdx - 9 + 12) % 12];
+    const yearlyQianYiPalace = allPalaces[(lifePalaceIdx - 6 + 12) % 12];
+
+    overlaySummary = `【流年十二宮重疊本命盤核心疊宮拓撲】：
+- 【流年命宮】：太歲坐入地支【${yearBranch}】，重疊本命【${yearlyLifePalace?.name || '命宮'}】。大耕老師疊宮心法：流年命宮重疊本命某宮，代表今年你整年度的生活重心、注意力與主要考題，將全數圍繞著【${yearlyLifePalace?.name}】的人事物展開！
+- 【流年官祿】：重疊本命【${yearlyGuanLuPalace?.name || '官祿'}】，主導今年職場專案推進、工作跳槽與升遷競爭之主要戰場。
+- 【流年財帛】：重疊本命【${yearlyCaiBoPalace?.name || '財帛'}】，揭示今年金錢進出之主管道與投資盈虧之關鍵轉折。
+- 【流年夫妻】：重疊本命【${yearlyFuQiPalace?.name || '夫妻'}】，主導今年感情桃花、夫妻關係或親密合作之互動品質。
+- 【流年田宅】：重疊本命【${yearlyTianZhaiPalace?.name || '田宅'}】，主導居家環境、不動產購置、搬遷或家庭內庫之穩定度。
+- 【流年遷移】：重疊本命【${yearlyQianYiPalace?.name || '遷移'}】，主導出外遠行、跨界開拓、出差旅行與外部大眾人設。`;
+
+    // 尋找四化星落入本命何宮
+    let luInPalace = '全盤';
+    let quanInPalace = '全盤';
+    let keInPalace = '全盤';
+    let jiInPalace = '全盤';
+    let jiPalaceIdx = 0;
+
+    allPalaces.forEach((p, idx) => {
+      const starNames = p.majorStars.map(s => s.name);
+      if (starNames.includes(sihua.lu)) luInPalace = p.name;
+      if (starNames.includes(sihua.quan)) quanInPalace = p.name;
+      if (starNames.includes(sihua.ke)) keInPalace = p.name;
+      if (starNames.includes(sihua.ji)) {
+        jiInPalace = p.name;
+        jiPalaceIdx = idx;
+      }
+    });
+
+    const jiClashPalace = allPalaces[(jiPalaceIdx + 6) % 12];
+
+    siHuaLocations = `【${yearNum}（${yearStem}${yearBranch}）年天干【${yearStem}】歲君四化飛星落點深入破譯】：
+1. 【流年化祿 ➔ ${sihua.lu}星】入本命【${luInPalace}】：
+   - 機遇風口所在！老天爺今年把最大的善緣、機會與吸金管道放在【${luInPalace}】。命主應在此領域主動進擊，大膽拓展合作與佈局，收穫年度天時紅利。
+2. 【流年化權 ➔ ${sihua.quan}星】入本命【${quanInPalace}】：
+   - 權威打拼所在！今年你必須在【${quanInPalace}】親自扛起責任、展現硬核技術與掌控魄力。此處競爭激烈但也是你樹立權威的大好良機。
+3. 【流年化科 ➔ ${sihua.ke}星】入本命【${keInPalace}】：
+   - 名聲貴人所在！今年在【${keInPalace}】宜多注重個人品牌、資格認證考試與公關形象，遇到挫折時向此處所屬之長輩或導師求助，必能化險為夷。
+4. 【流年化忌 ➔ ${sihua.ji}星】入本命【${jiInPalace}】：
+   - 年度核心黑洞與防守防線！化忌代表虧欠、是非、糾葛與過度焦慮。今年切莫在【${jiInPalace}】心存僥倖、盲目加槓桿或情緒用事！`;
+
+    jiClashSummary = `✦ 大耕老師與欽天門特別警示【化忌沖宮】：
+流年化忌【${sihua.ji}】坐落於【${jiInPalace}】，其正面沖破之對宮為【${jiClashPalace?.name}】！
+大耕老師金句：「忌坐之宮主操心，忌沖之宮受重創！」今年【${jiClashPalace?.name}】才是真正要嚴防死守的風暴眼。例如沖財帛防重大破財，沖夫妻防劇烈爭端，沖官祿防職場人事傾軋，沖疾厄防突發健康透支！務必提前建立風險防火牆！`;
+  } else {
+    overlaySummary = `流年太歲坐入地支【${yearBranch}】，主管全年度之世俗氣象與人事變遷。`;
+    siHuaLocations = `天干【${yearStem}】引動流年四化：${sihua.lu}化祿、${sihua.quan}化權、${sihua.ke}化科、${sihua.ji}化忌。`;
+  }
+
+  return `【流年歲君全面深批：${yearNum} ${yearStem}${yearBranch}年 · 虛歲 ${nominalAge}歲】
+
+一、宏觀太歲巡遊與三層疊宮密碼：
+歲君如同一年之皇帝巡行疆土，${yearNum}年太歲坐落於地支【${yearBranch}】宮位。外部社會大環境之政策脈動、經濟風口與人事潮流，將全面對命主施加強大的推進與考驗。命主在此年間將深刻感受到生活節奏之加速，許多過去懸而未決之事將被外部情勢倒逼著必須做出決斷。
+${overlaySummary}
+
+二、天干【${yearStem}】歲君四化飛星與吉凶座標：
+${siHuaLocations}
+${jiClashSummary}
+
+三、大耕老師獨家：流年「祿隨忌走」心理與現實戰略破局：
+大耕老師指出，流年之「祿隨忌走」是當年度命主心理壓力的縮影。
+今年流年化忌在【${sihua.ji}】，你在潛意識中對該領域最缺乏安全感，因此會下意識地拼命抓取流年化祿【${sihua.lu}】來掩飾內心的匱乏。
+破局心法：不要用忙碌來逃避核心問題！唯有運用流年化科【${sihua.ke}】的理性與秩序，冷靜劃清界線、審視制度漏洞，流年化權的魄力才能精準發揮，流年化祿的財富與善緣才能真正落袋為安。
+
+四、流年四大專題實戰行動指南：
+1. 【事業工作與升遷跳槽】：遇流年祿權相會之宮位，宜主動爭取帶領新專案、開拓新業務；若流年官祿宮逢化忌沖射，切忌衝動盲目裸辭或借貸創業，宜採「深挖洞、廣積糧」之守勢策略。
+2. 【財務金流與投資風控】：流年財帛與田宅為年度錢財進出門戶，見流年祿存宜穩健置產或增加定存被動現金流；遇化忌沖照時，嚴格杜絕高風險槓桿投機，合同款項務必白紙黑字約定清楚。
+3. 【感情桃花與婚姻相處】：流年夫妻宮若逢紅鸞天喜吉化，單身者正緣磁場強烈，宜多參與社交活動；已婚者若逢煞忌沖動，宜聚少離多、相互給予事業空間，以理性包容化解摩擦。
+4. 【健康身心與行事節奏】：注意流年忌星所落臟腑經絡五行之調養，凡事給自己預留緩衝彈性，保持「不以物喜、不以己悲」之戰略定力，自能安度考驗、穩操勝券！`;
+}
+
+// =========================================================================
+// 3. 流月節律千字深度解析 (斗君月建 ✕ 流月疊宮 ✕ 月度氣運攻守錦囊)
+// =========================================================================
+export function getMonthlyDeepReading(horoscope: HoroscopeState, allPalaces?: PalaceData[]): string {
+  const m = horoscope.monthlyInfo;
+  const y = horoscope.yearlyInfo;
+  if (!m || !y) return '當前未選定流月，請於時運羅盤中選取欲觀測之具體流月月份。';
+
+  const monthNum = horoscope.selectedMonth || m.month || 1;
+  const mStem = m.stem;
+  const mBranch = m.branch;
+  const mPalaceIdx = m.palaceIndex; // 流月命宮地支索引
+
+  const LUNAR_MONTH_NAMES = ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '臘月'];
+  const monthName = LUNAR_MONTH_NAMES[(monthNum - 1) % 12] || `農曆${monthNum}月`;
+
+  // 流月四化
+  const mSihua = STEM_SI_HUA[mStem] || { lu: '廉貞', quan: '破軍', ke: '武曲', ji: '太陽' };
+
+  let monthlyOverlayText = '';
+  let monthlySiHuaText = '';
+
+  if (allPalaces && allPalaces.length === 12) {
+    const monthlyLifePalace = allPalaces[mPalaceIdx];
+    const yearlyLifePalaceIdx = y.palaceIndex;
+    const diffToYear = (yearlyLifePalaceIdx - mPalaceIdx + 12) % 12;
+    const yearlyPalaceName = `流年${TWELVE_PALACE_ORDER[diffToYear]}`;
+
+    // 流月官祿與財帛
+    const monthlyGuanLuPalace = allPalaces[(mPalaceIdx - 8 + 12) % 12];
+    const monthlyCaiBoPalace = allPalaces[(mPalaceIdx - 4 + 12) % 12];
+
+    monthlyOverlayText = `【流月三層疊宮拓撲（本命 ✕ 流年 ✕ 流月）】：
+- 【流月命宮】：落於地支【${mBranch}】位，精準重疊【${yearlyPalaceName}】，底層對應本命【${monthlyLifePalace?.name || '命宮'}】！
+  大耕老師疊宮精解：本月你的全部注意力、情緒起伏與具體事件爆發點，正是這三層宮位的交集！當流月命宮踩入【${yearlyPalaceName}】時，今年在該領域所埋下的種子，將在【${monthName}】迎來實質性的開花結果或嚴峻檢驗！
+- 【流月官祿】：重疊本命【${monthlyGuanLuPalace?.name || '官祿'}】，主導本月份之具體工作任務推進、主管指示、業績考核與職場互動。
+- 【流月財帛】：重疊本命【${monthlyCaiBoPalace?.name || '財帛'}】，揭示本月份日常現金周轉、帳單支出、回款進度與消費慾望。`;
+
+    // 尋找月四化落入本命何宮
+    let mLuPalace = '全盤';
+    let mJiPalace = '全盤';
+    let mJiPalaceIdx = 0;
+
+    allPalaces.forEach((p, idx) => {
+      const starNames = p.majorStars.map(s => s.name);
+      if (starNames.includes(mSihua.lu)) mLuPalace = p.name;
+      if (starNames.includes(mSihua.ji)) {
+        mJiPalace = p.name;
+        mJiPalaceIdx = idx;
+      }
+    });
+
+    const mJiClashPalace = allPalaces[(mJiPalaceIdx + 6) % 12];
+
+    monthlySiHuaText = `【${monthName}（${mStem}${mBranch}月）流月天干【${mStem}】四化動態密碼】：
+1. 【流月化祿 ➔ ${mSihua.lu}星】入本命【${mLuPalace}】：
+   - 本月份最大的小確幸與機會之窗！此處利於洽談商務、增進人際和睦、獲取獎金補貼或靈感爆發，是本月的主攻突破口。
+2. 【流月化權 ➔ ${mSihua.quan}星】與【流月化科 ➔ ${mSihua.ke}星】：
+   - 化權賦予你本月雷厲風行的執行力與專業說服力；化科則為本月解決麻煩糾紛的解藥，遇阻多請教懂行的平輩或專業人士。
+3. 【流月化忌 ➔ ${mSihua.ji}星】入本命【${mJiPalace}】，正面沖射對宮【${mJiClashPalace?.name}】：
+   - 本月份最需戒慎恐懼之暗礁雷區！大耕老師提醒：流月忌星往往引動突發性口角是非、合約款項延宕、電腦檔案故障或身體疲憊。本月份在【${mJiPalace}】與【${mJiClashPalace?.name}】所屬之人事物上，切記「三思而後行，少說話多做事」。`;
+  } else {
+    monthlyOverlayText = `流月命宮坐地支【${mBranch}】，月令建極，引動當月之微觀運勢。`;
+    monthlySiHuaText = `流月天干【${mStem}】引動月四化：${mSihua.lu}化祿、${mSihua.quan}化權、${mSihua.ke}化科、${mSihua.ji}化忌。`;
+  }
+
+  return `【流月節律全面深批：${monthName} (${mStem}${mBranch}月) · 斗君氣候顯微鏡】
+
+一、斗君定軸與微觀三層時空疊合：
+紫微斗數流年看宏觀大勢，流月則看具體事件之「應期節奏」。
+${monthName}天干為【${mStem}】，地支坐落於【${mBranch}】位。斗君為流年氣運之月度運轉軸心，引動本月之天地氣流。
+${monthlyOverlayText}
+
+二、流月天干【${mStem}】四化飛星與微觀吉凶應期：
+${monthlySiHuaText}
+
+三、本月氣運三階段推進節律：
+1. 【上旬（初一至初十 · 氣運立定）】：月令初交，心緒容易因換月氣場而產生短暫波折。此時宜盤點月度目標，確立行事清單，重要合約建議複查條款，切忌心浮氣躁。
+2. 【中旬（十一至二十 · 攻堅發力）】：流月祿權動能全面釋放，為全月工作推進、商務洽談、人際拜訪與業績開展之黃金期。宜全力以赴、乘勝追擊。
+3. 【下旬（廿一至三十 · 收官防禦）】：氣數逐漸向下一流月過渡，容易在瑣碎事務上出現疏漏或疲態。此處宜結算帳目、維護客戶關係、早睡早起儲備體力，平安交接。
+
+四、大耕老師流月行事攻守錦囊與避雷指引：
+1. 【職場與商務】：本月若需推動重大決策或簽署法律文件，宜選在流月祿科引動之吉利流日進行；遇長官挑剔或客戶刁難時，修持「閉嘴禪」，切忌正面情緒對撞。
+2. 【財務與開銷】：注意防範衝動消費或非必要之人情借貸，尤其在流月忌星沖動之日子，外出防遺失財物，網購防退換貨麻煩。
+3. 【心靈調護】：流月是靈魂在一年中的微觀呼吸。明白順逆有時，月缺月圓皆是常態。在順流中謙遜感恩，在逆流中沉潛修心，自能一個月比一個月更加沉穩自如！`;
+}
+
+// =========================================================================
+// 4. 大限十年時空主軸千字深度解析 (十年大局 ✕ 本命疊宮 ✕ 攻守節奏)
+// =========================================================================
+export function getDecadalDeepReading(horoscope: HoroscopeState, allPalaces?: PalaceData[]): string {
   const dec = horoscope.decadalInfo;
   if (!dec) return '當前未選定大限年歲段，請於時運羅盤中選取欲觀測之十年大限。';
 
@@ -137,49 +443,47 @@ export function getDecadalDeepReading(horoscope: HoroscopeState): string {
   const ageStart = dec.ageRange[0];
   const ageEnd = dec.ageRange[1];
   const palName = dec.name;
+  const lifePalaceIdx = dec.palaceIndex;
+
+  const decSihua = STEM_SI_HUA[stem] || { lu: '廉貞', quan: '破軍', ke: '武曲', ji: '太陽' };
+
+  let decadalOverlayText = '';
+  if (allPalaces && allPalaces.length === 12) {
+    const decLifePalace = allPalaces[lifePalaceIdx];
+    const decGuanLuPalace = allPalaces[(lifePalaceIdx - 8 + 12) % 12];
+    const decCaiBoPalace = allPalaces[(lifePalaceIdx - 4 + 12) % 12];
+    const decTianZhaiPalace = allPalaces[(lifePalaceIdx - 9 + 12) % 12];
+
+    decadalOverlayText = `【大限十年重疊本命盤架構】：
+- 【大限命宮】：重疊本命【${decLifePalace?.name || palName}】，宣告這黃金十年的人生大舞台將在此全面拉開！
+- 【大限官祿】：重疊本命【${decGuanLuPalace?.name || '官祿'}】，為十年職涯發展、專業立足點與事業天花板之關鍵所在。
+- 【大限財帛】：重疊本命【${decCaiBoPalace?.name || '財帛'}】，決定這十年階級躍遷、資產翻倍或財富考驗之主要通道。
+- 【大限田宅】：重疊本命【${decTianZhaiPalace?.name || '田宅'}】，掌管這十年的不動產置產運、家宅安寧與家庭庫存底蘊。`;
+  }
 
   return `【大限十年時空主軸：${stem}${branch}大限 (${ageStart}～${ageEnd}歲 · 聚焦【${palName}】)】
 
 一、大限重疊本命之核心命題與命運轉折：
 行運至此十年，大限命宮精準重疊本命【${palName}】。在紫微斗數「天人合一、體用疊加」的原理下，這意味著本命盤中該領域所隱藏的一切潛能、欠債與課題，將在這黃金十年內被全面喚醒與激化。這十年的生活重心、資源調配與主要心力，將無可避免地圍繞著「${palName}」展開激戰。若該宮位本命吉星多，這十年將是順風順水、大展宏圖的黃金擴張期；若本命該宮位藏有煞忌暗礁，則這十年將是生命淬鍊心志、浴火重生的試金石大考驗。
+${decadalOverlayText}
 
 二、大限天干【${stem}】化星飛布引動之微觀時空密碼：
-大限天干「${stem}」如同十年間的天時大氣候，引動特定四化飛星全面進駐星盤各宮：
-1. 【大限化祿之方】：為這十年財利、機遇與善緣的主攻方向。命主應在此領域主動進擊，不設限地拓展人際網絡與商業模式，享受天時帶來的超額紅利。
-2. 【大限化權之方】：為這十年確立權威、扛起責任與專案主導的鐵腕戰場。此處宜大膽決策、敢打硬仗，建立個人的專業壁壘與組織領導地位。
-3. 【大限化科之方】：為這十年求名求聲譽、學術考證與貴人相助的清泉所在。遇到阻滯時，向此宮位所指涉之領域尋求智慧指引，必能逢凶化吉。
-4. 【大限化忌之方（核心雷區）】：為這十年最大的考驗與暗礁所在！天干化忌代表「虧欠、牽絆與命運之緊箍咒」。命主切忌在此領域心存僥倖、盲目擴張或投機取巧。此處最宜「修心、專精技術、看淡得失、築牢防火牆」，將忌星的壓迫感轉化為十年磨一劍的深沉定力。
+大限天干「${stem}」如同十年間的天時大氣候，化出大限專屬之【${decSihua.lu}化祿、${decSihua.quan}化權、${decSihua.ke}化科、${decSihua.ji}化忌】：
+1. 【大限化祿之方（${decSihua.lu}星所在）】：為這十年財利、機遇與善緣的主攻方向。命主應在此領域主動進擊，不設限地拓展人際網絡與商業模式，享受天時帶來的超額紅利。
+2. 【大限化權之方（${decSihua.quan}星所在）】：為這十年確立權威、扛起責任與專案主導的鐵腕戰場。此處宜大膽決策、敢打硬仗，建立個人的專業壁壘與組織領導地位。
+3. 【大限化科之方（${decSihua.ke}星所在）】：為這十年求名求聲譽、學術考證與貴人相助的清泉所在。遇到阻滯時，向此宮位所指涉之領域尋求智慧指引，必能逢凶化吉。
+4. 【大限化忌之方（${decSihua.ji}星所在 · 核心雷區）】：為這十年最大的考驗與暗礁所在！大耕老師指出：大限化忌代表這十年的命運緊箍咒。命主切忌在此領域心存僥倖、盲目借貸擴張或投機取巧。此處最宜「修心、專精技術、築牢防火牆」，將忌星的壓迫感轉化為十年磨一劍的深沉定力！
 
 三、十年之人生戰略規劃與節奏掌控：
-十年大限猶如一場長途拉鋸戰，命主宜依「起、承、轉、合」四階段嚴格調控節奏：
+十年大限猶如一場長途拉鋸戰，大耕老師建議依「起、承、轉、合」四階段嚴格調控節奏：
 - 【前三年（築基積累）】：審時度勢，盤點本命盤與大限盤交疊之優勢資源，切忌盲動，以調試系統與建立人脈護城河為重；
 - 【中四年（破局發力）】：天時地利漸趨成熟，大膽聚焦於核心事業推進，借力使力，將化祿與化權之動能發揮至淋漓盡致；
 - 【後三年（收官守成）】：運限交接之際氣數易生波動，切忌盲目擴大戰線，宜進行資產沉澱、人才梯隊傳承，並開始為下一個十年的宮位躍遷預作佈局。`;
 }
 
-export function getYearlyDeepReading(horoscope: HoroscopeState): string {
-  const y = horoscope.yearlyInfo;
-  if (!y) return '當前未選定流年，請於時運羅盤中選取欲觀測之具體流年年份。';
-
-  return `【流年歲君全面深批：${y.year} ${y.stem}${y.branch}年 · 虛歲 ${y.nominalAge}歲】
-
-一、太歲臨宮之宏觀氣場與命主感應：
-流年歲君為一年之主宰，如同皇帝親臨疆土。${y.year}年太歲坐落於地支【${y.branch}】宮位，流年命宮由此展開。本年度外部客觀環境之政策風向、經濟氣候與人際社會潮流，將直接對命主施加強大之拉扯與推動。命主在此年間將深刻感受到生活節奏之驟然加快，許多延宕已久的決策將被外部事態倒逼著必須做出抉擇。
-
-二、流年天干【${y.stem}】歲君四化之戰術指南：
-本年度天干「${y.stem}」司權，化出流年專屬之祿權科忌四曜，為今年之攻防劃定明確座標：
-1. 【流祿入局】：為今年最直觀之吸金管道與機會之門，命主應主動出擊，敏銳抓取市場需求變化，將天時機遇迅速轉化為實質收益；
-2. 【流權加身】：賦予命主在職場競爭、談判桌與專案推進中的非凡掌控力，宜當仁不讓，以雷厲風行之執行力破除障礙；
-3. 【流科照拂】：主今年宜提升品牌聲譽、發表專業著作、參加資格認證考試或拓展高端導師人脈，貴人往往出現在文藝或專業長輩之中；
-4. 【流忌懸空（重點防禦防線）】：為今年最容易引發紛爭、官非、財務虧損或情緒焦慮之暗礁！流年忌星沖動何宮，何處即需嚴加戒備——忌在財帛慎防盲目投資，忌在夫妻宜多忍讓溝通，忌在疾厄切莫過度熬夜，忌在官祿切防合約盲點。
-
-三、流月流日微觀聯動與年度決策心法：
-一整年之氣運並非一成不變，而是由十二個流月循序推進。當流月命宮與流年太歲或大限忌星重疊相沖之月份（尤其是春夏交接或秋冬轉折之月），往往是矛盾集中引爆之深水區，該月份宜採取「防守型策略」，以靜制動；而當流月走至祿權會合之吉位時，則為大舉突破之關鍵週。謹記「知命是為了借天時，造命是為了安身心」，在本年度在變動中保持定見，自能趨吉避凶、收穫豐碩果實。`;
-}
-
-// ==========================================
-// 3. 原局經典格局大觀與命格高度 (1000字級)
-// ==========================================
+// =========================================================================
+// 5. 原局經典格局大觀與命格高度 (千字精解)
+// =========================================================================
 export function getNatalPatternDeepReading(
   soul: string,
   body: string,
@@ -213,9 +517,9 @@ export function getNatalPatternDeepReading(
 五行之局與命盤星曜相互交融，構成了命主獨特之生命能量波形。`;
 }
 
-// ==========================================
-// 4. 八字與斗數雙軌印證深度解析 (1000字級)
-// ==========================================
+// =========================================================================
+// 6. 八字與斗數雙軌印證深度解析 (千字精解)
+// =========================================================================
 export function getBaziCrossDeepReading(bazi: BaziData, fiveElementsClass: string): string {
   const dm = bazi.dayMaster;
   const strength = bazi.dayMasterStrength;
@@ -244,3 +548,18 @@ export function getBaziCrossDeepReading(bazi: BaziData, fiveElementsClass: strin
 反之，當八字大運逢刑衝破害，而紫微大限歲君又遭羊陀空劫化忌夾攻時，即為人生「潛伏修煉之寒冬期」，此時應以防守、健康調養、深造進修為第一要務。
 合參八字與紫微，方能窮究天人之際，通曉變通之道，真正達成「知天命而盡人事」之超然境界。`;
 }
+
+// 保持向下相容的靜態本體庫（若需要）
+export const PALACE_DEEP_ESSENCE: Record<string, {
+  philosophy: string;
+  modernManifestation: string;
+  shadowAndLight: string;
+  actionGuidance: string;
+}> = {
+  '預設': {
+    philosophy: '宮位乃命盤空間之投影。',
+    modernManifestation: '世俗課題之反映。',
+    shadowAndLight: '吉凶互參，陰陽並行。',
+    actionGuidance: '順天應人，以心御星。'
+  }
+};

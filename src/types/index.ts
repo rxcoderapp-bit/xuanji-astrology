@@ -107,6 +107,7 @@ export interface HoroscopeState {
     stem: string;
     branch: string;
     palaceIndex: number;
+    mutagens?: { star: string; mutagen: MutagenType }[];
   };
   dailyInfo?: {
     day: number;
