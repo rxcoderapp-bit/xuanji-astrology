@@ -173,7 +173,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <BookOpen className="w-4 h-4 text-[#8d271c] dark:text-[#df756b]" />
           <h2 className="font-bold text-sm sm:text-base tracking-wide text-[#2b2723] dark:text-[#f2efe9]">
-            玄璣動態智能解盤室
+            天樞動態智能解盤室
           </h2>
         </div>
         <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded border text-[#8d271c] dark:text-[#df756b] font-semibold

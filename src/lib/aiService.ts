@@ -203,7 +203,7 @@ export async function callAIModel(prompt: string, customSystemPrompt?: string): 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${settings.openrouterApiKey.trim()}`,
         'HTTP-Referer': window.location.origin,
-        'X-Title': '玄璣紫微八字解盤系統'
+        'X-Title': '天樞星象紫微八字解盤系統'
       },
       body: JSON.stringify({
         model,

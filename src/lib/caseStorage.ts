@@ -1,9 +1,10 @@
 import type { CaseRecord } from '../types';
 import { cloudSync } from './cloudSync';
 
-const STORAGE_KEY = 'xuanji_mingli_cases_v3';
+const STORAGE_KEY = 'tianshu_mingli_cases_v1';
+const LEGACY_STORAGE_KEY = 'xuanji_mingli_cases_v3';
 
-// Purge legacy storage versions if present
+// Purge old temporary keys if present
 try {
   localStorage.removeItem('xuanji_mingli_cases_v1');
   localStorage.removeItem('xuanji_mingli_cases_v2');
@@ -14,7 +15,14 @@ const DEFAULT_PRESET_CASES: CaseRecord[] = [];
 
 export function getStoredCases(): CaseRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacyRaw) {
+        localStorage.setItem(STORAGE_KEY, legacyRaw);
+        raw = legacyRaw;
+      }
+    }
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRESET_CASES));
       return DEFAULT_PRESET_CASES;

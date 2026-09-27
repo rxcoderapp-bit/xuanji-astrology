@@ -46,10 +46,10 @@ export const DEFAULT_FIREBASE_CONFIG: FirebaseConfig = {
   measurementId: "G-CKQGY29D97"
 };
 
-const CASES_STORAGE_KEY = 'xuanji_mingli_cases_v3';
-const DIVINATION_STORAGE_KEY = 'xuanji_divination_history_v1';
-const FIREBASE_CONFIG_KEY = 'xuanji_firebase_config';
-const LAST_SYNC_KEY = 'xuanji_last_sync_time';
+const CASES_STORAGE_KEY = 'tianshu_mingli_cases_v1';
+const DIVINATION_STORAGE_KEY = 'tianshu_divination_history_v1';
+const FIREBASE_CONFIG_KEY = 'tianshu_firebase_config';
+const LAST_SYNC_KEY = 'tianshu_last_sync_time';
 
 export type SyncStatus = 'offline' | 'connected' | 'syncing' | 'error';
 

@@ -74,12 +74,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-serif text-base sm:text-xl font-bold shadow-sm transition shrink-0
             bg-[#9c2e22] text-[#f8f5ee] border border-[#7a2218] dark:bg-[#af3426] dark:text-white">
-            玄
+            樞
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 className="text-base sm:text-xl font-serif font-bold tracking-tight sm:tracking-wider whitespace-nowrap text-[#211f1d] dark:text-[#f2efe9]">
-                玄璣紫微<span className="hidden sm:inline"> · 八字互動解盤</span>
+                天樞星象<span className="hidden sm:inline"> · 紫微八字互動解盤</span>
               </h1>
               <span className="hidden lg:inline-flex items-center text-xs px-2 py-0.5 rounded-full font-serif border
                 bg-[#f1ebe0] text-[#78261e] border-[#d9ceb9] dark:bg-[#201d1c] dark:text-[#df756b] dark:border-[#422d2a]">
@@ -93,9 +93,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ? 'bg-amber-100 text-amber-900 border-amber-400 dark:bg-amber-950 dark:text-amber-300 animate-pulse'
                     : 'bg-black/5 dark:bg-white/5 text-[#787166] dark:text-[#959187] border-transparent hover:border-[#9c2e22]'
                 }`}
-                title={isUpdateAvailable ? '有新版本可更新！點擊立即套用' : 'PWA v1.2.1 (點擊可強制清除快取並重整)'}
+                title={isUpdateAvailable ? '有新版本可更新！點擊立即套用' : 'PWA v1.3.2 (點擊可強制清除快取並重整)'}
               >
-                {isUpdateAvailable ? '✨ 新版本就緒' : 'v1.2.1 PWA'}
+                {isUpdateAvailable ? '✨ 新版本就緒' : 'v1.3.2 PWA'}
               </button>
             </div>
             <p className="hidden md:block text-xs text-[#706a62] dark:text-[#99948c] font-sans truncate">

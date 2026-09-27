@@ -205,7 +205,7 @@ export const CaseDatabaseModal: React.FC<CaseDatabaseModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `玄璣命例庫備份_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `天樞命例庫備份_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };

@@ -1,9 +1,9 @@
 /**
- * 玄機天象 - 紫微斗數八字互動式解盤系統
+ * 天樞星象 - 紫微斗數八字互動式解盤系統
  * Offline-First Service Worker with Instant Update
  */
 
-const CACHE_NAME = 'xuanji-v1.2.1-mobile-fix';
+const CACHE_NAME = 'tianshu-v1.3.2';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
