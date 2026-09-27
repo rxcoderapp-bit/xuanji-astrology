@@ -331,6 +331,7 @@ export default function App() {
           gender={birthInput.gender}
           solarDate={chartResult.solarDate}
           lunarDate={chartResult.lunarDate}
+          laiYinIndex={chartResult.laiYinIndex}
           onOpenAISettings={() => setIsAISettingsModalOpen(true)}
         />
 
