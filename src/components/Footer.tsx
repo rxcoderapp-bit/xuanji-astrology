@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  useVisitorStats 
+  useVisitorStats,
+  visitorTracker
 } from '../lib/visitorTracker';
 import { 
   ShieldCheck, Cloud, Compass, 
@@ -262,12 +263,27 @@ export const Footer: React.FC<FooterProps> = ({
                 3. <strong>跨端同步</strong>：若啟用 Google 雲端同步，資料將由 Google Firebase 進行傳輸加密保存，僅供您本人已登入之 Google 帳戶取用。
               </p>
             </div>
-            <button
-              onClick={() => setShowPrivacyModal(false)}
-              className="mt-5 w-full py-2 rounded-lg bg-[#8d271c] text-white font-bold text-xs hover:bg-[#721f16] transition"
-            >
-              明瞭並關閉
-            </button>
+            <div className="mt-5 pt-3 border-t border-[#e2dac9] dark:border-[#2a2c3a] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('是否將造訪人次統計立即歸零重設為真實第 1 次？')) {
+                    visitorTracker.resetToFresh();
+                    setShowPrivacyModal(false);
+                    alert('已成功歸零！統計現為純真實第 1 人次。');
+                  }
+                }}
+                className="text-[11px] text-[#8e8578] dark:text-[#9e978a] hover:text-[#8d271c] dark:hover:text-[#ef5350] underline cursor-pointer"
+              >
+                立即歸零（純真實第1人次）
+              </button>
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="px-4 py-1.5 rounded-lg bg-[#8d271c] text-white font-bold text-xs hover:bg-[#721f16] transition"
+              >
+                明瞭並關閉
+              </button>
+            </div>
           </div>
         </div>
       )}
