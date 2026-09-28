@@ -19,6 +19,7 @@ import { DivinationModal } from './components/DivinationModal';
 import { AISettingsModal } from './components/AISettingsModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { KnowledgeBaseModal } from './components/KnowledgeBaseModal';
+import { Footer } from './components/Footer';
 import { saveCaseRecord } from './lib/caseStorage';
 import { registerPWA, subscribeToUpdate, applyUpdate } from './lib/pwaService';
 import { cloudSync, type SyncStatus } from './lib/cloudSync';
@@ -376,7 +377,14 @@ export default function App() {
 
       </main>
 
-      {/* 5. Detailed Birth Input Modal Dialog */}
+      {/* 5. Classical Metaphysics Footer with Real-Time Visitor Stats */}
+      <Footer
+        onOpenKnowledgeBase={() => setIsKnowledgeBaseModalOpen(true)}
+        onOpenDatabase={() => setIsDatabaseModalOpen(true)}
+        onOpenDivination={() => setIsDivinationModalOpen(true)}
+      />
+
+      {/* 6. Detailed Birth Input Modal Dialog */}
       <BirthModal
         isOpen={isBirthModalOpen}
         onClose={() => setIsBirthModalOpen(false)}

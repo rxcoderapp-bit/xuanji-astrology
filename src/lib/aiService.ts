@@ -340,25 +340,41 @@ export function buildLoveMarriagePrompt(
 export function buildDivinationPrompt(result: DivinationResult): string {
   const stars = [...result.majorStars, ...result.minorStars].map(s => `${s.name}${s.brightness ? `(${s.brightness})` : ''}${s.mutagen ? `[化${s.mutagen}]` : ''}`).join('、') || '無主星';
 
-  return `請身為易經紫微神課宗師，為以下求問者進行「一事一占 · 神卦精批」：
+  const methodDesc = result.method === 'horary' 
+    ? '動態時空正時卦 (天地盤時空神課)' 
+    : result.method === 'coins'
+      ? '大衍三金錢神筮 (六爻文王互動搖卦)'
+      : `心念報數起卦 (${result.numbers?.join(', ')})`;
 
-【求問事項資訊】
-- 所問具體問題：【${result.question}】
-- 問事所屬類別：${result.category}
-- 占卜起卦時間：${result.castTime}
-- 起卦方式：${result.method === 'horary' ? '動態時空正時卦' : `心念報數起卦 (${result.numbers?.join(', ')})`}
+  return `請身為易經紫微神課與大衍筮法宗師，為以下求問者進行「一事一占 · 神卦星卦全息精批」：
 
-【占卜卦象星曜配置】
+【求問事項檔案】
+- 所問具體事項：【${result.question}】
+- 占問類別：${result.category}
+- 占問時間：${result.castTime}
+- 起卦方式：${methodDesc}
+
+【易經 64 卦 ✕ 紫微斗數星象全息配置】
+- 感應易經本卦：【${result.hexagramName} ${result.hexagramSymbol || ''}】（上${result.upperTrigram.name}【${result.upperTrigram.nature}】下${result.lowerTrigram.name}【${result.lowerTrigram.nature}】）
+- 卦辭象傳：${result.hexagramJudgment || '順天應人，吉凶相生'}
+- 動爻發動：第 ${result.movingLineIndex === 0 ? '無動爻 (靜卦)' : `${result.movingLineIndex} 爻動`}（${result.movingLineText || '局勢沉澱'}）
 - 事由用神宮位：【${result.targetPalaceName}】
 - 用神宮內星曜：${stars}
 - 對宮沖照宮位：【${result.oppositePalaceName}】
-- 四化引動效應：${result.sihuaImpact.join('； ') || '無重大化曜'}
-- 本地初算法吉凶等級：${result.outcomeGrade} (綜合評分: ${result.score}分)
-- 初步推導應期：${result.timingWindow}
+- 四化動態引動：${result.sihuaImpact.join('； ') || '無重大化曜'}
+- 本地量化評級：${result.outcomeGrade} (綜合能量評分: ${result.score}分)
 
-請以極具權威感、神驗且富有現代心理指導性的語言，為求問者撰寫一份「占卜斷卦錦囊報告」：
-1. 【乾坤定調】：直截了當地給出此事的吉凶定性（成/敗/滯/變），不模稜兩可。
-2. 【星象玄機剖析】：用神宮位之主煞星如何交會？對宮沖照有何外在變數？四化星如何決定事態走向？
-3. 【時機應期推斷】：何時為最佳突破窗口？何時為暗礁爆發之危險期？
-4. 【行動避凶錦囊】：給予求問者 3 條立竿見影的具體處世行動指引。`;
+【三階動態應期】
+- 萌芽發端：${result.timingPhases?.germination || '近期微瀾初現'}
+- 激化轉折：${result.timingPhases?.climax || '關鍵交鋒期'}
+- 定局結算：${result.timingPhases?.resolution || result.timingWindow}
+
+【正統古籍神課引證】
+${result.classicalAphorisms?.map(a => `- ${a}`).join('\n') || ''}
+
+請以兼具古籍權威感、神機妙算與現代心理決策指導性的風格，撰寫一份「一事一占 · 神卦斷語錦囊」：
+1. 【乾坤定調】：直截了當地給出事態的吉凶定性（成/敗/滯/變/轉），給求問者清晰明確的定心丸。
+2. 【星卦合一深批】：紫微斗數用神星曜與易經【${result.hexagramName}】卦德如何互為體用？動爻揭示了何種內部或外部轉變關鍵？
+3. 【三階應期精準推導】：解析事情在「萌芽發端」、「波折激化」與「最終定局結算」三個時段的具體徵兆與節點月令。
+4. 【錦囊妙計 · 避凶趨吉指引】：提供 3 條立竿見影、具體落地的行動策略，助求問者順天應人化險為夷。`;
 }

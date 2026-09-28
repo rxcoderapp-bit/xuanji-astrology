@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Sparkles, Compass, Dices, Clock, 
-  Bot, HelpCircle, Award, History,
-  Trash2, Search, Eye
+  X, Sparkles, Compass, Dices, 
+  Bot, HelpCircle, History,
+  Trash2, Search, Coins,
+  Clock, ShieldAlert, Award, Copy, Check,
+  Layers, RefreshCw
 } from 'lucide-react';
 import type { 
   DivinationCategory, 
   DivinationMethod, 
   DivinationResult, 
   DivinationRecord,
-  PalaceData 
+  PalaceData,
+  HexagramLineType
 } from '../types';
 import { castZiweiDivination } from '../lib/divinationEngine';
 import { callAIModel, buildDivinationPrompt } from '../lib/aiService';
@@ -28,16 +31,16 @@ interface DivinationModalProps {
   onOpenAISettings: () => void;
 }
 
-const CATEGORIES: { id: DivinationCategory; desc: string }[] = [
-  { id: '事業工作', desc: '升遷、跳槽、創業、專案前景 (看官祿宮)' },
-  { id: '求財投資', desc: '盈虧、財運、合約資金、進財時機 (看財帛宮)' },
-  { id: '感情婚姻', desc: '脫單、戀情發展、婚姻波折、復合 (看夫妻宮)' },
-  { id: '合作商機', desc: '合夥人、外部關係、團隊可靠度 (看僕役宮)' },
-  { id: '健康平安', desc: '體質安危、隱患防範、情緒壓力 (看疾厄宮)' },
-  { id: '置產買房', desc: '購屋、裝修、不動產增值、搬遷 (看田宅宮)' },
-  { id: '考試升遷', desc: '公職考試、證照考取、長官考評 (看父母宮)' },
-  { id: '訴訟是非', desc: '官非爭議、合約法規、小人口舌 (看父母/官祿)' },
-  { id: '重大抉擇', desc: '二選一、人生十字路口轉折 (看命宮/遷移)' },
+const CATEGORIES: { id: DivinationCategory; desc: string; icon: string }[] = [
+  { id: '事業工作', desc: '升遷、跳槽、創業、專案前景 (看官祿宮)', icon: '💼' },
+  { id: '求財投資', desc: '盈虧、財運、合約資金、進財時機 (看財帛宮)', icon: '💰' },
+  { id: '感情婚姻', desc: '脫單、戀情發展、婚姻波折、復合 (看夫妻宮)', icon: '❤️' },
+  { id: '合作商機', desc: '合夥人、外部關係、團隊可靠度 (看僕役宮)', icon: '🤝' },
+  { id: '健康平安', desc: '體質安危、隱患防範、情緒壓力 (看疾厄宮)', icon: '🌿' },
+  { id: '置產買房', desc: '購屋、裝修、不動產增值、搬遷 (看田宅宮)', icon: '🏡' },
+  { id: '考試升遷', desc: '公職考試、證照考取、長官考評 (看父母宮)', icon: '📜' },
+  { id: '訴訟是非', desc: '官非爭議、合約法規、小人口舌 (看父母/官祿)', icon: '⚖️' },
+  { id: '重大抉擇', desc: '二選一、人生十字路口轉折 (看命宮/遷移)', icon: '🧭' },
 ];
 
 export const DivinationModal: React.FC<DivinationModalProps> = ({
@@ -56,6 +59,11 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
   const [num2, setNum2] = useState(3);
   const [num3, setNum3] = useState(9);
 
+  // Coins casting state
+  const [coinsTosses, setCoinsTosses] = useState<number[][]>([]);
+  const [isTossingAnimation, setIsTossingAnimation] = useState(false);
+  const [currentTossCoins, setCurrentTossCoins] = useState<[number, number, number]>([3, 2, 3]);
+
   // Result state & active record ID
   const [result, setResult] = useState<DivinationResult | null>(null);
   const [currentRecordId, setCurrentRecordId] = useState<string | null>(null);
@@ -68,6 +76,7 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [copiedAi, setCopiedAi] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -77,21 +86,86 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
 
   if (!isOpen) return null;
 
+  // 隨機靈動數
   const handleRandomizeNumbers = () => {
     setNum1(Math.floor(Math.random() * 12) + 1);
     setNum2(Math.floor(Math.random() * 12) + 1);
     setNum3(Math.floor(Math.random() * 12) + 1);
   };
 
-  const handleCast = (e: React.FormEvent) => {
-    e.preventDefault();
+  // 擲一次銅錢 (第 1 到 6 爻)
+  const handleTossOneRound = () => {
+    if (coinsTosses.length >= 6) {
+      setCoinsTosses([]);
+    }
+
+    setIsTossingAnimation(true);
+    setTimeout(() => {
+      const c1 = Math.random() > 0.5 ? 3 : 2;
+      const c2 = Math.random() > 0.5 ? 3 : 2;
+      const c3 = Math.random() > 0.5 ? 3 : 2;
+      const newToss: [number, number, number] = [c1, c2, c3];
+      
+      setCurrentTossCoins(newToss);
+      setCoinsTosses(prev => {
+        const next = [...prev, newToss];
+        return next.length > 6 ? [newToss] : next;
+      });
+      setIsTossingAnimation(false);
+    }, 450);
+  };
+
+  // 一鍵擲出六爻
+  const handleTossAllSixRounds = () => {
+    setIsTossingAnimation(true);
+    setTimeout(() => {
+      const all: number[][] = [];
+      for (let i = 0; i < 6; i++) {
+        all.push([
+          Math.random() > 0.5 ? 3 : 2,
+          Math.random() > 0.5 ? 3 : 2,
+          Math.random() > 0.5 ? 3 : 2
+        ]);
+      }
+      setCoinsTosses(all);
+      setCurrentTossCoins(all[5] as [number, number, number]);
+      setIsTossingAnimation(false);
+    }, 500);
+  };
+
+  // 執行占卜起卦
+  const handleCast = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!question.trim()) {
       alert('請先輸入您想占問的具體問題！');
       return;
     }
 
+    if (method === 'coins' && coinsTosses.length < 6) {
+      if (confirm('銅錢尚未擲滿六爻，是否為您一鍵補齊六爻起卦？')) {
+        const all: number[][] = [...coinsTosses];
+        while (all.length < 6) {
+          all.push([
+            Math.random() > 0.5 ? 3 : 2,
+            Math.random() > 0.5 ? 3 : 2,
+            Math.random() > 0.5 ? 3 : 2
+          ]);
+        }
+        setCoinsTosses(all);
+        executeFinalCast(all);
+        return;
+      }
+      return;
+    }
+
+    executeFinalCast(coinsTosses);
+  };
+
+  const executeFinalCast = (tossesToUse: number[][]) => {
     const numbers: [number, number, number] | undefined = method === 'numbers' ? [num1, num2, num3] : undefined;
-    const res = castZiweiDivination(question.trim(), category, method, numbers, currentChartPalaces);
+    const finalTosses = method === 'coins' ? tossesToUse : undefined;
+
+    const res = castZiweiDivination(question.trim(), category, method, numbers, currentChartPalaces, finalTosses);
     const newId = `div_${Date.now()}`;
     
     setResult(res);
@@ -109,6 +183,7 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
     setHistoryRecords(getDivinationRecords());
   };
 
+  // 呼叫 AI 宗師問卜
   const handleCallAIDivination = async () => {
     if (!result) return;
     setIsAiLoading(true);
@@ -129,12 +204,20 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
     }
   };
 
+  const handleCopyAiAnalysis = () => {
+    if (!aiAnalysis) return;
+    navigator.clipboard.writeText(aiAnalysis);
+    setCopiedAi(true);
+    setTimeout(() => setCopiedAi(false), 2000);
+  };
+
   const handleSelectHistoryRecord = (rec: DivinationRecord) => {
     setResult(rec);
     setCurrentRecordId(rec.id);
     setAiAnalysis(rec.aiAnalysis || null);
     setQuestion(rec.question);
     setCategory(rec.category);
+    setMethod(rec.method);
     setActiveTab('cast');
   };
 
@@ -161,44 +244,99 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
     }
   };
 
+  // 渲染爻線 (⚊ ⚋)
+  const renderHexagramLine = (lineType: HexagramLineType, index: number, isMoving: boolean) => {
+    const isYang = lineType === 'yang' || lineType === 'moving_yang';
+    const isLineMoving = lineType === 'moving_yang' || lineType === 'moving_yin' || isMoving;
+
+    return (
+      <div key={index} className="flex items-center gap-2 text-xs">
+        <span className="w-12 text-[11px] font-mono text-[#7a7267] dark:text-[#8e897e] text-right">
+          第 {index + 1} 爻
+        </span>
+        <div className="flex-1 flex items-center justify-center">
+          {isYang ? (
+            <div className={`h-3.5 w-full rounded-sm transition ${
+              isLineMoving 
+                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 shadow-md ring-2 ring-rose-400' 
+                : 'bg-[#8d271c] dark:bg-[#c0392b]'
+            }`} />
+          ) : (
+            <div className="flex items-center justify-between w-full gap-2.5">
+              <div className={`h-3.5 w-full rounded-sm ${
+                isLineMoving 
+                  ? 'bg-gradient-to-r from-amber-500 to-rose-500 shadow-md ring-2 ring-rose-400' 
+                  : 'bg-[#4a4238] dark:bg-[#686259]'
+              }`} />
+              <div className={`h-3.5 w-full rounded-sm ${
+                isLineMoving 
+                  ? 'bg-gradient-to-r from-rose-500 to-amber-500 shadow-md ring-2 ring-rose-400' 
+                  : 'bg-[#4a4238] dark:bg-[#686259]'
+              }`} />
+            </div>
+          )}
+        </div>
+        <div className="w-14 text-center">
+          {isLineMoving ? (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 animate-pulse">
+              動爻
+            </span>
+          ) : (
+            <span className="text-[10px] text-[#888] font-mono">
+              {isYang ? '少陽' : '少陰'}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/65 backdrop-blur-sm animate-fade-in font-serif">
-      <div className="w-full max-w-4xl h-[92vh] max-h-[850px] rounded-2xl shadow-2xl border flex flex-col overflow-hidden transition
-        bg-[#fcfbf7] dark:bg-[#161720] border-[#d8d0be] dark:border-[#31333f] text-[#222] dark:text-[#eee]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 bg-black/70 backdrop-blur-sm animate-fade-in font-serif">
+      <div className="w-full max-w-5xl h-[94vh] max-h-[900px] rounded-2xl shadow-2xl border flex flex-col overflow-hidden transition
+        bg-[#fcfbf7] dark:bg-[#14151c] border-[#d8d0be] dark:border-[#2a2c3a] text-[#222] dark:text-[#eee]">
         
         {/* Header */}
-        <div className="px-6 py-4 flex items-center justify-between border-b
-          bg-[#f6f2e8] dark:bg-[#1c1e27] border-[#e2d9c8] dark:border-[#2b2d3b]">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-[#8d271c] text-white">
+        <div className="px-5 py-3.5 flex items-center justify-between border-b
+          bg-[#f6f2e8] dark:bg-[#191b24] border-[#e2d9c8] dark:border-[#262835]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md bg-gradient-to-br from-[#8d271c] to-[#59140c] text-white">
               <Compass className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-[#2b2723] dark:text-[#f4f1ec]">
-                紫微斗數一事一占 · 神卦問事
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-[#2b2723] dark:text-[#f4f1ec]">
+                  一事一占 · 神卦星象全息問事
+                </h2>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-sans font-bold bg-[#8d271c]/10 text-[#8d271c] dark:bg-[#c0392b]/20 dark:text-[#ef5350]">
+                  易經64卦 ✕ 紫微星曜合參
+                </span>
+              </div>
               <p className="text-xs text-[#706a62] dark:text-[#9c958b]">
-                時空正時起卦 · 類神用神定吉凶 · 雙重 AI 宗師斷卦
+                時空正時起卦 · 大衍文王三銅錢神筮 · 先天數理 · 三階動態應期
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-black dark:hover:text-white">
+          <button 
+            onClick={onClose} 
+            className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-gray-500 hover:text-black dark:hover:text-white transition"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Tabs: Cast vs History */}
-        <div className="flex border-b text-xs font-bold bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733]">
+        <div className="flex border-b text-xs font-bold bg-[#ede7da] dark:bg-[#111218] border-[#ded5c3] dark:border-[#222430]">
           <button
             type="button"
             onClick={() => setActiveTab('cast')}
             className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition
               ${activeTab === 'cast'
-                ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#161720]'
+                ? 'border-[#8d271c] text-[#8d271c] dark:border-[#ef5350] dark:text-[#ef5350] bg-[#fcfbf7] dark:bg-[#14151c]'
                 : 'border-transparent text-[#666] dark:text-[#aaa] hover:text-[#222] dark:hover:text-white'}`}
           >
             <Compass className="w-4 h-4" />
-            <span>【起卦問事】</span>
+            <span>【神卦起卦 · 星易互參】</span>
           </button>
           <button
             type="button"
@@ -208,47 +346,47 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
             }}
             className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition
               ${activeTab === 'history'
-                ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#161720]'
+                ? 'border-[#8d271c] text-[#8d271c] dark:border-[#ef5350] dark:text-[#ef5350] bg-[#fcfbf7] dark:bg-[#14151c]'
                 : 'border-transparent text-[#666] dark:text-[#aaa] hover:text-[#222] dark:hover:text-white'}`}
           >
             <History className="w-4 h-4" />
-            <span>【歷史占卜紀錄庫】</span>
+            <span>【歷史占卜問事簿】</span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#8d271c] text-white">
               {historyRecords.length}
             </span>
           </button>
         </div>
 
-        {/* Modal Main Layout */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 scrollbar-thin">
+        {/* Modal Main Scroll Area */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin">
           
           {/* TAB 1: 起卦問事 */}
           {activeTab === 'cast' && (
             <div className="space-y-6">
               
-              {/* Question Input Section */}
-              <form onSubmit={handleCast} className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#1a1b24] border-[#ded5c3] dark:border-[#2c2e3c] space-y-4 shadow-xs">
+              {/* Question & Category Input Section */}
+              <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a22] border-[#ded5c3] dark:border-[#282a38] space-y-4 shadow-xs">
                 
                 {/* Question Text */}
                 <div>
                   <label className="block text-xs font-bold text-[#554e44] dark:text-[#b4aea4] mb-1.5 flex items-center gap-1">
-                    <HelpCircle className="w-3.5 h-3.5 text-[#8d271c] dark:text-[#df756b]" />
-                    請填入心念聚焦的具體問題 (越精確，卦象越靈驗)
+                    <HelpCircle className="w-3.5 h-3.5 text-[#8d271c] dark:text-[#ef5350]" />
+                    心念聚焦點（請具體陳述事件焦點，不宜含糊模稜）
                   </label>
                   <input
                     type="text"
                     value={question}
                     onChange={e => setQuestion(e.target.value)}
-                    placeholder="例如：今年該不該答應某公司的合夥邀請？/ 某筆投資何時能回款？"
-                    className="w-full px-3.5 py-2.5 rounded-xl border text-sm font-sans outline-none
-                      bg-[#faf8f4] dark:bg-[#13141a] border-[#d8d0bf] dark:border-[#383a48] text-[#222] dark:text-[#eee] focus:border-[#8d271c]"
+                    placeholder="例如：本次與某外商團隊的併購合約前景如何？/ 下半年是否適合轉換跑道跳槽？"
+                    className="w-full px-3.5 py-2.5 rounded-xl border text-sm font-sans outline-none transition
+                      bg-[#faf8f4] dark:bg-[#111218] border-[#d8d0bf] dark:border-[#353746] text-[#222] dark:text-[#eee] focus:border-[#8d271c]"
                   />
                 </div>
 
-                {/* Category Selector */}
+                {/* Category Grid */}
                 <div>
                   <label className="block text-xs font-bold text-[#554e44] dark:text-[#b4aea4] mb-1.5">
-                    選擇問事類別 (決定事由類神宮位)
+                    問事類別（決定紫微斗數事由類神用神宮垣）
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {CATEGORIES.map(cat => (
@@ -259,10 +397,13 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
                         className={`p-2.5 rounded-xl text-xs font-serif transition border text-left flex flex-col justify-between
                           ${category === cat.id
                             ? 'bg-[#8d271c] text-white border-[#701e15] font-bold shadow-xs'
-                            : 'bg-white dark:bg-[#15161c] text-[#444] dark:text-[#ccc] border-[#ded5c5] dark:border-[#2f313e] hover:bg-[#ede5d4] dark:hover:bg-[#20222b]'}`}
+                            : 'bg-white dark:bg-[#14151c] text-[#444] dark:text-[#ccc] border-[#ded5c5] dark:border-[#272936] hover:bg-[#ede5d4] dark:hover:bg-[#1e202b]'}`}
                       >
-                        <span className="text-xs font-bold">{cat.id}</span>
-                        <span className={`text-[10px] truncate ${category === cat.id ? 'text-[#ffcfca]' : 'text-[#888]'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <span>{cat.icon}</span>
+                          <span className="text-xs font-bold">{cat.id}</span>
+                        </div>
+                        <span className={`text-[10px] mt-1 truncate ${category === cat.id ? 'text-[#ffcfca]' : 'text-[#888]'}`}>
                           {cat.desc.split('(')[0]}
                         </span>
                       </button>
@@ -270,102 +411,199 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
                   </div>
                 </div>
 
-                {/* Method Selector: Horary vs Number */}
-                <div className="pt-2 border-t border-[#eee6d7] dark:border-[#262835] flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-4 text-xs">
-                    <span className="font-bold text-[#666] dark:text-[#aaa]">起卦模式：</span>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={method === 'horary'}
-                        onChange={() => setMethod('horary')}
-                        className="accent-[#8d271c]"
-                      />
-                      <span>動態時空正時卦 (精確至當下分秒)</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={method === 'numbers'}
-                        onChange={() => setMethod('numbers')}
-                        className="accent-[#8d271c]"
-                      />
-                      <span>心念報數起卦 (報三數)</span>
-                    </label>
+                {/* Divination Method Selection Tabs */}
+                <div className="pt-3 border-t border-[#eee6d7] dark:border-[#262835] space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-bold text-[#554e44] dark:text-[#b4aea4]">
+                      起卦秘法：
+                    </span>
+                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#eee8dc] dark:bg-[#111218] border border-[#dcd3c0] dark:border-[#252733]">
+                      <button
+                        type="button"
+                        onClick={() => setMethod('horary')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition flex items-center gap-1.5
+                          ${method === 'horary'
+                            ? 'bg-[#8d271c] text-white shadow-xs'
+                            : 'text-[#555] dark:text-[#aaa] hover:text-black dark:hover:text-white'}`}
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>正時起卦 · 時空神課</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMethod('coins')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition flex items-center gap-1.5
+                          ${method === 'coins'
+                            ? 'bg-[#8d271c] text-white shadow-xs'
+                            : 'text-[#555] dark:text-[#aaa] hover:text-black dark:hover:text-white'}`}
+                      >
+                        <Coins className="w-3.5 h-3.5" />
+                        <span>大衍銅錢 · 互動搖卦</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMethod('numbers')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition flex items-center gap-1.5
+                          ${method === 'numbers'
+                            ? 'bg-[#8d271c] text-white shadow-xs'
+                            : 'text-[#555] dark:text-[#aaa] hover:text-black dark:hover:text-white'}`}
+                      >
+                        <Dices className="w-3.5 h-3.5" />
+                        <span>先天數理 · 靈動數</span>
+                      </button>
+                    </div>
                   </div>
 
+                  {/* Mode 1: Horary Description */}
+                  {method === 'horary' && (
+                    <div className="p-3 rounded-xl bg-[#f8f5ee] dark:bg-[#121319] border border-[#e4dcce] dark:border-[#242633] text-xs text-[#665e52] dark:text-[#9e978b] flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#8d271c] dark:text-[#ef5350]" />
+                        <span>以動念當下年月日時分秒之天地陰陽氣數，同步排演正時天盤與易經時空卦。</span>
+                      </div>
+                      <span className="font-mono text-[11px] opacity-75">
+                        即時感應
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Mode 2: Coins Interactive Casting */}
+                  {method === 'coins' && (
+                    <div className="p-4 rounded-xl bg-[#f8f5ee] dark:bg-[#121319] border border-[#e4dcce] dark:border-[#242633] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#8d271c] dark:text-[#ef5350] flex items-center gap-1.5">
+                          <Coins className="w-4 h-4" />
+                          <span>文王三枚大衍神錢筮法（已擲 {coinsTosses.length} / 6 爻）</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleTossOneRound}
+                            disabled={isTossingAnimation}
+                            className="px-3 py-1 rounded-lg text-xs font-bold transition border shadow-xs flex items-center gap-1
+                              bg-[#96551b] hover:bg-[#804715] text-[#fff7ed] border-[#7d4414] disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${isTossingAnimation ? 'animate-spin' : ''}`} />
+                            <span>{coinsTosses.length >= 6 ? '重新擲第1爻' : `擲第 ${coinsTosses.length + 1} 爻`}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleTossAllSixRounds}
+                            disabled={isTossingAnimation}
+                            className="px-3 py-1 rounded-lg text-xs font-bold transition border shadow-xs flex items-center gap-1
+                              bg-[#8d271c] hover:bg-[#721f16] text-white border-[#661c14] disabled:opacity-50"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>一鍵搖出六爻</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3 Coins Visual Area */}
+                      <div className="flex items-center justify-center gap-6 py-3">
+                        {currentTossCoins.map((val, idx) => (
+                          <div 
+                            key={idx}
+                            className={`w-14 h-14 rounded-full border-2 flex items-center justify-center font-bold text-xs shadow-md transition-transform duration-300
+                              ${isTossingAnimation ? 'rotate-180 scale-110' : ''}
+                              ${val === 3 
+                                ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950 border-amber-500 ring-2 ring-amber-300/40' 
+                                : 'bg-gradient-to-br from-stone-300 via-stone-400 to-stone-600 text-stone-900 border-stone-400 ring-2 ring-stone-300/30'}`}
+                          >
+                            <div className="w-8 h-8 rounded-full border border-black/30 flex items-center justify-center">
+                              <span className="font-serif font-black text-sm">
+                                {val === 3 ? '背' : '字'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="text-center text-[11px] text-[#797165] dark:text-[#979185]">
+                        說明：背為陽(3)，字為陰(2)。三背為老陽(9，動爻)，三字為老陰(6，動爻)，兩背一字為少陰(8)，兩字一背為少陽(7)。
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mode 3: Numbers Input */}
                   {method === 'numbers' && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#888]">靈動數(1~12):</span>
-                      <input
-                        type="number"
-                        min="1"
-                        max="12"
-                        value={num1}
-                        onChange={e => setNum1(Number(e.target.value))}
-                        className="w-10 p-1 border rounded text-center font-mono text-xs"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="12"
-                        value={num2}
-                        onChange={e => setNum2(Number(e.target.value))}
-                        className="w-10 p-1 border rounded text-center font-mono text-xs"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="12"
-                        value={num3}
-                        onChange={e => setNum3(Number(e.target.value))}
-                        className="w-10 p-1 border rounded text-center font-mono text-xs"
-                      />
+                    <div className="p-3.5 rounded-xl bg-[#f8f5ee] dark:bg-[#121319] border border-[#e4dcce] dark:border-[#242633] flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-[#655e52] dark:text-[#9e978b]">心念報三數 (1 ~ 12)：</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="12"
+                          value={num1}
+                          onChange={e => setNum1(Number(e.target.value))}
+                          className="w-11 p-1.5 border rounded-lg text-center font-mono text-xs bg-white dark:bg-[#1c1d26] border-[#d8d0be] dark:border-[#333544]"
+                        />
+                        <input
+                          type="number"
+                          min="1"
+                          max="12"
+                          value={num2}
+                          onChange={e => setNum2(Number(e.target.value))}
+                          className="w-11 p-1.5 border rounded-lg text-center font-mono text-xs bg-white dark:bg-[#1c1d26] border-[#d8d0be] dark:border-[#333544]"
+                        />
+                        <input
+                          type="number"
+                          min="1"
+                          max="12"
+                          value={num3}
+                          onChange={e => setNum3(Number(e.target.value))}
+                          className="w-11 p-1.5 border rounded-lg text-center font-mono text-xs bg-white dark:bg-[#1c1d26] border-[#d8d0be] dark:border-[#333544]"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={handleRandomizeNumbers}
-                        className="p-1 px-2 rounded border text-xs font-sans text-[#666] hover:bg-gray-100 flex items-center gap-1"
+                        className="p-1.5 px-3 rounded-lg border text-xs font-sans text-[#666] hover:bg-white dark:hover:bg-[#20222d] flex items-center gap-1 transition"
                       >
-                        <Dices className="w-3.5 h-3.5" /> 搖數
+                        <Dices className="w-3.5 h-3.5 text-[#8d271c]" /> 靈機隨機搖數
                       </button>
                     </div>
                   )}
 
-                  {/* Cast Action Button */}
-                  <button
-                    type="submit"
-                    className="px-6 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2
-                      bg-[#8d271c] text-white hover:bg-[#782017]"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>立即啟卦排演</span>
-                  </button>
+                  {/* Main Cast Submit Button */}
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleCast()}
+                      className="px-8 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg transition flex items-center gap-2
+                        bg-gradient-to-r from-[#8d271c] to-[#63140b] text-white hover:opacity-95 active:scale-95"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>立 刻 啟 卦 排 演</span>
+                    </button>
+                  </div>
+
                 </div>
 
-              </form>
+              </div>
 
               {/* Divination Result Section */}
               {result && (
-                <div className="space-y-5 animate-fade-in">
+                <div className="space-y-6 animate-fade-in">
                   
-                  {/* Verdict Banner Card */}
-                  <div className="p-5 rounded-2xl border shadow-sm space-y-3
-                    bg-white dark:bg-[#1a1b24] border-[#ded5c3] dark:border-[#2c2e3c]">
+                  {/* Hero Verdict Banner Card */}
+                  <div className="p-5 sm:p-6 rounded-2xl border shadow-md space-y-4
+                    bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3c]">
                     
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 border-[#eee6d7] dark:border-[#262835]">
-                      <div className="flex items-center gap-2.5">
-                        <span className={`px-3 py-1 rounded-lg text-sm font-bold shadow-xs
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4 border-[#eee6d7] dark:border-[#262835]">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3.5 py-1.5 rounded-xl text-base font-bold shadow-sm
                           ${['大吉', '吉'].includes(result.outcomeGrade) ? 'bg-[#1b7a4f] text-white' : ''}
                           ${['小吉', '平'].includes(result.outcomeGrade) ? 'bg-[#2a5d7c] text-white' : ''}
                           ${['小凶', '凶', '大凶'].includes(result.outcomeGrade) ? 'bg-[#8d271c] text-white' : ''}`}>
                           {result.outcomeGrade}
                         </span>
                         <div>
-                          <h3 className="font-bold text-base text-[#222] dark:text-[#eee]">
+                          <h3 className="font-bold text-lg sm:text-xl text-[#222] dark:text-[#eee]">
                             {result.verdict}
                           </h3>
-                          <p className="text-xs text-[#777] font-mono mt-0.5">
-                            起卦時間：{result.castTime} · 用神宮位：【{result.targetPalaceName}】· 氣場評分：{result.score}分
+                          <p className="text-xs text-[#777] dark:text-[#999] font-mono mt-0.5">
+                            起卦時間：{result.castTime} · 用神宮位：【{result.targetPalaceName}】· 卦象評分：{result.score}分
                           </p>
                         </div>
                       </div>
@@ -374,53 +612,157 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
                       <button
                         onClick={handleCallAIDivination}
                         disabled={isAiLoading}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-sm transition
-                          bg-gradient-to-r from-[#2a5d7c] to-[#1c456b] text-white hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs shadow-md transition
+                          bg-gradient-to-r from-[#2a5d7c] to-[#1c456b] text-white hover:opacity-90 disabled:opacity-50 active:scale-95"
                       >
                         <Bot className="w-4 h-4" />
                         <span>{isAiLoading ? 'AI 宗師推演中...' : '呼叫 AI 宗師深入斷卦'}</span>
                       </button>
                     </div>
 
-                    {/* Grid 2-col details */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed pt-1">
+                    {/* Dual Cards: Left = Hexagram Card, Right = Ziwei Palace Card */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-1">
                       
-                      {/* Left: Star & Palaces Analysis */}
-                      <div className="space-y-2.5 p-3.5 rounded-xl bg-[#faf7ef] dark:bg-[#14151b] border border-[#e8dfcf] dark:border-[#272935]">
-                        <div className="font-bold text-[#8d271c] dark:text-[#df756b] flex items-center gap-1">
-                          <Compass className="w-3.5 h-3.5" /> 用神星曜象意深入剖析
+                      {/* Left: 易經 64 卦全息卡 (5 cols) */}
+                      <div className="lg:col-span-5 p-4 rounded-xl border bg-[#faf7ee] dark:bg-[#13141a] border-[#e8dfcf] dark:border-[#252735] space-y-3">
+                        <div className="flex items-center justify-between border-b pb-2 border-[#e6dcce] dark:border-[#20222d]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{result.hexagramSymbol}</span>
+                            <div>
+                              <span className="font-bold text-sm text-[#8d271c] dark:text-[#ef5350]">
+                                易經感應【{result.hexagramName}】
+                              </span>
+                              <span className="text-[10px] ml-2 text-[#777] dark:text-[#999]">
+                                上{result.upperTrigram.name}({result.upperTrigram.nature}) 下{result.lowerTrigram.name}({result.lowerTrigram.nature})
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#8d271c]/10 text-[#8d271c] dark:text-[#ef5350]">
+                            {result.movingLineIndex === 0 ? '純靜卦' : `動爻: 第${result.movingLineIndex}爻`}
+                          </span>
                         </div>
-                        <p className="text-[#555] dark:text-[#bbb]">
+
+                        {/* Visual Hexagram Lines */}
+                        <div className="py-2 px-1 space-y-2 bg-white/70 dark:bg-[#1a1b24] rounded-lg border border-[#e8ded0] dark:border-[#252838]">
+                          {result.hexagramLines.map((lineType, idx) => 
+                            renderHexagramLine(lineType, idx, idx + 1 === result.movingLineIndex)
+                          )}
+                        </div>
+
+                        {/* Judgment & Moving line advice */}
+                        <div className="space-y-1.5 text-xs text-[#554e44] dark:text-[#b0aaa0] pt-1">
+                          <div>
+                            <span className="font-bold text-[#8d271c] dark:text-[#ef5350]">《大象傳》：</span>
+                            <span>{result.hexagramJudgment}</span>
+                          </div>
+                          <div className="text-[11px] p-2 rounded bg-[#f2ecdd] dark:bg-[#1c1d27] border border-[#e4dac9] dark:border-[#2c2e3e]">
+                            <span className="font-bold text-[#2a5d7c] dark:text-[#64b5f6]">動爻變易機竅：</span>
+                            <span>{result.movingLineText}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: 紫微斗數用神宮位與三方星象 (7 cols) */}
+                      <div className="lg:col-span-7 p-4 rounded-xl border bg-[#faf7ee] dark:bg-[#13141a] border-[#e8dfcf] dark:border-[#252735] space-y-3">
+                        <div className="flex items-center justify-between border-b pb-2 border-[#e6dcce] dark:border-[#20222d]">
+                          <div className="flex items-center gap-1.5 font-bold text-sm text-[#8d271c] dark:text-[#ef5350]">
+                            <Compass className="w-4 h-4" />
+                            <span>用神宮位【{result.targetPalaceName}】✕ 對宮【{result.oppositePalaceName}】</span>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-[#2a5d7c] dark:text-[#64b5f6]">
+                            能量值: {result.score}
+                          </span>
+                        </div>
+
+                        {/* Detailed Star Analysis */}
+                        <p className="text-xs leading-relaxed text-[#555] dark:text-[#bbb]">
                           {result.detailedAnalysis}
                         </p>
+
+                        {/* Sihua Impacts */}
                         {result.sihuaImpact.length > 0 && (
-                          <div className="pt-2 border-t border-[#ede4d4] dark:border-[#252733] space-y-1">
-                            <span className="font-bold text-[#2a5d7c] dark:text-[#64b5f6]">四化氣機引動：</span>
+                          <div className="p-2.5 rounded-lg bg-white/70 dark:bg-[#1a1b24] border border-[#e8ded0] dark:border-[#252838] space-y-1 text-xs">
+                            <span className="font-bold text-[#2a5d7c] dark:text-[#64b5f6]">四化氣機動態引動：</span>
                             {result.sihuaImpact.map((s, idx) => (
                               <div key={idx} className="text-[#444] dark:text-[#ccc]">✦ {s}</div>
                             ))}
                           </div>
                         )}
+
+                        {/* Star Hexagram Resonance */}
+                        <div className="p-2.5 rounded-lg bg-[#f0ebd9] dark:bg-[#1b1c26] border border-[#ded4bf] dark:border-[#292c3c] text-xs text-[#524b40] dark:text-[#aba496] leading-relaxed">
+                          {result.starHexagramResonance}
+                        </div>
                       </div>
 
-                      {/* Right: Action & Timing Window */}
-                      <div className="space-y-3 p-3.5 rounded-xl bg-[#faf7ef] dark:bg-[#14151b] border border-[#e8dfcf] dark:border-[#272935]">
-                        <div>
-                          <div className="font-bold text-[#1b7a4f] dark:text-[#4ade80] flex items-center gap-1 mb-1">
-                            <Clock className="w-3.5 h-3.5" /> 關鍵應驗時窗 (應期)
+                    </div>
+
+                    {/* Three-Phase Timing Bar (三階動態應期) */}
+                    <div className="p-4 rounded-xl border bg-[#fbf9f4] dark:bg-[#15161e] border-[#e2d9c7] dark:border-[#262836] space-y-2.5">
+                      <div className="flex items-center justify-between text-xs font-bold text-[#8d271c] dark:text-[#ef5350]">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>三階動態時空應期精推</span>
+                        </span>
+                        <span className="text-[11px] font-normal text-[#777] dark:text-[#999]">
+                          {result.timingWindow}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div className="p-3 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e2d9c8] dark:border-[#292b3a]">
+                          <div className="font-bold text-[#2e7d32] dark:text-[#4caf50] mb-1">
+                            🌱 第一階：萌芽發端期
                           </div>
-                          <p className="text-[#555] dark:text-[#bbb]">
-                            {result.timingWindow}
-                          </p>
+                          <div className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                            {result.timingPhases?.germination}
+                          </div>
                         </div>
 
-                        <div className="pt-2 border-t border-[#ede4d4] dark:border-[#252733]">
-                          <div className="font-bold text-[#9c5914] dark:text-[#e59b3f] flex items-center gap-1 mb-1">
-                            <Award className="w-3.5 h-3.5" /> 現代行動避凶錦囊
+                        <div className="p-3 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e2d9c8] dark:border-[#292b3a]">
+                          <div className="font-bold text-[#e65100] dark:text-[#ff9800] mb-1">
+                            ⚡ 第二階：激化轉折期
                           </div>
-                          <div className="text-[#444] dark:text-[#ccc] whitespace-pre-line">
-                            {result.actionPlan}
+                          <div className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                            {result.timingPhases?.climax}
                           </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e2d9c8] dark:border-[#292b3a]">
+                          <div className="font-bold text-[#8d271c] dark:text-[#ef5350] mb-1">
+                            🎯 第三階：定局結算期
+                          </div>
+                          <div className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                            {result.timingPhases?.resolution}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Plan (錦囊妙計) & Classical Citations (古籍引證) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      
+                      {/* JinNang Action Plan */}
+                      <div className="p-3.5 rounded-xl bg-[#faf7ef] dark:bg-[#14151b] border border-[#e8dfcf] dark:border-[#272935] space-y-2">
+                        <div className="font-bold text-[#2e7d32] dark:text-[#81c784] flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5" /> 避凶趨吉錦囊策論
+                        </div>
+                        <div className="text-[#555] dark:text-[#bbb] whitespace-pre-line leading-relaxed">
+                          {result.actionPlan}
+                        </div>
+                      </div>
+
+                      {/* Classical Citations */}
+                      <div className="p-3.5 rounded-xl bg-[#faf7ef] dark:bg-[#14151b] border border-[#e8dfcf] dark:border-[#272935] space-y-2">
+                        <div className="font-bold text-[#8d271c] dark:text-[#ef5350] flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5" /> 正統古籍神課引證 (RAG 智庫)
+                        </div>
+                        <div className="space-y-1.5 text-[11px] text-[#665e52] dark:text-[#9e978b] leading-relaxed">
+                          {result.classicalAphorisms?.map((item, idx) => (
+                            <div key={idx} className="p-1.5 rounded bg-white/60 dark:bg-[#1a1b24] border border-[#e8ded0] dark:border-[#252838]">
+                              {item}
+                            </div>
+                          ))}
                         </div>
                       </div>
 
@@ -428,47 +770,42 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
 
                   </div>
 
-                  {/* AI Master Interpretation Box */}
-                  {isAiLoading && (
-                    <div className="p-8 rounded-2xl border text-center space-y-3 bg-white dark:bg-[#1a1b24] border-[#ded5c3] dark:border-[#2c2e3c]">
-                      <Sparkles className="w-8 h-8 text-[#8d271c] dark:text-[#df756b] animate-spin mx-auto" />
-                      <p className="font-bold text-sm text-[#222] dark:text-[#eee]">
-                        AI 命理大師正依據您所求問之卦象與紫微星盤進行深層推演...
-                      </p>
-                      <p className="text-xs text-[#888]">
-                        透過 Gemini / OpenRouter 進行高維度易經心法對照
-                      </p>
-                    </div>
-                  )}
-
-                  {aiError && (
-                    <div className="p-4 rounded-xl border bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 text-xs flex items-center justify-between">
-                      <span>{aiError}</span>
-                      <button
-                        onClick={onOpenAISettings}
-                        className="underline font-bold text-xs"
-                      >
-                        前往檢查 AI 設定
-                      </button>
-                    </div>
-                  )}
-
+                  {/* AI Analysis Result Section */}
                   {aiAnalysis && (
-                    <div className="p-5 rounded-2xl border shadow-md space-y-3 bg-gradient-to-b from-[#fdfbf7] to-white dark:from-[#1b1d28] dark:to-[#15161f] border-[#d8cdb8] dark:border-[#383a4c]">
-                      <div className="flex items-center justify-between border-b pb-2 border-[#e8dfcf] dark:border-[#2b2d3c]">
-                        <div className="flex items-center gap-2">
-                          <Bot className="w-4 h-4 text-[#8d271c] dark:text-[#df756b]" />
-                          <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b]">
-                            AI 易經宗師 · 神課詳批錦囊報告
-                          </h3>
+                    <div className="p-5 sm:p-6 rounded-2xl border bg-gradient-to-br from-[#fdfbf7] to-[#f4f0e6] dark:from-[#171822] dark:to-[#12131a] border-[#ded5c3] dark:border-[#2e3142] space-y-3 shadow-md animate-fade-in">
+                      <div className="flex items-center justify-between border-b pb-3 border-[#e8dfcf] dark:border-[#272a3a]">
+                        <div className="flex items-center gap-2 text-sm font-bold text-[#2a5d7c] dark:text-[#64b5f6]">
+                          <Bot className="w-4 h-4" />
+                          <span>AI 宗師大師級深度解卦錦囊</span>
                         </div>
-                        <span className="text-[10px] text-[#888] font-mono">
-                          Powered by LLM API
-                        </span>
+                        <button
+                          onClick={handleCopyAiAnalysis}
+                          className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border bg-white dark:bg-[#1e202c] border-[#d8d0bf] dark:border-[#35384a] text-[#555] dark:text-[#ccc] hover:border-[#8d271c] transition"
+                        >
+                          {copiedAi ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedAi ? '已複製' : '複製斷語'}</span>
+                        </button>
                       </div>
-                      <div className="text-xs text-[#332f2b] dark:text-[#ddd] whitespace-pre-wrap leading-relaxed font-sans">
+
+                      <div className="text-xs sm:text-sm leading-relaxed text-[#3c3732] dark:text-[#d5d0c5] whitespace-pre-line font-serif space-y-2">
                         {aiAnalysis}
                       </div>
+                    </div>
+                  )}
+
+                  {/* AI Error Alert */}
+                  {aiError && (
+                    <div className="p-4 rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 text-xs flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4 shrink-0" />
+                        <span>{aiError}</span>
+                      </div>
+                      <button
+                        onClick={onOpenAISettings}
+                        className="px-2.5 py-1 rounded bg-rose-600 text-white font-bold hover:bg-rose-700 transition"
+                      >
+                        前往 AI 設定
+                      </button>
                     </div>
                   )}
 
@@ -478,153 +815,89 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: 歷史占卜紀錄 */}
+          {/* TAB 2: 歷史占卜問事簿 */}
           {activeTab === 'history' && (
             <div className="space-y-4">
-              
-              {/* Search & Actions Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-[#1a1b24] border border-[#ded5c3] dark:border-[#2c2e3c]">
-                <div className="flex items-center gap-2 flex-1 max-w-sm">
-                  <Search className="w-4 h-4 text-[#888]" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="搜尋問題關鍵字、類別或結論..."
-                    className="w-full text-xs outline-none bg-transparent text-[#222] dark:text-[#eee]"
+                    placeholder="搜尋歷史占卜問事關鍵字或分類..."
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border text-xs outline-none
+                      bg-white dark:bg-[#1a1b24] border-[#d8d0bf] dark:border-[#2f3140] text-[#222] dark:text-[#eee]"
                   />
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#777]">共 {historyRecords.length} 筆占卜</span>
-                  {historyRecords.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleClearAllHistory}
-                      className="px-2.5 py-1 text-xs rounded border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>清空全部</span>
-                    </button>
-                  )}
-                </div>
+                {historyRecords.length > 0 && (
+                  <button
+                    onClick={handleClearAllHistory}
+                    className="px-3 py-2 rounded-xl border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 text-xs hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-1 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>清空歷史</span>
+                  </button>
+                )}
               </div>
 
-              {/* Records List */}
-              {(() => {
-                const filtered = historyRecords.filter(r => {
-                  if (!searchQuery.trim()) return true;
-                  const q = searchQuery.toLowerCase();
-                  return (
-                    r.question.toLowerCase().includes(q) ||
-                    r.category.toLowerCase().includes(q) ||
-                    r.verdict.toLowerCase().includes(q)
-                  );
-                });
-
-                if (filtered.length === 0) {
-                  return (
-                    <div className="p-12 text-center border rounded-2xl border-dashed border-[#d8d0be] dark:border-[#333544] bg-white/50 dark:bg-[#161720]/50 space-y-2">
-                      <History className="w-8 h-8 text-[#8d271c]/50 dark:text-[#df756b]/50 mx-auto" />
-                      <div className="font-bold text-sm text-[#444] dark:text-[#ccc]">
-                        {searchQuery ? '查無符合條件的占卜紀錄' : '尚無歷史占卜紀錄'}
-                      </div>
-                      <p className="text-xs text-[#888]">
-                        在「起卦問事」分頁提出問題並排演後，系統將自動永久保存所有卦象、應期及 AI 宗師報告。
-                      </p>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div className="space-y-3">
-                    {filtered.map(rec => (
+              {historyRecords.length === 0 ? (
+                <div className="py-16 text-center text-xs text-[#888] space-y-2">
+                  <Compass className="w-8 h-8 mx-auto opacity-30" />
+                  <p>尚無任何占卜紀錄。前往【起卦問事】立即體驗大衍神卦！</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {historyRecords
+                    .filter(r => !searchQuery.trim() || r.question.includes(searchQuery) || r.category.includes(searchQuery) || r.hexagramName?.includes(searchQuery))
+                    .map(rec => (
                       <div
                         key={rec.id}
-                        className="p-4 rounded-xl border bg-white dark:bg-[#1a1b24] border-[#ded5c3] dark:border-[#2c2e3c] hover:border-[#8d271c] dark:hover:border-[#df756b] transition shadow-2xs space-y-2.5"
+                        onClick={() => handleSelectHistoryRecord(rec)}
+                        className="p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3
+                          bg-white dark:bg-[#1a1b24] hover:bg-[#faf7ee] dark:hover:bg-[#20222f] border-[#ded5c5] dark:border-[#2c2e3c]"
                       >
-                        {/* Top row */}
-                        <div className="flex items-center justify-between">
+                        <div className="min-w-0 space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#8d271c] text-white">
-                              {rec.category}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold
                               ${['大吉', '吉'].includes(rec.outcomeGrade) ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : ''}
                               ${['小吉', '平'].includes(rec.outcomeGrade) ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' : ''}
-                              ${['小凶', '凶', '大凶'].includes(rec.outcomeGrade) ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' : ''}`}
-                            >
-                              {rec.outcomeGrade} ({rec.score}分)
+                              ${['小凶', '凶', '大凶'].includes(rec.outcomeGrade) ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' : ''}`}>
+                              {rec.outcomeGrade}
                             </span>
-                            <span className="text-[11px] text-[#888] font-mono">
-                              {rec.createdAt || rec.castTime}
+                            <span className="text-xs font-bold text-[#8d271c] dark:text-[#ef5350]">
+                              【{rec.category}】
+                            </span>
+                            {rec.hexagramName && (
+                              <span className="text-xs font-serif font-bold text-[#2a5d7c] dark:text-[#64b5f6]">
+                                {rec.hexagramSymbol} {rec.hexagramName}
+                              </span>
+                            )}
+                            <span className="text-xs text-[#777] font-mono">
+                              {rec.createdAt}
                             </span>
                           </div>
-
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleSelectHistoryRecord(rec)}
-                              className="px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1
-                                bg-[#f6f2e8] dark:bg-[#202330] hover:bg-[#ede3d1] dark:hover:bg-[#2a2e40] text-[#8d271c] dark:text-[#df756b]"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>檢視卦象與斷語</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={e => handleDeleteRecord(rec.id, e)}
-                              className="p-1 rounded text-gray-400 hover:text-red-600 transition"
-                              title="刪除此筆占卜紀錄"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                          <p className="text-xs font-medium text-[#222] dark:text-[#eee] truncate">
+                            {rec.question}
+                          </p>
                         </div>
 
-                        {/* Question title */}
-                        <div className="text-sm font-bold text-[#222] dark:text-[#eee]">
-                          問：{rec.question}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={(e) => handleDeleteRecord(rec.id, e)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                            title="刪除此紀錄"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-
-                        {/* Summary info */}
-                        <div className="text-xs text-[#666] dark:text-[#aaa] flex flex-wrap items-center gap-3">
-                          <div>用神宮位：<b className="text-[#8d271c] dark:text-[#df756b]">{rec.targetPalaceName}宮</b></div>
-                          <div>沖照對宮：<b>{rec.oppositePalaceName}宮</b></div>
-                          <div>星曜：{rec.majorStars.map(s => s.name).join('、') || '空宮借照'}</div>
-                          {rec.aiAnalysis && (
-                            <span className="text-[10px] px-1.5 py-0.2 rounded font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
-                              ✦ 已含 AI 宗師詳批
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Brief Verdict preview */}
-                        <div className="text-xs p-2 rounded bg-[#faf7ef] dark:bg-[#14151b] border border-[#e8dfcf] dark:border-[#272935] text-[#444] dark:text-[#ccc]">
-                          {rec.verdict}
-                        </div>
-
                       </div>
                     ))}
-                  </div>
-                );
-              })()}
-
+                </div>
+              )}
             </div>
           )}
 
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-3 border-t flex justify-between items-center text-xs text-[#777]
-          bg-[#f6f2e8] dark:bg-[#1c1e27] border-[#e2d9c8] dark:border-[#2b2d3b]">
-          <span>紫微一事一占：心誠則靈，以正心正念化解煞忌。</span>
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 rounded-lg border border-[#cfc6b4] text-[#666]"
-          >
-            關閉
-          </button>
         </div>
 
       </div>

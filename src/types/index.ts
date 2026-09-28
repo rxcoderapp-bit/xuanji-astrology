@@ -178,7 +178,22 @@ export type DivinationCategory =
   | '訴訟是非' 
   | '重大抉擇';
 
-export type DivinationMethod = 'horary' | 'numbers';
+export type DivinationMethod = 'horary' | 'numbers' | 'coins';
+
+export interface TrigramInfo {
+  name: string;      // 乾、坤、震、巽、坎、離、艮、兌
+  symbol: string;    // ☰, ☷, ☳, ☴, ☵, ☲, ☶, ☱
+  element: string;   // 金、木、水、火、土
+  nature: string;    // 天、地、雷、風、水、火、山、澤
+}
+
+export type HexagramLineType = 'yang' | 'yin' | 'moving_yang' | 'moving_yin';
+
+export interface DivinationTimingPhases {
+  germination: string; // 萌芽發端期 (近期徵兆與初現動向)
+  climax: string;      // 激化轉折期 (衝突高潮與關鍵變數)
+  resolution: string;  // 定局結算期 (終局水落石出之農曆月日)
+}
 
 export interface DivinationResult {
   question: string;
@@ -186,6 +201,7 @@ export interface DivinationResult {
   castTime: string;
   method: DivinationMethod;
   numbers?: [number, number, number];
+  coinsTosses?: number[][]; // 6 rounds of 3 coin values [2,3,2...]
   targetPalaceIndex: number;
   targetPalaceName: string;
   oppositePalaceName: string;
@@ -198,6 +214,18 @@ export interface DivinationResult {
   detailedAnalysis: string; // 詳析
   actionPlan: string; // 錦囊妙計
   timingWindow: string; // 應期預測
+  // ===== 易經 64 卦 ✕ 紫微星卦合參 (升級屬性) =====
+  hexagramName: string;            // 卦名 (如: 地天泰、火天大有、水火既濟)
+  hexagramSymbol: string;          // 卦畫符號 (如: ䷊, ䷍)
+  upperTrigram: TrigramInfo;       // 上卦 (外卦)
+  lowerTrigram: TrigramInfo;       // 下卦 (內卦)
+  hexagramLines: HexagramLineType[]; // 六爻由初至上 (index 0 ~ 5)
+  movingLineIndex: number;         // 動爻數 (1 ~ 6，0 為無動爻靜卦)
+  hexagramJudgment: string;        // 卦辭與象傳
+  movingLineText: string;          // 動爻爻辭斷語
+  starHexagramResonance: string;   // 星卦合參深批
+  timingPhases: DivinationTimingPhases; // 三階動態應期
+  classicalAphorisms: string[];    // 古籍神課原典引證
 }
 
 export interface DivinationRecord extends DivinationResult {

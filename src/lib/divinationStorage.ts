@@ -25,13 +25,31 @@ const DEFAULT_PRESET_DIVINATIONS: DivinationRecord[] = [
     sihuaImpact: ['用神逢化祿，合作利益豐厚', '魁鉞貴人入照，得有力長官支援'],
     outcomeGrade: '大吉',
     score: 82,
-    verdict: '【乾坤定調：亨通吉兆】此局得府相朝垣之吉，外部合作夥伴具備高度信用與專業壁壘。',
+    verdict: '【天火同人 · 亨通吉兆】此局得府相朝垣之吉，外部合作夥伴具備高度信用與專業壁壘。',
     detailedAnalysis: '用神僕役宮得天府廟旺鎮守，化祿生發財氣，天相主誠信契約。三方魁鉞相拱，代表此次合作並非普通小商務，而是具備長期格局之專案。',
     actionPlan: '1. 合約白紙黑字規範股權結構與退場機制。\n2. 充分借重對方之渠道優勢，自身專注技術研發。\n3. 進展宜快不宜遲，立冬前夕完成簽署最為妥貼。',
     timingWindow: '應期在農曆十月至十二月（亥子之月）見分曉。',
+    hexagramName: '天火同人',
+    hexagramSymbol: '䷌',
+    upperTrigram: { name: '乾', symbol: '☰', element: '金', nature: '天' },
+    lowerTrigram: { name: '離', symbol: '☲', element: '火', nature: '火' },
+    hexagramLines: ['yang', 'yin', 'yang', 'yang', 'yang', 'moving_yang'],
+    movingLineIndex: 6,
+    hexagramJudgment: '同人于野，亨。利涉大川，利君子貞。天與火，同人；君子以類族辨物。',
+    movingLineText: '【上九：同人于郊，無悔】：合作意向廣泛，志在長遠，雖在邊緣亦無過咎。',
+    starHexagramResonance: '【星卦合一】：僕役宮天府天相祿會，逢天火同人卦，象徵與志同道合者共謀大業，上下同心無往不利。',
+    timingPhases: {
+      germination: '【萌芽發端期】近期 7 至 14 天內，雙方初步意向書簽署。',
+      climax: '【激化轉折期】秋末深秋之際，股權與出資條款細節交鋒落定。',
+      resolution: '【定局結算期】鎖定【農曆十月亥月】，正式敲定簽約合作！'
+    },
+    classicalAphorisms: [
+      '《易經·大象傳》：天與火，同人；君子以類族辨物。',
+      '《太微紫微賦》：府相朝垣，食祿萬鍾；貴人相助，百事亨通。'
+    ],
     aiAnalysis: `【AI 宗師斷卦錦囊報告】
 一、乾坤定調：
-所問之合夥投資，卦象呈「君臣慶會、府相生財」之大吉格局。合作方具備雄厚資金與資源背景，誠信度高。
+所問之合夥投資，卦象呈「天火同人、府相生財」之大吉格局。合作方具備雄厚資金與資源背景，誠信度高。
 
 二、星象玄機剖析：
 用神僕役坐天府化祿，為聚庫之象；對宮兄弟宮氣脈相通，意味著合夥人能為你帶來實質的現金流與市場突破。唯獨需留意文書細節，切忌口頭承諾。

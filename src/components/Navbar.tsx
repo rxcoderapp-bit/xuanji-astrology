@@ -1,9 +1,10 @@
 import React from 'react';
-import { Moon, Sun, Calendar, FolderOpen, Compass, Sparkles, Cloud, ArrowUpCircle, BookOpen } from 'lucide-react';
+import { Moon, Sun, Calendar, FolderOpen, Compass, Sparkles, Cloud, ArrowUpCircle, BookOpen, Eye } from 'lucide-react';
 import type { BirthInput } from '../types';
 import type { User } from 'firebase/auth';
 import type { SyncStatus } from '../lib/cloudSync';
 import { forceClearCacheAndReload } from '../lib/pwaService';
+import { useVisitorStats } from '../lib/visitorTracker';
 
 interface NavbarProps {
   darkMode: boolean;
@@ -38,6 +39,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   birthInput,
   fiveElementsClass
 }) => {
+  const visitorStats = useVisitorStats();
+
   const handleVersionClick = () => {
     if (isUpdateAvailable && onApplyUpdate) {
       onApplyUpdate();
@@ -87,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 bg-[#f1ebe0] text-[#78261e] border-[#d9ceb9] dark:bg-[#201d1c] dark:text-[#df756b] dark:border-[#422d2a]">
                 中州三合 · 欽天四化 · 命例庫
               </span>
-              {/* Version & PWA Badge (Click to Bust Cache) */}
+              {/* Version & PWA Badge */}
               <button
                 onClick={handleVersionClick}
                 className={`hidden md:inline-flex text-[10px] font-mono px-1.5 py-0.5 rounded border transition cursor-pointer ${
@@ -98,6 +101,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title={isUpdateAvailable ? '有新版本可更新！點擊立即套用' : 'PWA v1.3.2 (點擊可強制清除快取並重整)'}
               >
                 {isUpdateAvailable ? '✨ 新版本就緒' : 'v1.3.2 PWA'}
+              </button>
+              {/* Visitor Counter Pill */}
+              <button
+                onClick={() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }}
+                className="hidden xl:inline-flex items-center gap-1 text-[11px] font-sans px-2 py-0.5 rounded-full border transition cursor-pointer
+                  bg-[#f3eee3] dark:bg-[#1a1b24] text-[#635a4d] dark:text-[#a8a397] border-[#ddd4c2] dark:border-[#2b2d3c] hover:border-[#8d271c]"
+                title={`全網累計緣訪：${visitorStats.totalVisits.toLocaleString()} 次 | 今日：${visitorStats.todayVisits} 位 | 在線：${visitorStats.onlineUsers} 人 (點擊前往頁尾查看詳情)`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <Eye className="w-3 h-3 text-[#8d271c] dark:text-[#ef5350]" />
+                <span className="font-mono font-bold text-[#8d271c] dark:text-[#ef5350]">
+                  {visitorStats.totalVisits.toLocaleString()}
+                </span>
+                <span className="text-[10px] opacity-75">緣訪</span>
               </button>
             </div>
             <p className="hidden md:block text-xs text-[#706a62] dark:text-[#99948c] font-sans truncate">
