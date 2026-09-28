@@ -4,9 +4,17 @@ import {
   Briefcase, DollarSign, 
   Layers, BookOpen, Clock,
   Bot, Copy, Check, Settings, AlertCircle,
-  Flame, Globe
+  Flame, Globe, Zap, Heart, ArrowRight
 } from 'lucide-react';
-import type { PalaceData, HoroscopeState, BaziData, SanFangSiZheng } from '../types';
+import type { 
+  PalaceData, 
+  HoroscopeState, 
+  BaziData, 
+  SanFangSiZheng,
+  DualTrackEnergyData,
+  TimingResonanceItem,
+  LoveMarriageAnalysis
+} from '../types';
 import { 
   generatePalaceAnalysis, 
   MAJOR_STAR_DESCRIPTIONS, 
@@ -20,7 +28,21 @@ import {
   getNatalPatternDeepReading, 
   getBaziCrossDeepReading 
 } from '../lib/deepAnalysisEngine';
-import { getStoredAISettings, callAIModel, buildFullChartPrompt } from '../lib/aiService';
+import { 
+  getStoredAISettings, 
+  callAIModel, 
+  buildFullChartPrompt,
+  buildDualTrackPrompt,
+  buildLoveMarriagePrompt
+} from '../lib/aiService';
+import { 
+  computeDualTrackEnergy, 
+  computeStarGodSynastry, 
+  computeTimingResonance 
+} from '../lib/dualTrackEngine';
+import { computeLoveMarriageTimeline } from '../lib/loveMarriageEngine';
+import { DualTrackRadar } from './DualTrackRadar';
+import { LoveMarriagePanel } from './LoveMarriagePanel';
 
 interface InterpretationStudioProps {
   selectedPalace: PalaceData;
@@ -37,6 +59,10 @@ interface InterpretationStudioProps {
   lunarDate?: string;
   laiYinIndex?: number;
   onOpenAISettings?: () => void;
+  timingResonance?: TimingResonanceItem;
+  loveMarriageAnalysis?: LoveMarriageAnalysis;
+  dualTrackEnergy?: DualTrackEnergyData;
+  onSelectYear?: (year: number) => void;
 }
 
 export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
@@ -53,10 +79,14 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
   solarDate,
   lunarDate,
   laiYinIndex = 0,
-  onOpenAISettings
+  onOpenAISettings,
+  timingResonance,
+  loveMarriageAnalysis,
+  dualTrackEnergy,
+  onSelectYear
 }) => {
-  const [activeTab, setActiveTab] = useState<'palace' | 'horoscope' | 'natal' | 'bazi' | 'ai'>('palace');
-  const [aiScope, setAiScope] = useState<'full' | 'palace'>('full');
+  const [activeTab, setActiveTab] = useState<'palace' | 'horoscope' | 'dualTrack' | 'loveMarriage' | 'natal' | 'bazi' | 'ai'>('palace');
+  const [aiScope, setAiScope] = useState<'full' | 'palace' | 'dualTrack' | 'loveMarriage'>('full');
   const [aiResult, setAiResult] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -90,6 +120,31 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
     );
   }, [selectedPalace, allPalaces, sanFang, horoscope, bazi, laiYinIndex]);
 
+  // 雙軌合參動態五行能量
+  const activeEnergy = useMemo(() => {
+    if (dualTrackEnergy) return dualTrackEnergy;
+    const dStemBranch = horoscope.decadalInfo ? `${horoscope.decadalInfo.stem}${horoscope.decadalInfo.branch}` : undefined;
+    const yStemBranch = horoscope.yearlyInfo ? `${horoscope.yearlyInfo.stem}${horoscope.yearlyInfo.branch}` : undefined;
+    return computeDualTrackEnergy(bazi, dStemBranch, yStemBranch);
+  }, [dualTrackEnergy, bazi, horoscope]);
+
+  // 歲運雙軌吉凶共振
+  const activeResonance = useMemo(() => {
+    if (timingResonance) return timingResonance;
+    return computeTimingResonance(horoscope, bazi, allPalaces);
+  }, [timingResonance, horoscope, bazi, allPalaces]);
+
+  // 太微緣局婚戀分析
+  const activeLoveAnalysis = useMemo(() => {
+    if (loveMarriageAnalysis) return loveMarriageAnalysis;
+    return computeLoveMarriageTimeline(bazi, allPalaces, horoscope);
+  }, [loveMarriageAnalysis, bazi, allPalaces, horoscope]);
+
+  // 星神同頻矩陣
+  const starGodSynastry = useMemo(() => {
+    return computeStarGodSynastry(allPalaces, bazi);
+  }, [allPalaces, bazi]);
+
   // AI Prompt & Call Handlers
   const handleGenerateAIReading = async () => {
     const aiConfig = getStoredAISettings();
@@ -116,6 +171,22 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
           fiveElementsClass,
           soul,
           body,
+          bazi,
+          allPalaces,
+          horoscope
+        );
+      } else if (aiScope === 'dualTrack') {
+        promptText = buildDualTrackPrompt(
+          name || '命主',
+          gender || '男',
+          bazi,
+          allPalaces,
+          horoscope
+        );
+      } else if (aiScope === 'loveMarriage') {
+        promptText = buildLoveMarriagePrompt(
+          name || '命主',
+          gender || '男',
           bazi,
           allPalaces,
           horoscope
@@ -182,28 +253,36 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         </span>
       </div>
 
-      {/* Navigation Tabs (5-column responsive grid: never cuts off or overflows on mobile) */}
-      <div className="grid grid-cols-5 border-b text-[11px] sm:text-xs font-bold
-        bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733] select-none">
+      {/* Navigation Tabs (Smooth scroll on small screens, neatly arranged on desktop) */}
+      <div className="flex items-center overflow-x-auto scrollbar-none border-b text-[11px] sm:text-xs font-bold
+        bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733] select-none px-1">
         {[
           { id: 'palace', label: '選宮精批', fullLabel: '【選宮精批】' },
           { id: 'horoscope', label: '時運走勢', fullLabel: '【時運走勢】' },
+          { id: 'dualTrack', label: '⚡雙軌合參', fullLabel: '⚡雙軌合參' },
+          { id: 'loveMarriage', label: '💖太微緣局', fullLabel: '💖太微緣局' },
           { id: 'natal', label: '原局格局', fullLabel: '【原局格局】' },
           { id: 'bazi', label: '八字印證', fullLabel: '【八字印證】' },
           { id: 'ai', label: '✦ AI精批', fullLabel: '✦ AI大師精批' },
         ].map(tab => {
           const isActive = activeTab === tab.id;
           const isAI = tab.id === 'ai';
+          const isDualTrack = tab.id === 'dualTrack';
+          const isLove = tab.id === 'loveMarriage';
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`py-2 sm:py-2.5 px-0.5 sm:px-2 transition border-b-2 text-center flex items-center justify-center
+              className={`py-2 sm:py-2.5 px-2 sm:px-2.5 whitespace-nowrap transition border-b-2 text-center flex items-center justify-center shrink-0
                 ${isActive
                   ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#16171f] font-black'
                   : isAI
                     ? 'border-transparent text-[#96551b] dark:text-[#f59e0b] hover:text-[#8d271c] font-bold'
-                    : 'border-transparent text-[#666055] dark:text-[#a09b91] hover:text-[#222] dark:hover:text-white'}`}
+                    : isLove
+                      ? 'border-transparent text-[#be123c] dark:text-[#fb7185] hover:text-[#9f1239] font-bold'
+                      : isDualTrack
+                        ? 'border-transparent text-[#854d0e] dark:text-[#facc15] hover:text-[#8d271c] font-bold'
+                        : 'border-transparent text-[#666055] dark:text-[#a09b91] hover:text-[#222] dark:hover:text-white'}`}
             >
               <span className="sm:hidden">{tab.label}</span>
               <span className="hidden sm:inline">{tab.fullLabel}</span>
@@ -514,6 +593,225 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
           </div>
         )}
 
+        {/* ==================== TAB: 雙軌合參 (正統天星子平合參) ==================== */}
+        {activeTab === 'dualTrack' && (
+          <div className="space-y-5">
+            {/* Header intro card */}
+            <div className="p-4 rounded-xl bg-gradient-to-r from-[#fbf8f2] via-[#faf4ea] to-[#f7eee1] dark:from-[#1b1c25] dark:via-[#191921] dark:to-[#1d1a22] border border-[#e4d8c3] dark:border-[#383344] space-y-2.5">
+              <div className="flex items-center justify-between border-b pb-2 border-[#ecdfcc] dark:border-[#2d2938]">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-[#8d271c] text-white">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm sm:text-base text-[#8d271c] dark:text-[#df756b]">
+                      天樞雙軌合參智能引擎
+                    </h3>
+                    <p className="text-[11px] text-[#706456] dark:text-[#a0a8be]">
+                      正統五術體用一元 · 子平八字天命底色 ✕ 紫微斗數十二宮垂象
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#f2e9dc] dark:bg-[#252838] text-[#8d271c] dark:text-[#df756b] font-bold">
+                  星神同頻
+                </span>
+              </div>
+              <p className="text-xs text-[#52493d] dark:text-[#cfc5b6] leading-relaxed text-justify">
+                子平八字辨五行衰旺、定用神喜忌、明氣候寒暖，為「天命之體」；紫微斗數排十二宮垣、審諸星得失、觀四化飛伏，為「世俗之用」。體用互證，方能知命造運、明辨進退之機。
+              </p>
+            </div>
+
+            {/* 1. 歲運雙軌吉凶共振探測 (Timing Resonance) */}
+            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b] flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" />
+                  當前歲運雙軌吉凶共振 ({activeResonance.year}年 · {activeResonance.yearlyStemBranch}歲君)
+                </h3>
+                <span className={`px-2 py-0.5 rounded text-xs font-bold border ${
+                  activeResonance.score >= 50
+                    ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
+                    : activeResonance.score <= -30
+                    ? 'bg-[#fff1f2] dark:bg-[#311317] text-[#e11d48] dark:text-[#fb7185] border-[#fecdd3] dark:border-[#881337]'
+                    : 'bg-[#fefce8] dark:bg-[#2b2713] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
+                }`}>
+                  {activeResonance.grade} ({activeResonance.score > 0 ? `+${activeResonance.score}` : activeResonance.score}分)
+                </span>
+              </div>
+
+              {/* Triggers Breakdown */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#1f202b] border border-[#e8dfcf] dark:border-[#2c2e3f] space-y-1">
+                  <span className="font-bold text-[#b85d18] dark:text-[#e58a44] block">✦ 八字五行歲運引動：</span>
+                  <div className="text-[#443e37] dark:text-[#c4beb4] text-[11px]">
+                    {activeResonance.baziTriggers.length > 0 
+                      ? activeResonance.baziTriggers.map((t, idx) => <div key={idx}>• {t}</div>) 
+                      : '• 五行歲運進氣平和'}
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#1f202b] border border-[#e8dfcf] dark:border-[#2c2e3f] space-y-1">
+                  <span className="font-bold text-[#2a5d7c] dark:text-[#64b5f6] block">✦ 紫微流年星曜化吉化忌：</span>
+                  <div className="text-[#443e37] dark:text-[#c4beb4] text-[11px]">
+                    {activeResonance.keyStars.length > 0 
+                      ? activeResonance.keyStars.map((s, idx) => <span key={idx} className="mr-2 inline-block">• {s}</span>) 
+                      : '• 流年四化常規運轉'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Verdict & Strategy */}
+              <div className="space-y-2 pt-1 text-xs">
+                <div>
+                  <b className="text-[#8d271c] dark:text-[#df756b]">【宗師共振斷語】：</b>
+                  <span className="text-[#333] dark:text-[#ddd]">{activeResonance.verdict}</span>
+                </div>
+                <div>
+                  <b className="text-[#1b7a4f] dark:text-[#4ade80]">【趨吉避凶現代心法】：</b>
+                  <span className="text-[#333] dark:text-[#ddd]">{activeResonance.strategicAdvice}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. 五行全息動態能量分佈 (SVG Radar) */}
+            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                <h3 className="font-bold text-sm text-[#1b7a4f] dark:text-[#4ade80] flex items-center gap-1.5">
+                  <Flame className="w-4 h-4" />
+                  五行全息動態能量分佈與喜忌神
+                </h3>
+                <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
+                  日主【{activeEnergy.dayMaster}】({activeEnergy.dayMasterStrength})
+                </span>
+              </div>
+
+              {/* Embed Pure SVG Radar */}
+              <DualTrackRadar energy={activeEnergy} />
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#f0e8db] dark:border-[#262835] text-xs">
+                <div className="p-2.5 rounded-lg bg-[#f0fdf4] dark:bg-[#14261b] border border-[#bbf7d0] dark:border-[#1e462c]">
+                  <span className="font-bold text-[#15803d] dark:text-[#4ade80] block mb-0.5">✦ 命中喜用五行：</span>
+                  <span className="text-xs font-semibold text-[#166534] dark:text-[#86efac]">
+                    {activeEnergy.favorableElements.join('、') || '平和流通'}
+                  </span>
+                  <p className="text-[10px] text-[#4b7a5a] dark:text-[#80ad91] mt-0.5">逢此五行生旺歲運，百事順遂亨通</p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#fff1f2] dark:bg-[#2b1417] border border-[#fecdd3] dark:border-[#4c1d24]">
+                  <span className="font-bold text-[#be123c] dark:text-[#fb7185] block mb-0.5">✦ 命中忌仇五行：</span>
+                  <span className="text-xs font-semibold text-[#9f1239] dark:text-[#fda4af]">
+                    {activeEnergy.unfavorableElements.join('、') || '無強烈忌神'}
+                  </span>
+                  <p className="text-[10px] text-[#91505c] dark:text-[#bd7e8c] mt-0.5">逢此五行過盛歲運，宜守成謹慎避險</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. 星神同頻矩陣 (Star-God Synastry Matrix) */}
+            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                <h3 className="font-bold text-sm text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1.5">
+                  <Compass className="w-4 h-4" />
+                  星神同頻矩陣 (六大要宮互證)
+                </h3>
+                <span className="text-xs text-[#706456] dark:text-[#9e978d]">
+                  紫微主星 ✕ 八字十神
+                </span>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                {starGodSynastry.map((item, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-[#faf7f0] dark:bg-[#1d1f2a] border border-[#e8dfce] dark:border-[#2e3142] space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-sm text-[#8d271c] dark:text-[#df756b]">【{item.palaceName}】</span>
+                        <span className="text-xs text-[#554e44] dark:text-[#b4aea4]">
+                          {item.starNames.join('、') || '吉曜拱會'}
+                        </span>
+                        {item.tenGods.length > 0 && (
+                          <span className="text-[11px] px-1.5 py-0.2 rounded bg-[#ebe4d6] dark:bg-[#282a3a] text-[#706456] dark:text-[#a0a8be]">
+                            {item.tenGods.slice(0, 2).join(' ')}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
+                        item.resonanceLevel === '天作之合'
+                          ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
+                          : item.resonanceLevel === '剛柔並濟'
+                          ? 'bg-[#eff6ff] dark:bg-[#132035] text-[#2563eb] dark:text-[#60a5fa] border-[#bfdbfe] dark:border-[#1e3a8a]'
+                          : 'bg-[#fefce8] dark:bg-[#282413] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
+                      }`}>
+                        {item.resonanceLevel} ({item.resonanceScore}分)
+                      </span>
+                    </div>
+                    <div className="font-semibold text-xs text-[#2b2723] dark:text-[#e4e0d7]">
+                      {item.title}
+                    </div>
+                    <p className="text-[11px] text-[#554e44] dark:text-[#b4aea4] leading-relaxed text-justify">
+                      {item.verdict}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. AI Deep Reading CTA Banner */}
+            <div className="p-3.5 rounded-xl border bg-gradient-to-r from-[#fbf5eb] to-[#f4ebe1] dark:from-[#211a14] dark:to-[#221c26] border-[#ecdac0] dark:border-[#423328] flex items-center justify-between gap-3">
+              <div>
+                <div className="font-bold text-xs sm:text-sm text-[#8d271c] dark:text-[#df756b]">
+                  想獲得命造專屬之「雙軌合參」萬字大師精批？
+                </div>
+                <div className="text-[11px] text-[#6d6152] dark:text-[#a89d8e]">
+                  深度推演八字十神格局與紫微十四主星的化學共振
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveTab('ai');
+                  setAiScope('dualTrack');
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#8d271c] hover:bg-[#782017] transition flex items-center gap-1 shrink-0 shadow-xs cursor-pointer"
+              >
+                <span>召喚 AI 深批</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+          </div>
+        )}
+
+        {/* ==================== TAB: 太微緣局 (正緣桃花應期) ==================== */}
+        {activeTab === 'loveMarriage' && (
+          <div className="space-y-4">
+            <LoveMarriagePanel
+              analysis={activeLoveAnalysis}
+              selectedYear={horoscope.selectedYear}
+              onSelectYear={onSelectYear}
+            />
+
+            {/* AI Deep Reading CTA Banner */}
+            <div className="p-3.5 rounded-xl border bg-gradient-to-r from-[#fff5f5] to-[#fdf2f4] dark:from-[#261517] dark:to-[#24171d] border-[#fcd5d5] dark:border-[#522930] flex items-center justify-between gap-3">
+              <div>
+                <div className="font-bold text-xs sm:text-sm text-[#e11d48] dark:text-[#fb7185]">
+                  想獲取更詳盡的「命定正緣全息畫像」與相遇機緣深批？
+                </div>
+                <div className="text-[11px] text-[#7c6367] dark:text-[#b49ea2]">
+                  深入探討伴侶性格外貌、遇見場景與經營親密關係之避坑錦囊
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveTab('ai');
+                  setAiScope('loveMarriage');
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#e11d48] hover:bg-[#be123c] transition flex items-center gap-1 shrink-0 shadow-xs cursor-pointer"
+              >
+                <span>召喚正緣 AI 深批</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ==================== TAB 3: 原局格局 (深度千字解析) ==================== */}
         {activeTab === 'natal' && (
           <div className="space-y-6">
@@ -659,7 +957,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               );
             })()}
 
-            {/* Scope Selection */}
+            {/* Scope Selection (4 options: Full, Palace, DualTrack, LoveMarriage) */}
             <div className="p-3 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-2">
               <label className="block text-xs font-bold text-[#554e44] dark:text-[#b4aea4]">
                 精批範疇選擇：
@@ -668,7 +966,7 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
                 <button
                   type="button"
                   onClick={() => setAiScope('full')}
-                  className={`p-2.5 rounded-lg border text-center transition font-bold
+                  className={`p-2.5 rounded-lg border text-center transition font-bold cursor-pointer
                     ${aiScope === 'full'
                       ? 'bg-[#8d271c] text-white border-[#701e15] shadow-xs'
                       : 'bg-[#faf7f0] dark:bg-[#14151b] border-[#ded4c1] dark:border-[#2b2d3a] text-[#555] dark:text-[#aaa]'}`}
@@ -680,13 +978,43 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
                 <button
                   type="button"
                   onClick={() => setAiScope('palace')}
-                  className={`p-2.5 rounded-lg border text-center transition font-bold
+                  className={`p-2.5 rounded-lg border text-center transition font-bold cursor-pointer
                     ${aiScope === 'palace'
                       ? 'bg-[#8d271c] text-white border-[#701e15] shadow-xs'
                       : 'bg-[#faf7f0] dark:bg-[#14151b] border-[#ded4c1] dark:border-[#2b2d3a] text-[#555] dark:text-[#aaa]'}`}
                 >
                   <div>當前【{selectedPalace.name}】精解</div>
                   <div className="text-[10px] font-normal opacity-85 mt-0.5">星煞交疊與現代對策</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAiScope('dualTrack')}
+                  className={`p-2.5 rounded-lg border text-center transition font-bold cursor-pointer
+                    ${aiScope === 'dualTrack'
+                      ? 'bg-[#8d271c] text-white border-[#701e15] shadow-xs'
+                      : 'bg-[#faf7f0] dark:bg-[#14151b] border-[#ded4c1] dark:border-[#2b2d3a] text-[#555] dark:text-[#aaa]'}`}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>雙軌合參專題深批</span>
+                  </div>
+                  <div className="text-[10px] font-normal opacity-85 mt-0.5">八字用神 ✕ 紫微星曜互證</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAiScope('loveMarriage')}
+                  className={`p-2.5 rounded-lg border text-center transition font-bold cursor-pointer
+                    ${aiScope === 'loveMarriage'
+                      ? 'bg-[#e11d48] text-white border-[#9f1239] shadow-xs'
+                      : 'bg-[#faf7f0] dark:bg-[#14151b] border-[#ded4c1] dark:border-[#2b2d3a] text-[#555] dark:text-[#aaa]'}`}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <Heart className="w-3.5 h-3.5 fill-current" />
+                    <span>太微緣局正緣桃花</span>
+                  </div>
+                  <div className="text-[10px] font-normal opacity-85 mt-0.5">命定伴侶 ✕ 婚戀十年應期</div>
                 </button>
               </div>
             </div>

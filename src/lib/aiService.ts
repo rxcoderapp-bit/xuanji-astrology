@@ -273,10 +273,67 @@ ${horoscope.yearlyInfo?.mutagens?.map(m => `- 流年化${m.mutagen}: ${m.star}`)
 請按以下結構撰寫一篇約 1,000 ~ 1,500 字的深度專業命理評批：
 一、命格核心主軸與先天心性（命宮、身宮、來因宮定調）
 二、事業成就天花板與財富資產格局（官祿宮、財帛宮、田宅宮聯動）
-三、姻緣感情與家庭親密關係透視（夫妻宮、福德宮特質與關鍵課題）
+三、姻緣感情與家庭親密關係透視（夫妻宮、福德宮特質與正緣桃花應期）
 四、當前大限 (10年) 攻守戰略與轉折點
 五、當前流年歲君吉凶預警（祿入何處、忌沖何處、重大防範）
 六、現代處世哲學與知命造運具體錦囊妙計`;
+}
+
+// Generate Dual-Track (雙軌合參) Specialized AI Prompt
+export function buildDualTrackPrompt(
+  name: string,
+  gender: string,
+  bazi: BaziData,
+  palaces: PalaceData[],
+  horoscope: HoroscopeState
+): string {
+  const mingGong = palaces.find(p => p.name === '命宮') || palaces[0];
+  const mgStars = mingGong.majorStars.map(s => s.name).join('、') || '無主星';
+  const spousePalace = palaces.find(p => p.name === '夫妻') || palaces[2];
+  const spStars = spousePalace.majorStars.map(s => s.name).join('、') || '無主星';
+
+  return `請身為精通天星斗數與子平八字之古典五術大宗師，為以下命造進行「天命體用 · 雙軌合參」深度破譯：
+
+【命主檔案】
+- 命造姓名：${name} (${gender})
+- 八字四柱：${bazi.year.stem}${bazi.year.branch}年 / ${bazi.month.stem}${bazi.month.branch}月 / ${bazi.day.stem}${bazi.day.branch}日 / ${bazi.hour.stem}${bazi.hour.branch}時
+- 日主天元：${bazi.dayMaster} (${bazi.dayMasterStrength})
+- 紫微命宮：${mingGong.heavenlyStem}${mingGong.earthlyBranch}宮坐【${mgStars}】
+- 斗數夫妻宮：坐【${spStars}】
+- 當前歲運：${horoscope.selectedYear}年 (${horoscope.yearlyInfo?.stem}${horoscope.yearlyInfo?.branch}歲君)
+
+請依循正統雙軌合參原理，撰寫一份專題評析報告：
+1. 【體用互證篇】：八字格局（定先天器局高低與五行調候底色）✕ 紫微命身宮（定外顯性格手段與人事垂象）之化學反應。
+2. 【十神星宿同頻篇】：八字透出之核心十神（官煞/財星/食傷/印綬）如何與紫微十四主星同氣相求？
+3. 【歲運雙軌共振篇】：當前流年干支氣象 ✕ 流年四化飛星，兩者共振引發何種重大機遇或潛在暗礁？
+4. 【五行平衡與知命轉運錦囊】：如何依命中五行消長與星曜吉凶，在生活、心態與事業策略上達到陰陽平衡？`;
+}
+
+// Generate Love & Marriage (太微緣局) Specialized AI Prompt
+export function buildLoveMarriagePrompt(
+  name: string,
+  gender: string,
+  bazi: BaziData,
+  palaces: PalaceData[],
+  horoscope: HoroscopeState
+): string {
+  const spousePalace = palaces.find(p => p.name === '夫妻') || palaces[2];
+  const spStars = spousePalace.majorStars.map(s => `${s.name}${s.mutagen ? `[化${s.mutagen}]` : ''}`).join('、') || '借對宮星曜';
+  const spMinors = spousePalace.minorStars.map(s => s.name).join(' ');
+
+  return `請身為太微緣局婚戀命理大宗師，為以下命造進行「宿命正緣與桃花運勢」專題深批：
+
+【求測命造】
+- 姓名：${name} (${gender === '男' ? '乾造' : '坤造'})
+- 八字日柱（夫妻宮）：${bazi.day.stem}${bazi.day.branch} (日元${bazi.dayMaster}，夫/妻宮坐${bazi.day.branchShiShen})
+- 紫微夫妻宮：坐落${spousePalace.heavenlyStem}${spousePalace.earthlyBranch}，主星【${spStars}】，輔煞【${spMinors}】
+- 當前流年：${horoscope.selectedYear}年 (${horoscope.yearlyInfo?.stem}${horoscope.yearlyInfo?.branch}歲君)
+
+請從以下四個維度輸出深入淺出、富有洞見且溫暖的緣分報告：
+1. 【宿命正緣畫像】：伴侶的性格脾氣、外貌氣場、做事風格與可能從事的事業領域。
+2. 【相遇機緣與時空場景】：命主通常在何種生活場景、環境或機緣下最容易遇見正緣良配？
+3. 【未來數年婚戀動態】：何時為「宿命正緣大定」之黃金婚期？何時為「心動桃花盛開」之機緣？何時需防感情磨合或爛桃花？
+4. 【恩愛長久知命心法】：基於命造夫妻宮與八字五行結構，給予 3 條經營親密關係、跨越情感磨合期的落地長久心法。`;
 }
 
 // Generate Divination AI Prompt

@@ -6,6 +6,8 @@ import {
   getSanFangSiZheng 
 } from './lib/iztroEngine';
 import { computeBazi } from './lib/baziEngine';
+import { computeDualTrackEnergy, computeTimingResonance } from './lib/dualTrackEngine';
+import { computeLoveMarriageTimeline } from './lib/loveMarriageEngine';
 import { Navbar } from './components/Navbar';
 import { QuickBirthBar } from './components/QuickBirthBar';
 import { HoroscopeTimeWheel } from './components/HoroscopeTimeWheel';
@@ -143,6 +145,23 @@ export default function App() {
   const sanFang = useMemo(() => {
     return getSanFangSiZheng(selectedPalaceIndex);
   }, [selectedPalaceIndex]);
+
+  // 雙軌合參五行全息動態能量
+  const dualTrackEnergy = useMemo(() => {
+    const dStemBranch = horoscope.decadalInfo ? `${horoscope.decadalInfo.stem}${horoscope.decadalInfo.branch}` : undefined;
+    const yStemBranch = horoscope.yearlyInfo ? `${horoscope.yearlyInfo.stem}${horoscope.yearlyInfo.branch}` : undefined;
+    return computeDualTrackEnergy(baziData, dStemBranch, yStemBranch);
+  }, [baziData, horoscope]);
+
+  // 歲運雙軌吉凶共振探測
+  const timingResonance = useMemo(() => {
+    return computeTimingResonance(horoscope, baziData, chartResult.palaces);
+  }, [horoscope, baziData, chartResult.palaces]);
+
+  // 太微緣局婚戀時間軸與伴侶全息畫像
+  const loveMarriageAnalysis = useMemo(() => {
+    return computeLoveMarriageTimeline(baziData, chartResult.palaces, horoscope);
+  }, [baziData, chartResult.palaces, horoscope]);
 
   // Horoscope Actions
   const handleSelectLayer = (layer: LayerType) => {
@@ -303,6 +322,8 @@ export default function App() {
         onSelectDay={handleSelectDay}
         onSelectHour={handleSelectHour}
         onResetToNow={handleResetToNow}
+        timingResonance={timingResonance}
+        loveFortune={loveMarriageAnalysis.currentYearFortune}
       />
 
       {/* 4. Main Workspace: 4x4 Grid Chart + Deep Interpretation Studio */}
@@ -344,6 +365,10 @@ export default function App() {
           lunarDate={chartResult.lunarDate}
           laiYinIndex={chartResult.laiYinIndex}
           onOpenAISettings={() => setIsAISettingsModalOpen(true)}
+          timingResonance={timingResonance}
+          loveMarriageAnalysis={loveMarriageAnalysis}
+          dualTrackEnergy={dualTrackEnergy}
+          onSelectYear={handleSelectYear}
         />
 
       </main>

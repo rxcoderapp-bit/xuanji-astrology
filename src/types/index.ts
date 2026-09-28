@@ -219,3 +219,84 @@ export interface AISettings {
   customBaseUrl?: string;
   temperature: number;
 }
+
+// ================== 雙軌合參 (Dual-Track Resonance) 類型 ==================
+
+export interface ElementEnergyDetail {
+  element: '木' | '火' | '土' | '金' | '水';
+  score: number;       // 絕對分值 (0 ~ 100)
+  percentage: number;  // 佔比百分比
+  status: '極旺' | '旺' | '平和' | '休囚' | '極弱';
+  characteristics: string; // 性情與臟腑對應
+}
+
+export interface DualTrackEnergyData {
+  elements: Record<'wood' | 'fire' | 'earth' | 'metal' | 'water', ElementEnergyDetail>;
+  dayMaster: string;
+  dayMasterElement: string;
+  dayMasterStrength: '極旺' | '偏旺' | '中和' | '偏弱' | '極弱';
+  favorableElements: string[];   // 喜用神 (如: 木、火)
+  unfavorableElements: string[]; // 忌仇神 (如: 金、水)
+  patternName: string;           // 先天格局 (如: 正印格、食神生財格、從旺格)
+  climateDescription: string;    // 四季氣候調候綜評
+}
+
+export interface StarGodResonanceItem {
+  palaceName: string;
+  starNames: string[];
+  tenGods: string[];
+  resonanceLevel: '天作之合' | '相輔相成' | '剛柔並濟' | '同氣互耗' | '刑剋相抗';
+  resonanceScore: number; // 0 ~ 100
+  title: string;
+  verdict: string;
+}
+
+export interface TimingResonanceItem {
+  year: number;
+  decadeStemBranch: string;
+  yearlyStemBranch: string;
+  score: number; // -100 ~ +100
+  grade: '雙軌大吉' | '順風借勢' | '外吉內虛' | '暗生機兆' | '沉潛蓄力' | '雙軌重危';
+  keyStars: string[];
+  baziTriggers: string[];
+  verdict: string;
+  strategicAdvice: string;
+}
+
+// ================== 太微緣局·正緣桃花應期 (Love & Marriage) 類型 ==================
+
+export type LoveYearType = 'true_love' | 'peach_blossom' | 'karmic_test' | 'peaceful';
+
+export interface LoveFortuneYear {
+  year: number;
+  nominalAge: number;
+  stemBranch: string;
+  score: number; // 0 ~ 100
+  type: LoveYearType;
+  badge: string; // e.g. '⭐⭐⭐⭐⭐ 宿命正緣' | '⭐⭐⭐⭐ 心動桃花' | '⚠️ 情感磨合' | '🌱 靜好相守'
+  title: string;
+  baziSigns: string[];    // e.g. ['天干逢五合 (甲己合)', '夫宮逢六合 (辰酉合)']
+  ziweiSigns: string[];   // e.g. ['流年夫妻宮天喜入度', '大限流年雙祿朝照']
+  summary: string;
+  advice: string;
+}
+
+export interface SpouseArchetype {
+  spouseStars: string[];       // 斗數夫妻宮與日支十神
+  dayBranch: string;           // 八字夫妻宮地支
+  dayBranchTenGod: string;     // 日支十神
+  personality: string;         // 性格氣質畫像
+  appearanceTraits: string;    // 外貌特徵氣場
+  careerDirection: string;     // 事業能力特點
+  meetingScenarios: string;    // 遇見正緣情境機緣
+  harmonyTips: string;         // 相處長久心法
+}
+
+export interface LoveMarriageAnalysis {
+  spouseArchetype: SpouseArchetype;
+  currentYearFortune: LoveFortuneYear;
+  timeline: LoveFortuneYear[];
+  bestYears: LoveFortuneYear[];
+  overallLoveSummary: string;
+}
+

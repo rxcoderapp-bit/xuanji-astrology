@@ -1,6 +1,5 @@
-import React from 'react';
-import { RotateCcw, Sparkles, Compass } from 'lucide-react';
-import type { HoroscopeState, LayerType } from '../types';
+import { RotateCcw, Sparkles, Compass, Heart, Zap } from 'lucide-react';
+import type { HoroscopeState, LayerType, TimingResonanceItem, LoveFortuneYear } from '../types';
 import type { DecadalHoroscope } from 'iztro/lib/data/types';
 
 interface HoroscopeTimeWheelProps {
@@ -13,6 +12,8 @@ interface HoroscopeTimeWheelProps {
   onSelectDay: (day: number) => void;
   onSelectHour: (hourIndex: number) => void;
   onResetToNow: () => void;
+  timingResonance?: TimingResonanceItem;
+  loveFortune?: LoveFortuneYear;
 }
 
 const LUNAR_MONTHS = ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '臘月'];
@@ -27,7 +28,9 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
   onSelectMonth,
   onSelectDay,
   onSelectHour,
-  onResetToNow
+  onResetToNow,
+  timingResonance,
+  loveFortune
 }) => {
   const currentDecade = decadalList[horoscope.selectedDecadeIndex];
   const startYear = currentDecade?.yearRange?.[0] || horoscope.selectedYear - 5;
@@ -262,6 +265,37 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
                   </>
                 )}
               </span>
+
+              {/* 雙軌共振與太微緣局流動標籤 */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {timingResonance && (
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                    timingResonance.score >= 50
+                      ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
+                      : timingResonance.score <= -30
+                      ? 'bg-[#fff1f2] dark:bg-[#311317] text-[#e11d48] dark:text-[#fb7185] border-[#fecdd3] dark:border-[#881337]'
+                      : 'bg-[#fefce8] dark:bg-[#2b2713] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
+                  }`} title={timingResonance.verdict}>
+                    <Zap className="w-3 h-3" />
+                    <span>雙軌共振: {timingResonance.grade} ({timingResonance.score > 0 ? `+${timingResonance.score}` : timingResonance.score})</span>
+                  </span>
+                )}
+
+                {loveFortune && (
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                    loveFortune.type === 'true_love'
+                      ? 'bg-[#fff1f2] dark:bg-[#3b1219] text-[#e11d48] dark:text-[#fb7185] border-[#fda4af] dark:border-[#881337]'
+                      : loveFortune.type === 'peach_blossom'
+                      ? 'bg-[#fff7ed] dark:bg-[#2d1b13] text-[#ea580c] dark:text-[#fb923c] border-[#fed7aa] dark:border-[#7c2d12]'
+                      : loveFortune.type === 'karmic_test'
+                      ? 'bg-[#fefce8] dark:bg-[#282413] text-[#d97706] dark:text-[#f59e0b] border-[#fde68a] dark:border-[#78350f]'
+                      : 'bg-[#f7fee7] dark:bg-[#192b13] text-[#65a30d] dark:text-[#a3e635] border-[#d9f99d] dark:border-[#365314]'
+                  }`} title={loveFortune.summary}>
+                    <Heart className="w-3 h-3 fill-current" />
+                    <span>緣局: {loveFortune.score}分 · {loveFortune.badge.split(' ')[1] || '平穩'}</span>
+                  </span>
+                )}
+              </div>
             </div>
 
           </div>
