@@ -300,3 +300,26 @@ export interface LoveMarriageAnalysis {
   overallLoveSummary: string;
 }
 
+// ================== 古籍 RAG 知識檢索與 AI Studio 類型 ==================
+
+export type ClassicalCategory = 'ziwei' | 'bazi' | 'dualTrack' | 'love' | 'health' | 'iching';
+
+export interface ClassicalCorpusItem {
+  id: string;
+  title: string;
+  category: ClassicalCategory;
+  categoryName: string;        // e.g. '紫微斗數' | '子平八字' | '雙軌合參' | '太微婚戀' | '五運中醫' | '易經術數'
+  sourceBook: string;          // e.g. 《太微紫微賦全箋》, 《滴天髓體用精解》
+  dynastyEra?: string;         // e.g. '古典正統傳承'
+  keywords: string[];          // e.g. ['武曲', '財帛宮', '化祿']
+  originalText: string;        // 古籍原文
+  vernacularMeaning: string;   // 白話深解
+  practicalGuidance: string;   // 現代落地應用錦囊
+}
+
+export interface RAGSearchResult {
+  item: ClassicalCorpusItem;
+  score: number;
+  matchedKeywords: string[];
+}
+

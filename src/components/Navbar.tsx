@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Calendar, FolderOpen, Compass, Sparkles, Cloud, ArrowUpCircle } from 'lucide-react';
+import { Moon, Sun, Calendar, FolderOpen, Compass, Sparkles, Cloud, ArrowUpCircle, BookOpen } from 'lucide-react';
 import type { BirthInput } from '../types';
 import type { User } from 'firebase/auth';
 import type { SyncStatus } from '../lib/cloudSync';
@@ -11,6 +11,7 @@ interface NavbarProps {
   onOpenBirthModal: () => void;
   onOpenDatabase?: () => void;
   onOpenDivination?: () => void;
+  onOpenKnowledgeBase?: () => void;
   onOpenAISettings?: () => void;
   onOpenCloudSync?: () => void;
   currentUser?: User | null;
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBirthModal,
   onOpenDatabase,
   onOpenDivination,
+  onOpenKnowledgeBase,
   onOpenAISettings,
   onOpenCloudSync,
   currentUser,
@@ -178,6 +180,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <FolderOpen className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">命例庫</span>
+            </button>
+          )}
+
+          {/* Classical Metaphysics Knowledge Base & AI Studio shortcut button */}
+          {onOpenKnowledgeBase && (
+            <button
+              onClick={onOpenKnowledgeBase}
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-serif font-bold transition border shadow-xs flex items-center gap-1.5
+                bg-[#234338] hover:bg-[#1a332a] text-[#ecfdf5] border-[#162e25]"
+              title="開啟 440 萬字古籍 RAG 知識智庫與大師級 AI Studio"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-[#a7f3d0]" />
+              <span className="hidden md:inline">典籍智庫</span>
             </button>
           )}
 

@@ -18,6 +18,7 @@ import { CaseDatabaseModal } from './components/CaseDatabaseModal';
 import { DivinationModal } from './components/DivinationModal';
 import { AISettingsModal } from './components/AISettingsModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
+import { KnowledgeBaseModal } from './components/KnowledgeBaseModal';
 import { saveCaseRecord } from './lib/caseStorage';
 import { registerPWA, subscribeToUpdate, applyUpdate } from './lib/pwaService';
 import { cloudSync, type SyncStatus } from './lib/cloudSync';
@@ -55,6 +56,7 @@ export default function App() {
   const [isDivinationModalOpen, setIsDivinationModalOpen] = useState(false);
   const [isAISettingsModalOpen, setIsAISettingsModalOpen] = useState(false);
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
+  const [isKnowledgeBaseModalOpen, setIsKnowledgeBaseModalOpen] = useState(false);
 
   // Cloud Sync & Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(cloudSync.currentUser);
@@ -293,6 +295,7 @@ export default function App() {
         onOpenBirthModal={() => setIsBirthModalOpen(true)}
         onOpenDatabase={() => setIsDatabaseModalOpen(true)}
         onOpenDivination={() => setIsDivinationModalOpen(true)}
+        onOpenKnowledgeBase={() => setIsKnowledgeBaseModalOpen(true)}
         onOpenAISettings={() => setIsAISettingsModalOpen(true)}
         onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
         currentUser={currentUser}
@@ -408,6 +411,18 @@ export default function App() {
       <CloudSyncModal
         isOpen={isCloudSyncModalOpen}
         onClose={() => setIsCloudSyncModalOpen(false)}
+      />
+
+      {/* 10. Classical Metaphysics Knowledge Base & AI Studio Modal */}
+      <KnowledgeBaseModal
+        isOpen={isKnowledgeBaseModalOpen}
+        onClose={() => setIsKnowledgeBaseModalOpen(false)}
+        selectedPalace={selectedPalace}
+        bazi={baziData}
+        horoscope={horoscope}
+        name={birthInput.name}
+        gender={birthInput.gender}
+        onOpenAISettings={() => setIsAISettingsModalOpen(true)}
       />
 
       {/* 10. Mobile Floating Fast-Jump between Chart Board and Interpretation Studio */}

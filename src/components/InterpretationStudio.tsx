@@ -4,7 +4,7 @@ import {
   Briefcase, DollarSign, 
   Layers, BookOpen, Clock,
   Bot, Copy, Check, Settings, AlertCircle,
-  Flame, Globe, Zap, Heart, ArrowRight
+  Flame, Globe, Zap, Heart, ArrowRight, Bookmark
 } from 'lucide-react';
 import type { 
   PalaceData, 
@@ -13,7 +13,8 @@ import type {
   SanFangSiZheng,
   DualTrackEnergyData,
   TimingResonanceItem,
-  LoveMarriageAnalysis
+  LoveMarriageAnalysis,
+  ClassicalCorpusItem
 } from '../types';
 import { 
   generatePalaceAnalysis, 
@@ -41,6 +42,7 @@ import {
   computeTimingResonance 
 } from '../lib/dualTrackEngine';
 import { computeLoveMarriageTimeline } from '../lib/loveMarriageEngine';
+import { retrieveContextForChart, buildRAGAugmentedPrompt } from '../lib/ragEngine';
 import { DualTrackRadar } from './DualTrackRadar';
 import { LoveMarriagePanel } from './LoveMarriagePanel';
 
@@ -91,6 +93,8 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [useRAG, setUseRAG] = useState(true);
+  const [retrievedCitations, setRetrievedCitations] = useState<ClassicalCorpusItem[]>([]);
 
   const [horoscopeSubTab, setHoroscopeSubTab] = useState<'yearly' | 'monthly' | 'decadal' | 'all'>('yearly');
 
@@ -216,6 +220,16 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
 2. 【吉凶實戰破譯】：煞星或化忌如何引動？吉星與祿權如何發揮？
 3. 【時運流限聯動】：在此宮位主導之大限或流年，命主將面臨何種考驗與突破？
 4. 【具體處世錦囊】：針對現代生活（職場、財務、情緒或關係）給予 3 條立竿見影的落地建議。`;
+      }
+
+      // 若啟用古籍 RAG，檢索命局相符之古籍並注入提示詞
+      if (useRAG) {
+        const ragTopic = aiScope === 'loveMarriage' ? 'love' : aiScope === 'dualTrack' ? 'dualTrack' : 'palace';
+        const citations = retrieveContextForChart(selectedPalace, bazi, horoscope, ragTopic);
+        setRetrievedCitations(citations);
+        promptText = buildRAGAugmentedPrompt(promptText, citations);
+      } else {
+        setRetrievedCitations([]);
       }
 
       const res = await callAIModel(promptText);
@@ -1019,21 +1033,70 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               </div>
             </div>
 
+            {/* RAG Knowledge Augmentation Toggle */}
+            <div className="p-3 rounded-xl border bg-gradient-to-r from-[#fbf8f0] to-[#f6efe1] dark:from-[#1b1c26] dark:to-[#1a1722] border-[#ded4bf] dark:border-[#2f2c3d] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bookmark className="w-4 h-4 text-[#8d271c] dark:text-[#df756b]" />
+                <div>
+                  <div className="font-bold text-xs text-[#2b2723] dark:text-[#ede9e2]">
+                    古籍 RAG 原典智慧引證
+                  </div>
+                  <div className="text-[10px] text-[#706456] dark:text-[#a09a8f]">
+                    自 440 萬字古籍庫精確檢索《太微賦》《滴天髓》注入解讀
+                  </div>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={useRAG} 
+                  onChange={e => setUseRAG(e.target.checked)} 
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-[#8d271c]"></div>
+              </label>
+            </div>
+
             {/* Generate Button */}
             <button
               onClick={handleGenerateAIReading}
               disabled={isAiLoading}
               className="w-full py-2.5 rounded-xl font-bold text-xs text-white transition flex items-center justify-center gap-2 shadow-md
-                bg-gradient-to-r from-[#8d271c] to-[#a83224] hover:from-[#782017] hover:to-[#912b1f] disabled:opacity-50"
+                bg-gradient-to-r from-[#8d271c] to-[#a83224] hover:from-[#782017] hover:to-[#912b1f] disabled:opacity-50 cursor-pointer"
             >
               <Sparkles className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
-              <span>{isAiLoading ? '大師靈感推演中，請稍候...' : '召喚宗師級 AI 即時解讀'}</span>
+              <span>{isAiLoading ? '大師檢索 440 萬字古籍推演中，請稍候...' : '召喚宗師級 AI 即時解讀'}</span>
             </button>
 
             {/* Error Message */}
             {aiError && (
               <div className="p-3 rounded-lg border text-xs bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-900/60">
                 {aiError}
+              </div>
+            )}
+
+            {/* Retrieved RAG Citations Display */}
+            {retrievedCitations.length > 0 && (
+              <div className="p-3 rounded-xl border bg-[#faf7f0] dark:bg-[#1a1b25] border-[#ded4c1] dark:border-[#2e3143] space-y-2 text-xs">
+                <div className="font-bold text-[#8d271c] dark:text-[#df756b] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>檢索召回之古籍原典引證 ({retrievedCitations.length} 條)</span>
+                  </div>
+                  <span className="text-[10px] text-[#706456] dark:text-[#a0a8be]">已自動注入 AI 提示詞</span>
+                </div>
+                <div className="space-y-1.5">
+                  {retrievedCitations.map((c, cIdx) => (
+                    <div key={cIdx} className="p-2 rounded-lg bg-white dark:bg-[#15161f] border border-[#eee4d4] dark:border-[#262838] space-y-0.5">
+                      <div className="font-bold text-[#b85d18] dark:text-[#e58a44] text-[11px]">
+                        {c.sourceBook}《{c.title}》
+                      </div>
+                      <p className="text-[11px] text-[#554e44] dark:text-[#b4aea4] italic">
+                        「{c.originalText}」
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
