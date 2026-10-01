@@ -37,15 +37,18 @@ const MUTAGEN_LABELS: MutagenType[] = ['祿', '權', '科', '忌'];
 
 // Convert hour to iztro's timeIndex (0-11)
 export function hourToTimeIndex(hour: number, minute: number = 0): number {
-  const adjustedHour = (hour + (minute >= 60 ? 1 : 0)) % 24;
+  const safeHour = isNaN(Number(hour)) ? 0 : Math.max(0, Math.min(23, Math.floor(Number(hour))));
+  const safeMinute = isNaN(Number(minute)) ? 0 : Math.max(0, Math.min(59, Math.floor(Number(minute))));
+  const adjustedHour = (safeHour + (safeMinute >= 60 ? 1 : 0)) % 24;
   return Math.floor(((adjustedHour + 1) % 24) / 2);
 }
 
 export function timeIndexToName(timeIndex: number): string {
   const branches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
-  const startHour = ((timeIndex * 2 + 23) % 24);
+  const safeIndex = isNaN(Number(timeIndex)) ? 0 : Math.max(0, Math.min(11, Math.floor(Number(timeIndex))));
+  const startHour = ((safeIndex * 2 + 23) % 24);
   const endHour = (startHour + 2) % 24;
-  return `${branches[timeIndex]}時 (${String(startHour).padStart(2, '0')}:00-${String(endHour).padStart(2, '0')}:00)`;
+  return `${branches[safeIndex]}時 (${String(startHour).padStart(2, '0')}:00-${String(endHour).padStart(2, '0')}:00)`;
 }
 
 export interface ChartExecutionResult {
@@ -66,14 +69,25 @@ export interface ChartExecutionResult {
 }
 
 export function computeAstrolabe(input: BirthInput): ChartExecutionResult {
-  const timeIndex = hourToTimeIndex(input.hour, input.minute);
-  const dateStr = `${input.year}-${input.month}-${input.day}`;
+  const safeYear = isNaN(Number(input.year)) || Number(input.year) < 1900 || Number(input.year) > 2100 ? 2000 : Math.floor(Number(input.year));
+  const safeMonth = isNaN(Number(input.month)) || Number(input.month) < 1 || Number(input.month) > 12 ? 1 : Math.floor(Number(input.month));
+  const safeDay = isNaN(Number(input.day)) || Number(input.day) < 1 || Number(input.day) > 31 ? 1 : Math.floor(Number(input.day));
+  const safeHour = isNaN(Number(input.hour)) ? 0 : Math.max(0, Math.min(23, Math.floor(Number(input.hour))));
+  const safeMinute = isNaN(Number(input.minute)) ? 0 : Math.max(0, Math.min(59, Math.floor(Number(input.minute))));
+
+  const timeIndex = hourToTimeIndex(safeHour, safeMinute);
+  const dateStr = `${safeYear}-${safeMonth}-${safeDay}`;
   
   let astrolabe: IFunctionalAstrolabe;
-  if (input.calendar === 'solar') {
-    astrolabe = astro.bySolar(dateStr, timeIndex, input.gender, input.isLeapMonth ?? false, 'zh-TW');
-  } else {
-    astrolabe = astro.byLunar(dateStr, timeIndex, input.gender, input.isLeapMonth ?? false, true, 'zh-TW');
+  try {
+    if (input.calendar === 'solar') {
+      astrolabe = astro.bySolar(dateStr, timeIndex, input.gender || '男', input.isLeapMonth ?? false, 'zh-TW');
+    } else {
+      astrolabe = astro.byLunar(dateStr, timeIndex, input.gender || '男', input.isLeapMonth ?? false, true, 'zh-TW');
+    }
+  } catch (err) {
+    console.warn('computeAstrolabe fallback on date conversion exception:', err);
+    astrolabe = astro.bySolar('2000-1-1', 0, input.gender || '男', false, 'zh-TW');
   }
 
   // Find Lai-Yin Palace (來因宮: Heavenly Stem matches Birth Year Stem)

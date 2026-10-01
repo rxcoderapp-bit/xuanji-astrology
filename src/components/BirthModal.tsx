@@ -36,23 +36,44 @@ export const BirthModal: React.FC<BirthModalProps> = ({
   const [year, setYear] = useState(initialValues.year);
   const [month, setMonth] = useState(initialValues.month);
   const [day, setDay] = useState(initialValues.day);
-  const [hour, setHour] = useState(initialValues.hour);
-  const [minute, setMinute] = useState(initialValues.minute);
+  const [hour, setHour] = useState<number | string>(initialValues.hour);
+  const [minute, setMinute] = useState<number | string>(initialValues.minute);
   const [isLeapMonth, setIsLeapMonth] = useState(initialValues.isLeapMonth ?? false);
+
+  // Synchronize when modal is opened or initialValues change
+  React.useEffect(() => {
+    if (isOpen) {
+      setName(initialValues.name);
+      setGender(initialValues.gender);
+      setCalendar(initialValues.calendar);
+      setYear(initialValues.year);
+      setMonth(initialValues.month);
+      setDay(initialValues.day);
+      setHour(initialValues.hour);
+      setMinute(initialValues.minute);
+      setIsLeapMonth(initialValues.isLeapMonth ?? false);
+    }
+  }, [isOpen, initialValues]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanYear = Math.max(1900, Math.min(2100, Number(year) || 2000));
+    const cleanMonth = Math.max(1, Math.min(12, Number(month) || 1));
+    const cleanDay = Math.max(1, Math.min(31, Number(day) || 1));
+    const cleanHour = Math.max(0, Math.min(23, Number(hour) || 0));
+    const cleanMinute = Math.max(0, Math.min(59, Number(minute) || 0));
+
     onSubmit({
       name: name.trim() || '即時命盤',
       gender,
       calendar,
-      year: Number(year),
-      month: Number(month),
-      day: Number(day),
-      hour: Number(hour),
-      minute: Number(minute),
+      year: cleanYear,
+      month: cleanMonth,
+      day: cleanDay,
+      hour: cleanHour,
+      minute: cleanMinute,
       isLeapMonth: calendar === 'lunar' ? isLeapMonth : false
     });
     onClose();
@@ -99,7 +120,15 @@ export const BirthModal: React.FC<BirthModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 text-sm">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          }}
+          className="p-6 space-y-5 text-sm"
+        >
           
           {/* Quick Realtime button */}
           <div className="flex items-center justify-between text-xs bg-[#efeae0] dark:bg-[#232530] p-2.5 rounded-lg border border-[#ded5c4] dark:border-[#373949]">
@@ -256,8 +285,19 @@ export const BirthModal: React.FC<BirthModalProps> = ({
                   type="number"
                   min="0"
                   max="23"
-                  value={hour}
-                  onChange={e => setHour(Number(e.target.value))}
+                  value={hour === '' ? '' : hour}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setHour('' as any);
+                    } else {
+                      const n = parseInt(val, 10);
+                      if (!isNaN(n)) setHour(Math.max(0, Math.min(23, n)));
+                    }
+                  }}
+                  onBlur={() => {
+                    if (hour === '' || isNaN(Number(hour))) setHour(0);
+                  }}
                   placeholder="時 (0-23)"
                   className="w-full px-3 py-2 rounded-lg border font-mono bg-white dark:bg-[#121318] border-[#d4cbba] dark:border-[#383a48] text-[#222] dark:text-[#eee]"
                 />
@@ -267,8 +307,19 @@ export const BirthModal: React.FC<BirthModalProps> = ({
                   type="number"
                   min="0"
                   max="59"
-                  value={minute}
-                  onChange={e => setMinute(Number(e.target.value))}
+                  value={minute === '' ? '' : minute}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setMinute('' as any);
+                    } else {
+                      const n = parseInt(val, 10);
+                      if (!isNaN(n)) setMinute(Math.max(0, Math.min(59, n)));
+                    }
+                  }}
+                  onBlur={() => {
+                    if (minute === '' || isNaN(Number(minute))) setMinute(0);
+                  }}
                   placeholder="分 (0-59)"
                   className="w-full px-3 py-2 rounded-lg border font-mono bg-white dark:bg-[#121318] border-[#d4cbba] dark:border-[#383a48] text-[#222] dark:text-[#eee]"
                 />

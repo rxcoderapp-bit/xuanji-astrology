@@ -21,7 +21,10 @@ import type {
   PalaceData,
   TrigramInfo,
   HexagramLineType,
-  DivinationTimingPhases
+  DivinationTimingPhases,
+  QimenDualPalaceAnalysis,
+  QimenFourHarmsItem,
+  QimenRemedyGuidance
 } from '../types';
 import { computeAstrolabe } from './iztroEngine';
 import { searchClassicalCorpus } from './ragEngine';
@@ -486,11 +489,16 @@ export function castZiweiDivination(
     actionPlan = `1. 【止損避險】：暫緩重大資金簽約或高風險動作，以保全本金為第一原則。\n2. 【化解干戈】：遇糾紛宜以和為貴，尋求公信第三方居中調解，切忌對簿公堂。\n3. 【沉潛修持】：逆境即磨刀石，正好修訂策略、補強內部漏洞，靜待下波天時。`;
   }
 
-  // 7. 古籍 RAG 知識庫智庫檢索（自動召回正統賦文）
+  // 7. 奇門時家雙宮主客態勢 ✕ 四害檢測 ✕ 六次元改運空間指南
+  const myPalace = targetPalaces.find(p => p.name.includes('命宮')) || targetPalaces[0];
+  const qimenRemedy = computeQimenRemedies(targetPalace, myPalace, category, score, oppositePalace);
+
+  // 8. 古籍 RAG 知識庫智庫檢索（自動召回正統賦文）
   const corpusHits = searchClassicalCorpus(`${targetName} ${hexDef.name}`, 'all', 2);
   const classicalAphorisms: string[] = [
     `《易經·大象傳》：${hexDef.judgment}`,
-    `《神卦心訣》：「事有體用，卦顯幾先。主星坐吉宮逢化曜，吉凶已定七分；輔以動爻之變，萬事無遁形。」`
+    `《神卦心訣》：「事有體用，卦顯幾先。主星坐吉宮逢化曜，吉凶已定七分；輔以動爻之變，萬事無遁形。」`,
+    `《奇門時家流年推運賦》：「體生用者耗散無功，用生體者大獲利益；主客相合，造化無窮。」`
   ];
   corpusHits.forEach(h => {
     if (h.item.originalText) {
@@ -528,6 +536,176 @@ export function castZiweiDivination(
     movingLineText,
     starHexagramResonance,
     timingPhases,
-    classicalAphorisms
+    classicalAphorisms,
+    // 奇門時家推運升級
+    qimenRemedy
+  };
+}
+
+/**
+ * 奇門時家流年推運 ✕ 雙宮斷主客態勢 ✕ 奇門四害六次元改運演算法
+ * 依據古典術數正統：《奇門時家流年推運賦》、《奇門六次元造命秘訣》、《遁甲主客經》
+ */
+const BRANCH_ELEMENT_MAP: Record<string, '木' | '火' | '土' | '金' | '水'> = {
+  '寅': '木', '卯': '木',
+  '巳': '火', '午': '火',
+  '申': '金', '酉': '金',
+  '亥': '水', '子': '水',
+  '辰': '土', '戌': '土', '丑': '土', '未': '土'
+};
+
+const PALACE_DIRECTION_MAP: Record<string, string> = {
+  '子': '正北方 (坎一宮)',
+  '丑': '東北偏北 (艮八宮)',
+  '寅': '東北偏東 (艮八宮)',
+  '卯': '正東方 (震三宮)',
+  '辰': '東南偏東 (巽四宮)',
+  '巳': '東南偏南 (巽四宮)',
+  '午': '正南方 (離九宮)',
+  '未': '西南偏南 (坤二宮)',
+  '申': '西南偏西 (坤二宮)',
+  '酉': '正西方 (兌七宮)',
+  '戌': '西北偏西 (乾六宮)',
+  '亥': '西北偏北 (乾六宮)'
+};
+
+function computeQimenRemedies(
+  targetPalace: PalaceData,
+  myPalace: PalaceData,
+  _category: DivinationCategory,
+  score: number,
+  oppositePalace: PalaceData
+): QimenRemedyGuidance {
+  const myElement = BRANCH_ELEMENT_MAP[myPalace.earthlyBranch] || '土';
+  const targetElement = BRANCH_ELEMENT_MAP[targetPalace.earthlyBranch] || '金';
+
+  // 1. 雙宮斷主客態勢 (體為我方命宮，用為所問之用神宮)
+  let guestHostRelation: QimenDualPalaceAnalysis['guestHostRelation'] = '比和 (旗鼓相當，利於合夥)';
+  let relationGrade: QimenDualPalaceAnalysis['relationGrade'] = '吉';
+  let summary = '';
+  let strategicAdvice = '';
+
+  const isGenerates = (a: string, b: string) => 
+    (a === '木' && b === '火') || (a === '火' && b === '土') || (a === '土' && b === '金') || (a === '金' && b === '水') || (a === '水' && b === '木');
+  const isOvercomes = (a: string, b: string) => 
+    (a === '木' && b === '土') || (a === '土' && b === '水') || (a === '水' && b === '火') || (a === '火' && b === '金') || (a === '金' && b === '木');
+
+  if (myElement === targetElement) {
+    guestHostRelation = '比和 (旗鼓相當，利於合夥)';
+    relationGrade = score >= 0 ? '大吉' : '平';
+    summary = `我方【${myPalace.name} (${myElement})】與事由客體【${targetPalace.name} (${targetElement})】同氣連枝，雙方勢均力敵，旗鼓相當。`;
+    strategicAdvice = '宜主動尋求共好共贏，資源對等互通，忌孤軍奮戰或互不妥協。';
+  } else if (isOvercomes(myElement, targetElement)) {
+    guestHostRelation = '我剋他 (佔據上風，克敵制勝)';
+    relationGrade = '大吉';
+    summary = `我方【${myPalace.name} (${myElement})】強勢壓制客方【${targetPalace.name} (${targetElement})】，主動權牢握在我手，局勢受我主導支配。`;
+    strategicAdvice = '宜乘勝追擊，牢牢主導談判節奏，制定規則標準，唯戒盛氣凌人逼人太甚。';
+  } else if (isOvercomes(targetElement, myElement)) {
+    guestHostRelation = '他剋我 (客強體弱，受制受壓)';
+    relationGrade = score < -20 ? '凶' : '不利';
+    summary = `客方環境【${targetPalace.name} (${targetElement})】強勢剋制我方【${myPalace.name} (${myElement})】，外在壓迫甚重，容易陷入被動掣肘處境。`;
+    strategicAdvice = '暫退防守，以柔克剛，尋求中介貴人通關解套，切莫與客方硬碰硬正面交鋒。';
+  } else if (isGenerates(targetElement, myElement)) {
+    guestHostRelation = '生入 (坐享其成，得道多助)';
+    relationGrade = '大吉';
+    summary = `客方用神【${targetPalace.name} (${targetElement})】持續滋養生旺我方【${myPalace.name} (${myElement})】，事來就我，貴人眷顧，機遇水到渠成。`;
+    strategicAdvice = '虛懷若谷，順受福澤，積極整合對方注入之資源與人脈，厚待協同者。';
+  } else {
+    guestHostRelation = '生出 (付出耗散，利他積福)';
+    relationGrade = '平';
+    summary = `我方【${myPalace.name} (${myElement})】持續向外生助【${targetPalace.name} (${targetElement})】，前期耗費心力資財較多，屬開拓耕耘期。`;
+    strategicAdvice = '放長線釣大魚，先付出建立信賴，控制前期成本開支，耐心守候長遠收成。';
+  }
+
+  const dualPalace: QimenDualPalaceAnalysis = {
+    guestHostRelation,
+    relationGrade,
+    myPalaceName: `${myPalace.name} (${myPalace.earthlyBranch}·${myElement})`,
+    targetPalaceName: `${targetPalace.name} (${targetPalace.earthlyBranch}·${targetElement})`,
+    summary,
+    strategicAdvice
+  };
+
+  // 2. 奇門四害檢測 (入墓、擊刑、門迫、空亡)
+  const fourHarms: QimenFourHarmsItem[] = [];
+  const targetBranch = targetPalace.earthlyBranch;
+  const targetDir = PALACE_DIRECTION_MAP[targetBranch] || '本宮方位';
+  const hasJi = targetPalace.majorStars.some(s => s.mutagen === '忌') || targetPalace.selfMutagens.some(sm => sm.mutagen === '忌');
+  const hasOppositeJi = oppositePalace.majorStars.some(s => s.mutagen === '忌');
+  const hasSha = targetPalace.minorStars.some(s => ['擎羊', '陀羅', '火星', '鈴星', '地空', '地劫'].includes(s.name));
+
+  // A. 入墓：辰戌丑未四墓庫
+  if (['辰', '戌', '丑', '未'].includes(targetBranch) && (hasJi || score < 0)) {
+    fourHarms.push({
+      type: '入墓',
+      location: `${targetDir}·${targetPalace.name}`,
+      severity: hasJi ? '高危' : '中度',
+      description: '奇門能量陷於墓庫，主動能被囚錮、才華受制、有志難伸、進度遲滯不前。',
+      spatialRemedy: `在住家或辦公室【${targetDir}】清除堆積雜物塵垢，保持空氣流通光亮，安放白水晶簇或金屬銅鐘震散沉悶墓氣。`,
+      behavioralRemedy: '打破自我封閉心態，主動向外界尋求援助交流，切忌獨自一人悶頭死磕。'
+    });
+  }
+
+  // B. 擊刑：受沖煞或自化刑傷
+  if (hasSha || targetPalace.selfMutagens.some(sm => sm.mutagen === '忌')) {
+    fourHarms.push({
+      type: '擊刑',
+      location: `${targetDir}·${targetPalace.name}`,
+      severity: '高危',
+      description: '磁場遭受劇烈擊破，主內部矛盾撕裂、合作紛爭、口舌官非或身心疲憊損耗。',
+      spatialRemedy: `在【${targetDir}】擺放闊葉綠植或黑曜石葫蘆以化煞吸濁，嚴禁放置尖銳剪刀與金屬利器。`,
+      behavioralRemedy: '戒驕戒躁，說話留有三分餘地，合同協議字斟句酌，切莫口出惡言或激化矛盾。'
+    });
+  }
+
+  // C. 門迫：對宮沖照有煞忌或星曜相剋
+  if (hasOppositeJi || (isOvercomes(targetElement, myElement) && score < 10)) {
+    fourHarms.push({
+      type: '門迫',
+      location: `${PALACE_DIRECTION_MAP[oppositePalace.earthlyBranch] || '對照方'} ✕ ${targetDir}`,
+      severity: '中度',
+      description: '門受宮剋或宮受門迫，能量互不協調，主阻礙頻繁、事倍功半、執行過程屢遭折騰。',
+      spatialRemedy: `在兩宮對照流動軸線上擺放天然鹽燈或陶瓷圓形流水盆，以五行中介之氣調和沖剋。`,
+      behavioralRemedy: '適度調整執行步伐與預期目標，不宜硬性強推，給予各方充分磨合與緩衝期。'
+    });
+  }
+
+  // D. 空亡：地空、地劫或逢旬空
+  if (targetPalace.minorStars.some(s => ['地空', '地劫', '截空', '旬空'].includes(s.name))) {
+    fourHarms.push({
+      type: '空亡',
+      location: `${targetDir}·${targetPalace.name}`,
+      severity: '中度',
+      description: '能量落入虛空，主承諾難兌現、期待落空、虛驚一場、名存實亡之象。',
+      spatialRemedy: `在【${targetDir}】點亮一盞長明暖光夜燈或擺設實木厚重聚寶盆，以「實象」填補「虛空」。`,
+      behavioralRemedy: '凡事務求真憑實據，不聽信口頭空頭支票，以定金與白紙黑字確立權責。'
+    });
+  }
+
+  if (fourHarms.length === 0) {
+    fourHarms.push({
+      type: '入墓',
+      location: `${targetDir}`,
+      severity: '輕微',
+      description: '奇門八方無明顯四害侵擾，氣場純淨通暢，主客能量運轉和諧無礙。',
+      spatialRemedy: `在【${targetDir}】保持明亮通風，擺放生機盎然的綠色常青盆栽，持續涵養清吉旺氣。`,
+      behavioralRemedy: '心境清明無礙，依循良善本心穩步推行既定計劃即可水到渠成。'
+    });
+  }
+
+  // 3. 六次元改運空間指南
+  const sixDimensionRemedies = {
+    spaceDirection: `【空間吉方借力】：核心用神吉方落在【${targetDir}】。日常辦公座向宜面迎此方，或將重大談判、籤約安排在此方位之空間展開，能得天地正氣加持。`,
+    timeTrigger: `【時間吉時引動】：重要行動宜挑選【辰時 (07:00-09:00)】或【申時 (15:00-17:00)】生旺時辰發動，借奇門天輔吉門貴人氣息催動轉機。`,
+    mindset: `【心態轉念修持】：破除「非此即彼」之焦慮我執，轉換為「利他合和」之開放心境。以靜制動，遇逆風時涵養定力，遇順境時心懷感恩。`,
+    colorArtifacts: `【奇門色彩與物象】：本局吉旺之氣利【金色、白色、米黃色或常青翠綠】。隨身佩戴圓潤玉石或白水晶飾品，有助於平穩氣場，避除雜訊。`,
+    energyRegulation: `【能量場調理】：每日清晨進行 5 分鐘腹式深呼吸吐納；居家臥室與書房定期開窗透氣，以檀香或天然沉香淨化空間滯塞磁場。`,
+    actionBreakthrough: `【行為破局指令】：今日第一步：主動致電或傳訊聯絡一位誠信師友尋求客觀回饋，並梳理一份核心重點清單，落實最小可行之推進動作！`
+  };
+
+  return {
+    dualPalace,
+    fourHarms,
+    sixDimensionRemedies
   };
 }

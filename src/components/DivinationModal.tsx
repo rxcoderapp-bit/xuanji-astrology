@@ -739,6 +739,141 @@ export const DivinationModal: React.FC<DivinationModalProps> = ({
                       </div>
                     </div>
 
+                    {/* Qimen Dual-Palace & Four Harms Remedy Section (奇門時家雙宮推運 ✕ 四害化解 ✕ 六次元改運) */}
+                    {result.qimenRemedy && (
+                      <div className="p-4 sm:p-5 rounded-xl border bg-[#fbf8f0] dark:bg-[#161720] border-[#e4dac6] dark:border-[#2b2d3d] space-y-4">
+                        <div className="flex items-center justify-between border-b pb-2.5 border-[#e8dfce] dark:border-[#272938]">
+                          <div className="flex items-center gap-2">
+                            <span className="p-1 rounded-md bg-[#8d271c]/10 text-[#8d271c] dark:text-[#ef5350]">
+                              🧭
+                            </span>
+                            <div>
+                              <h4 className="font-bold text-xs sm:text-sm text-[#8d271c] dark:text-[#ef5350]">
+                                奇門時家主客雙宮斷 ✕ 四害化解 ✕ 六次元改運指南
+                              </h4>
+                              <p className="text-[10px] text-[#706456] dark:text-[#a09a8f]">
+                                依據《奇門時家流年推運賦》與《奇門六次元造命秘訣》，破除磁場阻隔化逆為順
+                              </p>
+                            </div>
+                          </div>
+                          <span className={`px-2.5 py-0.5 rounded text-[11px] font-bold
+                            ${result.qimenRemedy.dualPalace.relationGrade === '大吉' || result.qimenRemedy.dualPalace.relationGrade === '吉'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              : result.qimenRemedy.dualPalace.relationGrade === '平'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                                : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'}`}>
+                            態勢：{result.qimenRemedy.dualPalace.relationGrade}
+                          </span>
+                        </div>
+
+                        {/* 1. Dual Palace Host-Guest Relationship */}
+                        <div className="p-3 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e5dccb] dark:border-[#2a2c3a] space-y-2 text-xs">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="font-bold text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1.5">
+                              <span>【主客動態】</span>
+                              <span className="text-[#8d271c] dark:text-[#ef5350]">{result.qimenRemedy.dualPalace.guestHostRelation}</span>
+                            </div>
+                            <div className="text-[11px] font-mono text-[#777] dark:text-[#aaa]">
+                              我方：{result.qimenRemedy.dualPalace.myPalaceName} ✕ 客方：{result.qimenRemedy.dualPalace.targetPalaceName}
+                            </div>
+                          </div>
+                          <p className="text-[#555] dark:text-[#bbb] leading-relaxed">
+                            {result.qimenRemedy.dualPalace.summary}
+                          </p>
+                          <div className="p-2 rounded bg-[#f5f1e4] dark:bg-[#13141a] text-[11px] text-[#4d4437] dark:text-[#c4bdb2]">
+                            <span className="font-bold text-[#8d271c] dark:text-[#ef5350]">大師戰略方針：</span>
+                            {result.qimenRemedy.dualPalace.strategicAdvice}
+                          </div>
+                        </div>
+
+                        {/* 2. Four Harms Diagnosis & Spatial Remedies */}
+                        {result.qimenRemedy.fourHarms.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="text-xs font-bold text-[#b45309] dark:text-[#f59e0b] flex items-center gap-1.5">
+                              <ShieldAlert className="w-3.5 h-3.5" />
+                              <span>奇門四害檢測（入墓 · 擊刑 · 門迫 · 空亡）調理對策</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                              {result.qimenRemedy.fourHarms.map((harm, hIdx) => (
+                                <div key={hIdx} className="p-3 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#2c2f3f] space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-[#8d271c] dark:text-[#ef5350] flex items-center gap-1">
+                                      <span className="px-1.5 py-0.2 rounded text-[10px] bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300">
+                                        {harm.type}
+                                      </span>
+                                      <span>{harm.location}</span>
+                                    </span>
+                                    <span className={`text-[10px] px-1.5 py-0.2 rounded ${
+                                      harm.severity === '高危' ? 'bg-rose-200 text-rose-900 dark:bg-rose-900/60 dark:text-rose-200' :
+                                      harm.severity === '中度' ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200' :
+                                      'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200'
+                                    }`}>
+                                      {harm.severity}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-[#666] dark:text-[#aaa]">
+                                    {harm.description}
+                                  </p>
+                                  <div className="text-[11px] text-[#2e7d32] dark:text-[#81c784] bg-emerald-50/60 dark:bg-emerald-950/20 p-1.5 rounded">
+                                    <span className="font-bold">空間調理：</span>{harm.spatialRemedy}
+                                  </div>
+                                  <div className="text-[11px] text-[#2a5d7c] dark:text-[#64b5f6] bg-sky-50/60 dark:bg-sky-950/20 p-1.5 rounded">
+                                    <span className="font-bold">行為心法：</span>{harm.behavioralRemedy}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 3. Six-Dimension Actionable Breakthrough Guides */}
+                        <div className="space-y-2">
+                          <div className="text-xs font-bold text-[#2e7d32] dark:text-[#81c784] flex items-center gap-1.5">
+                            <span>✨ 奇門六次元造命改運具體落地指南</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#292b3a] space-y-1">
+                              <div className="font-bold text-[#8d271c] dark:text-[#ef5350] text-[11px]">1. 空間方位借力</div>
+                              <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                                {result.qimenRemedy.sixDimensionRemedies.spaceDirection}
+                              </p>
+                            </div>
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#292b3a] space-y-1">
+                              <div className="font-bold text-[#b45309] dark:text-[#f59e0b] text-[11px]">2. 時間吉時引動</div>
+                              <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                                {result.qimenRemedy.sixDimensionRemedies.timeTrigger}
+                              </p>
+                            </div>
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#292b3a] space-y-1">
+                              <div className="font-bold text-[#2a5d7c] dark:text-[#64b5f6] text-[11px]">3. 心態轉念修持</div>
+                              <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                                {result.qimenRemedy.sixDimensionRemedies.mindset}
+                              </p>
+                            </div>
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#292b3a] space-y-1">
+                              <div className="font-bold text-[#7c3aed] dark:text-[#c084fc] text-[11px]">4. 色彩物象能量</div>
+                              <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                                {result.qimenRemedy.sixDimensionRemedies.colorArtifacts}
+                              </p>
+                            </div>
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#292b3a] space-y-1">
+                              <div className="font-bold text-[#059669] dark:text-[#34d399] text-[11px]">5. 能量場調理</div>
+                              <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                                {result.qimenRemedy.sixDimensionRemedies.energyRegulation}
+                              </p>
+                            </div>
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1b1c26] border border-[#e4dac8] dark:border-[#292b3a] space-y-1">
+                              <div className="font-bold text-[#dc2626] dark:text-[#f87171] text-[11px]">6. 行為破局指令</div>
+                              <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
+                                {result.qimenRemedy.sixDimensionRemedies.actionBreakthrough}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    )}
+
                     {/* Action Plan (錦囊妙計) & Classical Citations (古籍引證) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       

@@ -373,6 +373,7 @@ export default function App() {
           loveMarriageAnalysis={loveMarriageAnalysis}
           dualTrackEnergy={dualTrackEnergy}
           onSelectYear={handleSelectYear}
+          onSelectPalace={setSelectedPalaceIndex}
         />
 
       </main>

@@ -62,8 +62,8 @@ export const CaseDatabaseModal: React.FC<CaseDatabaseModalProps> = ({
   const [formYear, setFormYear] = useState(1990);
   const [formMonth, setFormMonth] = useState(1);
   const [formDay, setFormDay] = useState(1);
-  const [formHour, setFormHour] = useState(12);
-  const [formMinute, setFormMinute] = useState(0);
+  const [formHour, setFormHour] = useState<number | string>(12);
+  const [formMinute, setFormMinute] = useState<number | string>(0);
   const [formIsLeapMonth, setFormIsLeapMonth] = useState(false);
   const [formCategory, setFormCategory] = useState('自訂');
   const [formNotes, setFormNotes] = useState('');
@@ -485,7 +485,15 @@ export const CaseDatabaseModal: React.FC<CaseDatabaseModalProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSaveForm} className="p-5 space-y-4 text-xs">
+            <form
+              onSubmit={handleSaveForm}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                }
+              }}
+              className="p-5 space-y-4 text-xs"
+            >
               
               {/* Name & Gender */}
               <div className="grid grid-cols-2 gap-3">
@@ -642,7 +650,17 @@ export const CaseDatabaseModal: React.FC<CaseDatabaseModalProps> = ({
                     min="0"
                     max="23"
                     value={formHour}
-                    onChange={e => setFormHour(Number(e.target.value))}
+                    onChange={e => {
+                      const v = e.target.value;
+                      if (v === '') setFormHour('' as any);
+                      else {
+                        const n = parseInt(v, 10);
+                        if (!isNaN(n)) setFormHour(Math.max(0, Math.min(23, n)));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (formHour === '' || isNaN(Number(formHour))) setFormHour(0);
+                    }}
                     className="w-full px-2 py-1.5 rounded-lg border bg-white dark:bg-[#121318] border-[#d4cbba] dark:border-[#383a48] text-center font-mono"
                   />
                 </div>
@@ -653,7 +671,17 @@ export const CaseDatabaseModal: React.FC<CaseDatabaseModalProps> = ({
                     min="0"
                     max="59"
                     value={formMinute}
-                    onChange={e => setFormMinute(Number(e.target.value))}
+                    onChange={e => {
+                      const v = e.target.value;
+                      if (v === '') setFormMinute('' as any);
+                      else {
+                        const n = parseInt(v, 10);
+                        if (!isNaN(n)) setFormMinute(Math.max(0, Math.min(59, n)));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (formMinute === '' || isNaN(Number(formMinute))) setFormMinute(0);
+                    }}
                     className="w-full px-2 py-1.5 rounded-lg border bg-white dark:bg-[#121318] border-[#d4cbba] dark:border-[#383a48] text-center font-mono"
                   />
                 </div>

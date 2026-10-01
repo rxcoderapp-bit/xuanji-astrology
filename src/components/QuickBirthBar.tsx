@@ -35,6 +35,54 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
+  // Local buffered states for input fields to prevent layout shift & premature re-calculations while typing
+  const [localYear, setLocalYear] = useState<string>(String(birthInput.year));
+  const [localMonth, setLocalMonth] = useState<string>(String(birthInput.month));
+  const [localDay, setLocalDay] = useState<string>(String(birthInput.day));
+  const [localHour, setLocalHour] = useState<string>(String(birthInput.hour));
+  const [localMinute, setLocalMinute] = useState<string>(String(birthInput.minute).padStart(2, '0'));
+
+  // Synchronize when birthInput changes externally (e.g. from Chinese Hour buttons or case loading)
+  React.useEffect(() => {
+    setLocalYear(String(birthInput.year));
+    setLocalMonth(String(birthInput.month));
+    setLocalDay(String(birthInput.day));
+    setLocalHour(String(birthInput.hour));
+    setLocalMinute(String(birthInput.minute).padStart(2, '0'));
+  }, [birthInput.year, birthInput.month, birthInput.day, birthInput.hour, birthInput.minute]);
+
+  const commitDateChanges = () => {
+    const y = Math.max(1900, Math.min(2100, parseInt(localYear, 10) || birthInput.year));
+    const m = Math.max(1, Math.min(12, parseInt(localMonth, 10) || birthInput.month));
+    const d = Math.max(1, Math.min(31, parseInt(localDay, 10) || birthInput.day));
+    const h = Math.max(0, Math.min(23, parseInt(localHour, 10) || 0));
+    const min = Math.max(0, Math.min(59, parseInt(localMinute, 10) || 0));
+
+    if (
+      y !== birthInput.year ||
+      m !== birthInput.month ||
+      d !== birthInput.day ||
+      h !== birthInput.hour ||
+      min !== birthInput.minute
+    ) {
+      onChangeBirth({
+        ...birthInput,
+        year: y,
+        month: m,
+        day: d,
+        hour: h,
+        minute: min
+      });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
+      commitDateChanges();
+    }
+  };
+
   // Helper to determine active Chinese Hour branch
   const activeBranch = (() => {
     const h = birthInput.hour;
@@ -53,6 +101,8 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
   })();
 
   const handleHourSelect = (h: number, m: number) => {
+    setLocalHour(String(h));
+    setLocalMinute(String(m).padStart(2, '0'));
     onChangeBirth({
       ...birthInput,
       hour: h,
@@ -155,33 +205,36 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
             {/* Date Quick Inputs */}
             <div className="flex items-center gap-1 bg-white dark:bg-[#1b1c24] px-2.5 py-1 rounded-md border border-[#d6ccb8] dark:border-[#353746] font-mono text-xs shadow-2xs">
               <input
-                type="number"
-                min="1900"
-                max="2100"
-                value={birthInput.year}
-                onChange={e => onChangeBirth({ ...birthInput, year: Number(e.target.value) })}
-                className="w-12 bg-transparent outline-none text-center text-[#222] dark:text-[#eee] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                title="年份"
+                type="text"
+                inputMode="numeric"
+                value={localYear}
+                onChange={e => setLocalYear(e.target.value.replace(/[^0-9]/g, ''))}
+                onBlur={commitDateChanges}
+                onKeyDown={handleKeyDown}
+                className="w-12 bg-transparent outline-none text-center text-[#222] dark:text-[#eee]"
+                title="年份 (西元 1900-2100，輸入後按 Enter 或點擊外部生效)"
               />
               <span className="text-[#777] font-serif text-[11px]">年</span>
               <input
-                type="number"
-                min="1"
-                max="12"
-                value={birthInput.month}
-                onChange={e => onChangeBirth({ ...birthInput, month: Number(e.target.value) })}
-                className="w-7 bg-transparent outline-none text-center text-[#222] dark:text-[#eee] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                title="月份"
+                type="text"
+                inputMode="numeric"
+                value={localMonth}
+                onChange={e => setLocalMonth(e.target.value.replace(/[^0-9]/g, ''))}
+                onBlur={commitDateChanges}
+                onKeyDown={handleKeyDown}
+                className="w-7 bg-transparent outline-none text-center text-[#222] dark:text-[#eee]"
+                title="月份 (1-12，輸入後按 Enter 或點擊外部生效)"
               />
               <span className="text-[#777] font-serif text-[11px]">月</span>
               <input
-                type="number"
-                min="1"
-                max="31"
-                value={birthInput.day}
-                onChange={e => onChangeBirth({ ...birthInput, day: Number(e.target.value) })}
-                className="w-7 bg-transparent outline-none text-center text-[#222] dark:text-[#eee] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                title="日期"
+                type="text"
+                inputMode="numeric"
+                value={localDay}
+                onChange={e => setLocalDay(e.target.value.replace(/[^0-9]/g, ''))}
+                onBlur={commitDateChanges}
+                onKeyDown={handleKeyDown}
+                className="w-7 bg-transparent outline-none text-center text-[#222] dark:text-[#eee]"
+                title="日期 (1-31，輸入後按 Enter 或點擊外部生效)"
               />
               <span className="text-[#777] font-serif text-[11px]">日</span>
             </div>
@@ -193,23 +246,25 @@ export const QuickBirthBar: React.FC<QuickBirthBarProps> = ({
               </span>
               <div className="flex items-center font-mono text-xs font-semibold text-[#222] dark:text-[#eee]">
                 <input
-                  type="number"
-                  min="0"
-                  max="23"
-                  value={birthInput.hour}
-                  onChange={e => onChangeBirth({ ...birthInput, hour: Math.max(0, Math.min(23, Number(e.target.value) || 0)) })}
-                  className="w-7 bg-transparent outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  title="時 (0~23)"
+                  type="text"
+                  inputMode="numeric"
+                  value={localHour}
+                  onChange={e => setLocalHour(e.target.value.replace(/[^0-9]/g, ''))}
+                  onBlur={commitDateChanges}
+                  onKeyDown={handleKeyDown}
+                  className="w-7 bg-transparent outline-none text-center"
+                  title="時 (0~23，輸入後按 Enter 或點擊外部生效)"
                 />
                 <span className="text-[#888] font-bold px-0.5">:</span>
                 <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={String(birthInput.minute).padStart(2, '0')}
-                  onChange={e => onChangeBirth({ ...birthInput, minute: Math.max(0, Math.min(59, Number(e.target.value) || 0)) })}
-                  className="w-7 bg-transparent outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  title="分 (0~59)"
+                  type="text"
+                  inputMode="numeric"
+                  value={localMinute}
+                  onChange={e => setLocalMinute(e.target.value.replace(/[^0-9]/g, ''))}
+                  onBlur={commitDateChanges}
+                  onKeyDown={handleKeyDown}
+                  className="w-7 bg-transparent outline-none text-center"
+                  title="分 (0~59，輸入後按 Enter 或點擊外部生效)"
                 />
               </div>
             </div>

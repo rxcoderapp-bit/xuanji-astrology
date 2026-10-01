@@ -94,14 +94,26 @@ function toTrad(str: string): string {
 }
 
 export function computeBazi(input: BirthInput): BaziData {
+  const safeYear = isNaN(Number(input.year)) || Number(input.year) < 1900 || Number(input.year) > 2100 ? 2000 : Math.floor(Number(input.year));
+  const safeMonth = isNaN(Number(input.month)) || Number(input.month) < 1 || Number(input.month) > 12 ? 1 : Math.floor(Number(input.month));
+  const safeDay = isNaN(Number(input.day)) || Number(input.day) < 1 || Number(input.day) > 31 ? 1 : Math.floor(Number(input.day));
+  const safeHour = isNaN(Number(input.hour)) ? 0 : Math.max(0, Math.min(23, Math.floor(Number(input.hour))));
+  const safeMinute = isNaN(Number(input.minute)) ? 0 : Math.max(0, Math.min(59, Math.floor(Number(input.minute))));
+
   let lunar: any;
-  if (input.calendar === 'solar') {
-    const solar = Solar.fromYmdHms(input.year, input.month, input.day, input.hour, input.minute, 0);
+  try {
+    if (input.calendar === 'solar') {
+      const solar = Solar.fromYmdHms(safeYear, safeMonth, safeDay, safeHour, safeMinute, 0);
+      lunar = solar.getLunar();
+    } else {
+      lunar = input.isLeapMonth
+        ? Lunar.fromYmdHms(safeYear, -safeMonth, safeDay, safeHour, safeMinute, 0)
+        : Lunar.fromYmdHms(safeYear, safeMonth, safeDay, safeHour, safeMinute, 0);
+    }
+  } catch (err) {
+    console.warn('computeBazi fallback on date conversion exception:', err);
+    const solar = Solar.fromYmdHms(2000, 1, 1, 0, 0, 0);
     lunar = solar.getLunar();
-  } else {
-    lunar = input.isLeapMonth
-      ? Lunar.fromYmdHms(input.year, -input.month, input.day, input.hour, input.minute, 0)
-      : Lunar.fromYmdHms(input.year, input.month, input.day, input.hour, input.minute, 0);
   }
 
   const eightChar = lunar.getEightChar();

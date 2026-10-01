@@ -45,6 +45,10 @@ import { computeLoveMarriageTimeline } from '../lib/loveMarriageEngine';
 import { retrieveContextForChart, buildRAGAugmentedPrompt } from '../lib/ragEngine';
 import { DualTrackRadar } from './DualTrackRadar';
 import { LoveMarriagePanel } from './LoveMarriagePanel';
+import { MasterPatternPanel } from './MasterPatternPanel';
+import { ThreeLayerPanel } from './ThreeLayerPanel';
+import { FengshuiPanel } from './FengshuiPanel';
+import { BaziHologramPanel } from './BaziHologramPanel';
 
 interface InterpretationStudioProps {
   selectedPalace: PalaceData;
@@ -65,6 +69,7 @@ interface InterpretationStudioProps {
   loveMarriageAnalysis?: LoveMarriageAnalysis;
   dualTrackEnergy?: DualTrackEnergyData;
   onSelectYear?: (year: number) => void;
+  onSelectPalace?: (index: number) => void;
 }
 
 export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
@@ -85,9 +90,21 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
   timingResonance,
   loveMarriageAnalysis,
   dualTrackEnergy,
-  onSelectYear
+  onSelectYear,
+  onSelectPalace
 }) => {
-  const [activeTab, setActiveTab] = useState<'palace' | 'horoscope' | 'dualTrack' | 'loveMarriage' | 'natal' | 'bazi' | 'ai'>('palace');
+  const [activeTab, setActiveTab] = useState<
+    | 'palace' 
+    | 'horoscope' 
+    | 'threeLayer' 
+    | 'masterPattern' 
+    | 'fengshui' 
+    | 'dualTrack' 
+    | 'loveMarriage' 
+    | 'natal' 
+    | 'bazi' 
+    | 'ai'
+  >('palace');
   const [aiScope, setAiScope] = useState<'full' | 'palace' | 'dualTrack' | 'loveMarriage'>('full');
   const [aiResult, setAiResult] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -267,42 +284,59 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         </span>
       </div>
 
-      {/* Navigation Tabs (Smooth scroll on small screens, neatly arranged on desktop) */}
-      <div className="flex items-center overflow-x-auto scrollbar-none border-b text-[11px] sm:text-xs font-bold
-        bg-[#ede7da] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733] select-none px-1">
-        {[
-          { id: 'palace', label: '選宮精批', fullLabel: '【選宮精批】' },
-          { id: 'horoscope', label: '時運走勢', fullLabel: '【時運走勢】' },
-          { id: 'dualTrack', label: '⚡雙軌合參', fullLabel: '⚡雙軌合參' },
-          { id: 'loveMarriage', label: '💖太微緣局', fullLabel: '💖太微緣局' },
-          { id: 'natal', label: '原局格局', fullLabel: '【原局格局】' },
-          { id: 'bazi', label: '八字印證', fullLabel: '【八字印證】' },
-          { id: 'ai', label: '✦ AI精批', fullLabel: '✦ AI大師精批' },
-        ].map(tab => {
-          const isActive = activeTab === tab.id;
-          const isAI = tab.id === 'ai';
-          const isDualTrack = tab.id === 'dualTrack';
-          const isLove = tab.id === 'loveMarriage';
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`py-2 sm:py-2.5 px-2 sm:px-2.5 whitespace-nowrap transition border-b-2 text-center flex items-center justify-center shrink-0
-                ${isActive
-                  ? 'border-[#8d271c] text-[#8d271c] dark:border-[#df756b] dark:text-[#df756b] bg-[#fcfbf7] dark:bg-[#16171f] font-black'
-                  : isAI
-                    ? 'border-transparent text-[#96551b] dark:text-[#f59e0b] hover:text-[#8d271c] font-bold'
-                    : isLove
-                      ? 'border-transparent text-[#be123c] dark:text-[#fb7185] hover:text-[#9f1239] font-bold'
-                      : isDualTrack
-                        ? 'border-transparent text-[#854d0e] dark:text-[#facc15] hover:text-[#8d271c] font-bold'
-                        : 'border-transparent text-[#666055] dark:text-[#a09b91] hover:text-[#222] dark:hover:text-white'}`}
-            >
-              <span className="sm:hidden">{tab.label}</span>
-              <span className="hidden sm:inline">{tab.fullLabel}</span>
-            </button>
-          );
-        })}
+      {/* Navigation Tabs (2-Row Grid: All 10 tabs 100% visible on all screens without scrolling) */}
+      <div className="border-b bg-[#f0ebd9] dark:bg-[#13141a] border-[#ded5c3] dark:border-[#252733] select-none p-1.5 sm:p-2 space-y-1.5">
+        
+        {/* Row 1: 星盤與時空穿梭 */}
+        <div className="grid grid-cols-5 gap-1 text-[11px] sm:text-xs font-bold">
+          {[
+            { id: 'palace', label: '🎯選宮精批', activeColor: 'bg-[#8d271c] text-white border-[#701e15]' },
+            { id: 'horoscope', label: '⏳時運走勢', activeColor: 'bg-[#2a5d7c] text-white border-[#1c456b]' },
+            { id: 'threeLayer', label: '🌀三層疊宮', activeColor: 'bg-[#0284c7] text-white border-[#0369a1]' },
+            { id: 'masterPattern', label: '🛡️格局破局', activeColor: 'bg-[#b45309] text-white border-[#92400e]' },
+            { id: 'fengshui', label: '🧭陽宅羅盤', activeColor: 'bg-[#15803d] text-white border-[#166534]' },
+          ].map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`py-1.5 px-0.5 rounded-lg border text-center transition flex items-center justify-center cursor-pointer shadow-xs truncate
+                  ${isActive 
+                    ? tab.activeColor + ' font-black shadow-sm ring-1 ring-black/10'
+                    : 'bg-white/80 dark:bg-[#1c1d27] border-[#dcd3bf] dark:border-[#2b2d3c] text-[#554e44] dark:text-[#b4aea4] hover:bg-white dark:hover:bg-[#252734]'}`}
+              >
+                <span className="truncate">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Row 2: 體用合參與子平全息 */}
+        <div className="grid grid-cols-5 gap-1 text-[11px] sm:text-xs font-bold">
+          {[
+            { id: 'dualTrack', label: '⚡雙軌合參', activeColor: 'bg-[#b45309] text-white border-[#92400e]' },
+            { id: 'loveMarriage', label: '💖太微緣局', activeColor: 'bg-[#e11d48] text-white border-[#be123c]' },
+            { id: 'bazi', label: '🌿子平全息', activeColor: 'bg-[#059669] text-white border-[#047857]' },
+            { id: 'natal', label: '🏛️原局格局', activeColor: 'bg-[#4b5563] text-white border-[#374151]' },
+            { id: 'ai', label: '✦ AI精批', activeColor: 'bg-gradient-to-r from-[#8d271c] to-[#a83224] text-white border-[#701e15]' },
+          ].map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`py-1.5 px-0.5 rounded-lg border text-center transition flex items-center justify-center cursor-pointer shadow-xs truncate
+                  ${isActive 
+                    ? tab.activeColor + ' font-black shadow-sm ring-1 ring-black/10'
+                    : 'bg-white/80 dark:bg-[#1c1d27] border-[#dcd3bf] dark:border-[#2b2d3c] text-[#554e44] dark:text-[#b4aea4] hover:bg-white dark:hover:bg-[#252734]'}`}
+              >
+                <span className="truncate">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
       </div>
 
       {/* Scrollable Content Workspace (Natural scroll on mobile, contained scroll on desktop) */}
@@ -607,6 +641,32 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
           </div>
         )}
 
+        {/* ==================== TAB: 三層疊宮 (本命 ✕ 大限 ✕ 流年) ==================== */}
+        {activeTab === 'threeLayer' && (
+          <ThreeLayerPanel
+            palaces={allPalaces}
+            horoscope={horoscope}
+            onSelectPalace={onSelectPalace}
+          />
+        )}
+
+        {/* ==================== TAB: 格局破局 (38格局 ✕ 祿隨忌走) ==================== */}
+        {activeTab === 'masterPattern' && (
+          <MasterPatternPanel
+            palaces={allPalaces}
+            horoscope={horoscope}
+            onSelectPalace={onSelectPalace}
+          />
+        )}
+
+        {/* ==================== TAB: 陽宅羅盤 (居家八卦風水調理) ==================== */}
+        {activeTab === 'fengshui' && (
+          <FengshuiPanel
+            palaces={allPalaces}
+            onSelectPalace={onSelectPalace}
+          />
+        )}
+
         {/* ==================== TAB: 雙軌合參 (正統天星子平合參) ==================== */}
         {activeTab === 'dualTrack' && (
           <div className="space-y-5">
@@ -875,6 +935,9 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         {activeTab === 'bazi' && (
           <div className="space-y-6">
             
+            {/* 1. 子平八字動態五行量化 ✕ 四大用神 ✕ 中醫健康全息儀表板 */}
+            <BaziHologramPanel bazi={bazi} />
+
             {/* Bazi & Ziwei Cross Reading */}
             <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
               <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">

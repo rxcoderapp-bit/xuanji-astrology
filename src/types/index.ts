@@ -195,6 +195,37 @@ export interface DivinationTimingPhases {
   resolution: string;  // 定局結算期 (終局水落石出之農曆月日)
 }
 
+export interface QimenDualPalaceAnalysis {
+  guestHostRelation: '我剋他 (佔據上風，克敵制勝)' | '他剋我 (客強體弱，受制受壓)' | '比和 (旗鼓相當，利於合夥)' | '生出 (付出耗散，利他積福)' | '生入 (坐享其成，得道多助)';
+  relationGrade: '大吉' | '吉' | '平' | '不利' | '凶';
+  myPalaceName: string;
+  targetPalaceName: string;
+  summary: string;
+  strategicAdvice: string;
+}
+
+export interface QimenFourHarmsItem {
+  type: '入墓' | '擊刑' | '門迫' | '空亡';
+  location: string;
+  severity: '高危' | '中度' | '輕微';
+  description: string;
+  spatialRemedy: string;
+  behavioralRemedy: string;
+}
+
+export interface QimenRemedyGuidance {
+  dualPalace: QimenDualPalaceAnalysis;
+  fourHarms: QimenFourHarmsItem[];
+  sixDimensionRemedies: {
+    spaceDirection: string;   // 1. 空間方位 (吉方借力)
+    timeTrigger: string;      // 2. 時間引動 (吉日吉時)
+    mindset: string;          // 3. 心態修持 (心理重塑)
+    colorArtifacts: string;   // 4. 奇門色彩與物象能量
+    energyRegulation: string; // 5. 能量場調理
+    actionBreakthrough: string; // 6. 行為破局指令
+  };
+}
+
 export interface DivinationResult {
   question: string;
   category: DivinationCategory;
@@ -226,6 +257,8 @@ export interface DivinationResult {
   starHexagramResonance: string;   // 星卦合參深批
   timingPhases: DivinationTimingPhases; // 三階動態應期
   classicalAphorisms: string[];    // 古籍神課原典引證
+  // ===== 奇門時家流年推運 ✕ 雙宮斷主客態勢 ✕ 奇門四害六次元改運 =====
+  qimenRemedy?: QimenRemedyGuidance;
 }
 
 export interface DivinationRecord extends DivinationResult {
