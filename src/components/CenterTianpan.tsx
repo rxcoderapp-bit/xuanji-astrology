@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { BaziData } from '../types';
 import { DualTrackRadar } from './DualTrackRadar';
 import { computeDualTrackEnergy } from '../lib/dualTrackEngine';
+import { STEM_SI_HUA } from '../lib/deepAnalysisEngine';
 
 interface CenterTianpanProps {
   name: string;
@@ -31,6 +32,9 @@ export const CenterTianpan: React.FC<CenterTianpanProps> = ({
   bazi
 }) => {
   const [centerTab, setCenterTab] = useState<'bazi' | 'elements'>('bazi');
+
+  const yearStem = bazi?.year?.stem || '甲';
+  const natalSiHua = STEM_SI_HUA[yearStem] || { lu: '廉貞', quan: '破軍', ke: '武曲', ji: '太陽' };
 
   // 計算五行全息動態能量
   const energyData = useMemo(() => {
@@ -70,6 +74,27 @@ export const CenterTianpan: React.FC<CenterTianpanProps> = ({
         <div className="space-y-0.5 text-[#554e44] dark:text-[#aaa498] sm:text-right">
           <div>命主：<b className="text-[#8d271c] dark:text-[#df756b] font-bold">{soul}</b> · 身主：<b className="text-[#2a5d7c] dark:text-[#64b5f6] font-bold">{body}</b></div>
           <div>來因：<b className="text-[#1b7a4f] dark:text-[#4ade80] font-bold">{laiYinPalaceName}</b></div>
+        </div>
+      </div>
+
+      {/* 2.5 Natal SiHua Badges (生年四化：祿·權·科·忌) */}
+      <div className="flex items-center justify-between px-1.5 py-1 bg-[#f4ede0] dark:bg-[#1c1e28] rounded-md border border-[#e2d6c1] dark:border-[#2e3142] text-[10px] sm:text-[11px]">
+        <span className="font-bold text-[#736859] dark:text-[#a8a193] flex items-center gap-1 shrink-0">
+          <span>生年四化【{yearStem}干】：</span>
+        </span>
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.2 rounded font-bold text-[10px] sm:text-xs bg-[#15803d] text-white shadow-2xs" title="化祿：機遇與善緣">
+            <span>{natalSiHua.lu}</span><span className="text-[9px] opacity-90">祿</span>
+          </span>
+          <span className="inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.2 rounded font-bold text-[10px] sm:text-xs bg-[#b91c1c] text-white shadow-2xs" title="化權：掌控與執行">
+            <span>{natalSiHua.quan}</span><span className="text-[9px] opacity-90">權</span>
+          </span>
+          <span className="inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.2 rounded font-bold text-[10px] sm:text-xs bg-[#0284c7] text-white shadow-2xs ring-1 ring-sky-300/50" title="化科：智慧解厄與貴人">
+            <span>{natalSiHua.ke}</span><span className="text-[9px] opacity-90">科</span>
+          </span>
+          <span className="inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.2 rounded font-bold text-[10px] sm:text-xs bg-[#7e22ce] text-white shadow-2xs" title="化忌：考驗與淬鍊">
+            <span>{natalSiHua.ji}</span><span className="text-[9px] opacity-90">忌</span>
+          </span>
         </div>
       </div>
 

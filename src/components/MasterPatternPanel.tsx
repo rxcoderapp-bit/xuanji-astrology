@@ -139,11 +139,19 @@ export const MasterPatternPanel: React.FC<MasterPatternPanelProps> = ({
 
           {/* Dual Remedies: Ke (Cognition) & Quan (Action) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="p-2.5 rounded-lg bg-sky-50/70 dark:bg-sky-950/20 border border-sky-200/60 dark:border-sky-900/40 text-sky-900 dark:text-sky-200 leading-relaxed text-[11px]">
-              {luSuiJiZou.keRationalBoundary}
+            <div className="p-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-300 dark:border-sky-800/60 text-sky-950 dark:text-sky-200 leading-relaxed text-[11px] space-y-1 ring-1 ring-sky-400/20 shadow-2xs">
+              <div className="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5 text-xs">
+                <span className="px-1.5 py-0.2 rounded bg-[#0284c7] text-white font-black text-[10px] shadow-2xs">化科</span>
+                <span>理性認知安全閥 ✕ 貴人解套錦囊</span>
+              </div>
+              <p>{luSuiJiZou.keRationalBoundary}</p>
             </div>
-            <div className="p-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 leading-relaxed text-[11px]">
-              {luSuiJiZou.quanExecutionPower}
+            <div className="p-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-950 dark:text-amber-200 leading-relaxed text-[11px] space-y-1 shadow-2xs">
+              <div className="font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1.5 text-xs">
+                <span className="px-1.5 py-0.2 rounded bg-[#b91c1c] text-white font-bold text-[10px] shadow-2xs">化權</span>
+                <span>專業壁壘掌控 ✕ 制度執行鐵腕</span>
+              </div>
+              <p>{luSuiJiZou.quanExecutionPower}</p>
             </div>
           </div>
         </div>

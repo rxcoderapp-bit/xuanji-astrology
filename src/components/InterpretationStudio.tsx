@@ -443,7 +443,12 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
                         </span>
                       )}
                       {star.mutagen && (
-                        <span className="text-xs px-1.5 py-0.2 rounded font-bold bg-[#9c2e22] text-white">
+                        <span className={`text-xs px-2 py-0.5 rounded font-bold border ${
+                          star.mutagen === '祿' ? 'bg-[#15803d] text-white border-[#14532d]' :
+                          star.mutagen === '權' ? 'bg-[#b91c1c] text-white border-[#7f1d1d]' :
+                          star.mutagen === '科' ? 'bg-[#0284c7] text-white border-[#0369a1] ring-1 ring-sky-300/50 shadow-2xs font-black' :
+                          'bg-[#7e22ce] text-white border-[#581c87]'
+                        }`}>
                           化{star.mutagen}
                         </span>
                       )}
@@ -472,29 +477,108 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               )}
             </div>
 
-            {/* 3. Mutagens & Self Mutagens */}
+            {/* 3. Mutagens & Self Mutagens (祿權科忌全面全息深度破譯) */}
             <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3">
-              <h3 className="font-bold text-sm text-[#275c8d] dark:text-[#4fa3e3] flex items-center gap-1.5 border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
-                <Layers className="w-4 h-4" />
-                四化飛星動態與宮干自化破譯
+              <h3 className="font-bold text-sm text-[#275c8d] dark:text-[#4fa3e3] flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                <span className="flex items-center gap-1.5">
+                  <Layers className="w-4 h-4" />
+                  四化飛星（祿·權·科·忌）與宮干自化破譯
+                </span>
+                <span className="text-[10px] text-[#70685c] dark:text-[#999285] font-normal">
+                  先天天象 ✕ 後天應化
+                </span>
               </h3>
 
-              {/* Natal Mutagens in Palace */}
-              {selectedPalace.majorStars.filter(s => s.mutagen).map((s, idx) => {
-                const mutInfo = (MUTAGEN_MEANINGS as Record<string, any>)[s.mutagen || ''];
+              {/* Natal Mutagens in Palace (Checks BOTH major and minor/auxiliary stars) */}
+              {(() => {
+                const allPalaceMutagens = [...selectedPalace.majorStars, ...selectedPalace.minorStars].filter(s => s.mutagen);
+                if (allPalaceMutagens.length === 0) {
+                  return (
+                    <div className="p-3 rounded-lg bg-[#f8f5ee] dark:bg-[#191b22] border border-[#e5dac8] dark:border-[#272935] text-xs text-[#70685c] dark:text-[#999285] space-y-1">
+                      <div className="font-bold text-[#443e37] dark:text-[#c4beb4]">
+                        ✦ 本宮位無生年四化星曜坐守
+                      </div>
+                      <p className="text-[11px] leading-relaxed">
+                        四化飛星是人生的能量焦點。本宮無生年四化者，在此領域較不受特定因果執念之束縛，可依星曜特質自由發展；亦可觀測三方四正拱照之化祿、化權、化科或化忌能量以定世俗攻守。
+                      </p>
+                    </div>
+                  );
+                }
+
+                const MUTAGEN_CARD_THEMES: Record<string, { bg: string; border: string; title: string; tag: string; icon: string; subtitle: string }> = {
+                  '祿': {
+                    bg: 'bg-emerald-50/70 dark:bg-emerald-950/20',
+                    border: 'border-emerald-200 dark:border-emerald-800/40',
+                    title: 'text-emerald-700 dark:text-emerald-400',
+                    tag: 'bg-[#15803d] text-white font-bold',
+                    icon: '🌱',
+                    subtitle: '春生之善緣 · 機遇與財富之門'
+                  },
+                  '權': {
+                    bg: 'bg-rose-50/70 dark:bg-rose-950/20',
+                    border: 'border-rose-200 dark:border-rose-800/40',
+                    title: 'text-rose-700 dark:text-rose-400',
+                    tag: 'bg-[#b91c1c] text-white font-bold',
+                    icon: '⚔️',
+                    subtitle: '夏長之權威 · 專業突破與掌控魄力'
+                  },
+                  '科': {
+                    bg: 'bg-sky-50/80 dark:bg-sky-950/30',
+                    border: 'border-sky-300 dark:border-sky-700/60 ring-1 ring-sky-400/30 shadow-xs',
+                    title: 'text-sky-700 dark:text-sky-300 font-black',
+                    tag: 'bg-[#0284c7] text-white font-black shadow-xs ring-1 ring-sky-300/50',
+                    icon: '📜',
+                    subtitle: '秋收之清貴 · 智慧解厄·文譽考運·貴人防線'
+                  },
+                  '忌': {
+                    bg: 'bg-purple-50/70 dark:bg-purple-950/20',
+                    border: 'border-purple-200 dark:border-purple-800/40',
+                    title: 'text-purple-700 dark:text-purple-400',
+                    tag: 'bg-[#7e22ce] text-white font-bold',
+                    icon: '🌪️',
+                    subtitle: '冬藏之淬鍊 · 靈魂考驗·深鑽技術·大器晚成'
+                  },
+                };
+
                 return (
-                  <div key={idx} className="p-3 rounded-lg bg-[#edf4f9] dark:bg-[#17222c] border border-[#d2e3f0] dark:border-[#273d52] text-xs space-y-1">
-                    <span className="font-bold text-[#275c8d] dark:text-[#64b5f6]">
-                      【生年化{s.mutagen} · {s.name}】宿命定點顯化：
-                    </span>
-                    <p className="text-[#334155] dark:text-[#94a3b8]">{mutInfo?.character}：{mutInfo?.effect}</p>
-                    <p className="text-[#991b1b] dark:text-[#f87171]">{mutInfo?.warning}</p>
+                  <div className="space-y-2.5">
+                    {allPalaceMutagens.map((s, idx) => {
+                      const mutType = s.mutagen || '科';
+                      const theme = MUTAGEN_CARD_THEMES[mutType] || MUTAGEN_CARD_THEMES['科'];
+                      const mutInfo = (MUTAGEN_MEANINGS as Record<string, any>)[mutType];
+
+                      return (
+                        <div key={idx} className={`p-3.5 rounded-xl border ${theme.bg} ${theme.border} text-xs space-y-1.5 transition`}>
+                          <div className="flex items-center justify-between border-b pb-1.5 border-black/5 dark:border-white/5">
+                            <span className={`font-bold flex items-center gap-1.5 ${theme.title}`}>
+                              <span>{theme.icon}</span>
+                              <span>【生年化{mutType} · {s.name}】宿命定點顯化</span>
+                              <span className="text-[10px] font-normal opacity-80">({theme.subtitle})</span>
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${theme.tag}`}>
+                              化{mutType}
+                            </span>
+                          </div>
+                          <p className="text-[#334155] dark:text-[#94a3b8] leading-relaxed">
+                            <b className="text-[#1e293b] dark:text-[#e2e8f0]">能量本質：</b>{mutInfo?.character} ➔ {mutInfo?.effect}
+                          </p>
+                          {mutType === '科' && (
+                            <div className="p-2 rounded-lg bg-sky-100/70 dark:bg-sky-900/40 text-[#0369a1] dark:text-[#7dd3fc] leading-relaxed font-medium">
+                              ★ <b>宗師破局點金【化科智慧】</b>：化科為整張命盤最強大的「理性認知與貴人安全閥」！無論外在何等阻滯或遭遇化忌衝擊，化科所在之處必有貴人長輩提攜、合約法律保護或專業學識指引，是將危機轉化為名望口碑的致勝關鍵！
+                            </div>
+                          )}
+                          <p className="text-[#991b1b] dark:text-[#f87171] leading-relaxed">
+                            <b className="text-[#7f1d1d] dark:text-[#fca5a5]">戒慎防護：</b>{mutInfo?.warning}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 );
-              })}
+              })()}
 
               {/* Self Mutagens */}
-              <div className="text-xs text-[#554e44] dark:text-[#b4aea4] space-y-1.5">
+              <div className="text-xs text-[#554e44] dark:text-[#b4aea4] space-y-1.5 pt-2 border-t border-[#eee6d7] dark:border-[#262835]">
                 <div>
                   <b className="text-[#79287c] dark:text-[#ce7fe2]">宮干自化現象：</b>
                   <span className="font-medium text-[#222] dark:text-[#eee]">{analysis.selfMutagenText}</span>

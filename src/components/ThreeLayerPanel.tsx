@@ -204,8 +204,23 @@ export const ThreeLayerPanel: React.FC<ThreeLayerPanelProps> = ({
                   星曜：{activeOverlap.natalLayer.majorStars.join('、') || '借對宮'}
                 </div>
                 {activeOverlap.natalLayer.mutagens.length > 0 && (
-                  <div className="text-[10px] text-[#e65100] dark:text-[#ff9800]">
-                    生年四化：{activeOverlap.natalLayer.mutagens.join(' ')}
+                  <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+                    <span className="font-semibold text-[#736859] dark:text-[#a8a193]">生年四化：</span>
+                    {activeOverlap.natalLayer.mutagens.map((m, idx) => {
+                      const isKe = m.includes('科');
+                      const isLu = m.includes('祿');
+                      const isQuan = m.includes('權');
+                      const isJi = m.includes('忌');
+                      const bg = isKe ? 'bg-[#0284c7] text-white ring-1 ring-sky-300/50 shadow-2xs font-black' :
+                                 isLu ? 'bg-[#15803d] text-white font-bold' :
+                                 isQuan ? 'bg-[#b91c1c] text-white font-bold' :
+                                 isJi ? 'bg-[#7e22ce] text-white font-bold' : 'bg-gray-600 text-white';
+                      return (
+                        <span key={idx} className={`px-1.5 py-0.2 rounded ${bg}`}>
+                          {m}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
                 <p className="text-[11px] text-[#777] dark:text-[#999] pt-1 border-t border-[#eee4d4] dark:border-[#232532]">
@@ -229,8 +244,23 @@ export const ThreeLayerPanel: React.FC<ThreeLayerPanelProps> = ({
                   疊宮：大限【{activeOverlap.decadalLayer.palaceName}】重疊於本命【{activeOverlap.natalLayer.palaceName}】
                 </div>
                 {activeOverlap.decadalLayer.mutagens.length > 0 && (
-                  <div className="text-[10px] text-[#e65100] dark:text-[#ff9800]">
-                    大限四化：{activeOverlap.decadalLayer.mutagens.join(' ')}
+                  <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+                    <span className="font-semibold text-[#736859] dark:text-[#a8a193]">大限四化：</span>
+                    {activeOverlap.decadalLayer.mutagens.map((m, idx) => {
+                      const isKe = m.includes('科');
+                      const isLu = m.includes('祿');
+                      const isQuan = m.includes('權');
+                      const isJi = m.includes('忌');
+                      const bg = isKe ? 'bg-[#0284c7] text-white ring-1 ring-sky-300/50 shadow-2xs font-black' :
+                                 isLu ? 'bg-[#15803d] text-white font-bold' :
+                                 isQuan ? 'bg-[#b91c1c] text-white font-bold' :
+                                 isJi ? 'bg-[#7e22ce] text-white font-bold' : 'bg-gray-600 text-white';
+                      return (
+                        <span key={idx} className={`px-1.5 py-0.2 rounded ${bg}`}>
+                          {m}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
                 <p className="text-[11px] text-[#777] dark:text-[#999] pt-1 border-t border-[#d8e3ed] dark:border-[#1e2a3c]">
@@ -254,8 +284,23 @@ export const ThreeLayerPanel: React.FC<ThreeLayerPanelProps> = ({
                   疊宮：流年【{activeOverlap.yearlyLayer.palaceName}】重疊引動
                 </div>
                 {activeOverlap.yearlyLayer.mutagens.length > 0 && (
-                  <div className="text-[10px] text-[#e65100] dark:text-[#ff9800]">
-                    流年四化：{activeOverlap.yearlyLayer.mutagens.join(' ')}
+                  <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+                    <span className="font-semibold text-[#736859] dark:text-[#a8a193]">流年四化：</span>
+                    {activeOverlap.yearlyLayer.mutagens.map((m, idx) => {
+                      const isKe = m.includes('科');
+                      const isLu = m.includes('祿');
+                      const isQuan = m.includes('權');
+                      const isJi = m.includes('忌');
+                      const bg = isKe ? 'bg-[#0284c7] text-white ring-1 ring-sky-300/50 shadow-2xs font-black' :
+                                 isLu ? 'bg-[#15803d] text-white font-bold' :
+                                 isQuan ? 'bg-[#b91c1c] text-white font-bold' :
+                                 isJi ? 'bg-[#7e22ce] text-white font-bold' : 'bg-gray-600 text-white';
+                      return (
+                        <span key={idx} className={`px-1.5 py-0.2 rounded ${bg}`}>
+                          {m}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
                 <p className="text-[11px] text-[#777] dark:text-[#999] pt-1 border-t border-[#ecd5e4] dark:border-[#341d2e]">

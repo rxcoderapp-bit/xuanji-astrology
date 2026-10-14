@@ -22,11 +22,18 @@ const BRIGHTNESS_COLORS: Record<string, string> = {
   '不': 'text-[#6b7280] dark:text-[#64748b] opacity-80',
 };
 
-const MUTAGEN_BADGE_STYLE: Record<MutagenType, string> = {
-  '祿': 'bg-[#1b7a4f] text-white border-[#125c3a]',
-  '權': 'bg-[#b83426] text-white border-[#8f2419]',
-  '科': 'bg-[#275c8d] text-white border-[#1c456b]',
-  '忌': 'bg-[#79287c] text-white border-[#581c5a]',
+export const MUTAGEN_BADGE_STYLE: Record<MutagenType, string> = {
+  '祿': 'bg-[#15803d] text-white border-[#14532d] shadow-2xs font-extrabold', // 祿: 翠綠
+  '權': 'bg-[#b91c1c] text-white border-[#7f1d1d] shadow-2xs font-extrabold', // 權: 烈紅
+  '科': 'bg-[#0284c7] text-white border-[#0369a1] shadow-2xs font-extrabold ring-1 ring-sky-300/50', // 科: 亮藍醒目！
+  '忌': 'bg-[#7e22ce] text-white border-[#581c87] shadow-2xs font-extrabold', // 忌: 曜紫
+};
+
+const SELF_MUTAGEN_STYLE: Record<string, string> = {
+  '祿': 'text-[#15803d] dark:text-[#4ade80] bg-[#ecfdf5] dark:bg-[#064e3b]/30 border-[#a7f3d0] dark:border-[#065f46]',
+  '權': 'text-[#b91c1c] dark:text-[#f87171] bg-[#fef2f2] dark:bg-[#7f1d1d]/30 border-[#fecaca] dark:border-[#991b1b]',
+  '科': 'text-[#0284c7] dark:text-[#38bdf8] bg-[#f0f9ff] dark:bg-[#0c4a6e]/40 border-[#bae6fd] dark:border-[#0284c7] font-bold ring-1 ring-sky-300/30',
+  '忌': 'text-[#7e22ce] dark:text-[#c084fc] bg-[#faf5ff] dark:bg-[#581c87]/30 border-[#e9d5ff] dark:border-[#6b21a8]',
 };
 
 export const PalaceCell: React.FC<PalaceCellProps> = ({
@@ -119,10 +126,14 @@ export const PalaceCell: React.FC<PalaceCellProps> = ({
           if (isLucky) starColor = 'text-[#2a5d7c] dark:text-[#64b5f6] font-semibold';
 
           return (
-            <span key={mIdx} className={starColor}>
-              {star.name}
-              {star.brightness && <span className="text-[8px] sm:text-[9px] opacity-75">{star.brightness}</span>}
-              {star.mutagen && <span className="text-[8px] sm:text-[9px] text-[#9c2e22] font-bold">[{star.mutagen}]</span>}
+            <span key={mIdx} className={`inline-flex items-center ${starColor}`}>
+              <span>{star.name}</span>
+              {star.brightness && <span className="text-[8px] sm:text-[9px] opacity-75 ml-0.5">{star.brightness}</span>}
+              {star.mutagen && (
+                <span className={`text-[8px] sm:text-[9px] px-0.5 sm:px-1 py-0.2 rounded font-bold border ml-0.5 ${MUTAGEN_BADGE_STYLE[star.mutagen as MutagenType] || 'bg-[#0284c7] text-white'}`}>
+                  {star.mutagen}
+                </span>
+              )}
             </span>
           );
         })}
@@ -139,7 +150,10 @@ export const PalaceCell: React.FC<PalaceCellProps> = ({
       {palace.selfMutagens.length > 0 && (
         <div className="my-0.5 flex flex-wrap gap-0.5 sm:gap-1">
           {palace.selfMutagens.map((sm, smIdx) => (
-            <span key={smIdx} className="text-[8px] sm:text-[10px] text-[#79287c] dark:text-[#ce7fe2] bg-[#f5eef7] dark:bg-[#251929] px-0.5 sm:px-1 rounded border border-[#e2d0e6] dark:border-[#422949]">
+            <span
+              key={smIdx}
+              className={`text-[8px] sm:text-[10px] px-0.5 sm:px-1 rounded border font-semibold ${SELF_MUTAGEN_STYLE[sm.mutagen] || 'text-[#79287c] dark:text-[#ce7fe2] bg-[#f5eef7] dark:bg-[#251929] border-[#e2d0e6]'}`}
+            >
               {sm.star}自化{sm.mutagen}
             </span>
           ))}

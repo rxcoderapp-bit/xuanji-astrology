@@ -143,9 +143,10 @@ ${isLaiYin ? `✦ 本宮特別標註：此處為命造之【來因宮】！在�
 ${starArchetypeText}`;
 
   // ---------------------------------------------------------
-  // Part 2: 【四化動力學：「祿隨忌走」心理閉環 ✕ 欽天生年自化法象】(~350字)
+  // Part 2: 【四化動力學：「祿權科忌」心理閉環 ✕ 欽天生年自化法象】(~350字)
   // ---------------------------------------------------------
-  const natalMutagens = majorStars.filter(s => s.mutagen);
+  const allNatalStars = [...majorStars, ...minorStars];
+  const natalMutagens = allNatalStars.filter(s => s.mutagen);
   let mutagenAnalysis = '';
   if (natalMutagens.length > 0) {
     mutagenAnalysis = natalMutagens.map(s => {
@@ -156,7 +157,7 @@ ${starArchetypeText}`;
       } else if (s.mutagen === '權') {
         roleDesc = `斗數心法指出：生年權坐入【${pName}】，象徵掌控欲與專業霸氣在此宮全面顯化。命主凡事渴望親自拍板主導、好勝心強、不甘居人下，具備極強的打硬仗魄力，惟需注意溝通時過於生硬霸道。`;
       } else if (s.mutagen === '科') {
-        roleDesc = `斗數心法指出：生年科坐入【${pName}】，為清白聲譽、教養禮貌與貴人解厄之泉源。命主在此處愛惜羽毛、注重形象、處事有條理，遇到波折往往有貴人長輩暗中解危。`;
+        roleDesc = `正統斗數心法核心破譯【化科 · 智慧解厄大吉曜】：生年科坐入【${pName}】，為整張星盤最強之「清白聲譽、合約文采、考運功名與貴人解厄安全閥」！命主在此領域先天自帶教養形象與公信力，做事講究邏輯、條理與程序正義。凡遇糾紛是非、甚至遭逢煞星或化忌衝擊，在此領域必有德高望重之長輩、懂法規之專家或專業學問現身解危！化科乃全盤「大化小、小化無」之第一福星，亦是破除「祿隨忌走」焦慮代償的最關鍵理性槓桿！`;
       } else if (s.mutagen === '忌') {
         roleDesc = `核心心理動力學深度破譯：生年忌坐入【${pName}】，此處正是你靈魂最深處的「黑洞」與「核心不安全感所在」！你在此領域最感焦慮、最怕失去、最容易自責與完美主義苛求。但正統命理心法鄭重強調：化忌不是宿命的懲罰，而是生命為了把你磨礪成該領域真正的大師而出的考題！你付出的所有心血與鑽研，終將在此處結出最沉甸甸的果實。`;
       }
@@ -166,10 +167,10 @@ ${starArchetypeText}`;
     mutagenAnalysis = `本宮坐星並無生年四化直接座守，代表此領域的能量運作偏向潛移默化、遵循常規。然而，它隨時受到命盤整體氣運的牽制。`;
   }
 
-  // 「祿隨忌走」心理動力學聯動剖析
-  const luSuiJiText = `「祿隨忌走」心理動力學閉環深度解析：
+  // 「祿權科忌」四化動力學聯動 ✕「祿隨忌走」破局心法
+  const luSuiJiText = `「祿隨忌走」心理動力閉環 ✕「化科解套安全閥」深度解析：
 全盤生年忌坐落於【${natalJiPalaceName}】，而生年祿坐落於【${natalLuPalaceName}】。根據命理人性動力學法則，人在潛意識中為了填補【${natalJiPalaceName}】所感受到的欠債感與匱乏黑洞，會拼命將所有精力、熱情與追求傾注到【${natalLuPalaceName}】中，試圖以化祿的獲得感來麻醉化忌的焦慮。
-然而「化祿永遠填不滿化忌」！若【${pName}】恰為化忌或化祿之宮位，這股拉扯感將更為劇烈。唯有正視並接納【${natalJiPalaceName}】的不完美，停止將其視為洪水猛獸，化祿才能轉化為純粹的熱情奉獻，全盤氣局方能真正活化。`;
+然而「化祿永遠填不滿化忌」！如何破局？正統斗數秘儀指出：【化科】正是切斷此一焦慮死循環的「理性認知與貴人安全閥」！唯有運用化科的條理、界線與客觀專業，接納【${natalJiPalaceName}】的不完美，停止將其視為洪水猛獸；同時搭配【化權】的制度化執行力，化祿的財富與善緣才能真正安穩沉澱。`;
 
   // 宮干自化剖析
   let selfMutagenText = '';
@@ -292,7 +293,7 @@ export function getYearlyDeepReading(horoscope: HoroscopeState, allPalaces?: Pal
     let jiPalaceIdx = 0;
 
     allPalaces.forEach((p, idx) => {
-      const starNames = p.majorStars.map(s => s.name);
+      const starNames = [...p.majorStars, ...p.minorStars].map(s => s.name);
       if (starNames.includes(sihua.lu)) luInPalace = p.name;
       if (starNames.includes(sihua.quan)) quanInPalace = p.name;
       if (starNames.includes(sihua.ke)) keInPalace = p.name;
@@ -382,14 +383,18 @@ export function getMonthlyDeepReading(horoscope: HoroscopeState, allPalaces?: Pa
 - 【流月官祿】：重疊本命【${monthlyGuanLuPalace?.name || '官祿'}】，主導本月份之具體工作任務推進、主管指示、業績考核與職場互動。
 - 【流月財帛】：重疊本命【${monthlyCaiBoPalace?.name || '財帛'}】，揭示本月份日常現金周轉、帳單支出、回款進度與消費慾望。`;
 
-    // 尋找月四化落入本命何宮
+    // 尋找月四化落入本命何宮（包含甲級主星與輔煞星如文昌、文曲、右弼、左輔）
     let mLuPalace = '全盤';
+    let mQuanPalace = '全盤';
+    let mKePalace = '全盤';
     let mJiPalace = '全盤';
     let mJiPalaceIdx = 0;
 
     allPalaces.forEach((p, idx) => {
-      const starNames = p.majorStars.map(s => s.name);
+      const starNames = [...p.majorStars, ...p.minorStars].map(s => s.name);
       if (starNames.includes(mSihua.lu)) mLuPalace = p.name;
+      if (starNames.includes(mSihua.quan)) mQuanPalace = p.name;
+      if (starNames.includes(mSihua.ke)) mKePalace = p.name;
       if (starNames.includes(mSihua.ji)) {
         mJiPalace = p.name;
         mJiPalaceIdx = idx;
@@ -401,10 +406,12 @@ export function getMonthlyDeepReading(horoscope: HoroscopeState, allPalaces?: Pa
     monthlySiHuaText = `【${monthName}（${mStem}${mBranch}月）流月天干【${mStem}】四化動態密碼】：
 1. 【流月化祿 ➔ ${mSihua.lu}星】入本命【${mLuPalace}】：
    - 本月份最大的小確幸與機會之窗！此處利於洽談商務、增進人際和睦、獲取獎金補貼或靈感爆發，是本月的主攻突破口。
-2. 【流月化權 ➔ ${mSihua.quan}星】與【流月化科 ➔ ${mSihua.ke}星】：
-   - 化權賦予你本月雷厲風行的執行力與專業說服力；化科則為本月解決麻煩糾紛的解藥，遇阻多請教懂行的平輩或專業人士。
-3. 【流月化忌 ➔ ${mSihua.ji}星】入本命【${mJiPalace}】，正面沖射對宮【${mJiClashPalace?.name}】：
-   - 本月份最需戒慎恐懼之暗礁雷區！正統命理提醒：流月忌星往往引動突發性口角是非、合約款項延宕、電腦檔案故障或身體疲憊。本月份在【${mJiPalace}】與【${mJiClashPalace?.name}】所屬之人事物上，切記「三思而後行，少說話多做事」。`;
+2. 【流月化權 ➔ ${mSihua.quan}星】入本命【${mQuanPalace}】：
+   - 本月份專業掌控力與執行力主戰場！化權賦予你雷厲風行的魄力，在【${mQuanPalace}】領域宜敢做決策、親自掛帥推進核心任務。
+3. 【流月化科 ➔ ${mSihua.ke}星】入本命【${mKePalace}】（★ 本月智慧解厄與貴人安全閥）：
+   - 本月份名譽口碑、貴人相助與逢凶化吉之鑰匙！化科為本月解決一切棘手是非的關鍵解藥。若遇阻滯或困境，向【${mKePalace}】所指涉之長輩師長、專業顧問或客觀第三方求教必能迎刃而解；此方亦極利考試考證、簽署合約文書、學術進修與公關宣發。
+4. 【流月化忌 ➔ ${mSihua.ji}星】入本命【${mJiPalace}】，正面沖射對宮【${mJiClashPalace?.name}】：
+   - 本月份最需戒慎恐懼之暗礁雷區！正統命理提醒：流月忌星往往引動突發性口角是非、合約款項延宕、電腦檔案故障或身體疲憊。本月份在【${mJiPalace}】與【${mJiClashPalace?.name}】所屬之人事物上，切記「以化科之理性守住底線，三思而後行，少說話多做事」。`;
   } else {
     monthlyOverlayText = `流月命宮坐地支【${mBranch}】，月令建極，引動當月之微觀運勢。`;
     monthlySiHuaText = `流月天干【${mStem}】引動月四化：${mSihua.lu}化祿、${mSihua.quan}化權、${mSihua.ke}化科、${mSihua.ji}化忌。`;

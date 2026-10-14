@@ -233,8 +233,21 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
                   <>
                     當前大限：<b className="text-[#2a5d7c] dark:text-[#64b5f6]">{currentDecade?.ageRange?.[0]}~{currentDecade?.ageRange?.[1]}歲 ({currentDecade?.heavenlyStem}{currentDecade?.earthlyBranch})</b>
                     {horoscope.decadalInfo?.mutagens && horoscope.decadalInfo.mutagens.length > 0 && (
-                      <span className="ml-2">
-                        大限四化：{horoscope.decadalInfo.mutagens.map(m => `${m.star}${m.mutagen}`).join('、')}
+                      <span className="ml-2 inline-flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-[#736859] dark:text-[#a8a193]">大限四化：</span>
+                        {horoscope.decadalInfo.mutagens.map((m, idx) => (
+                          <span key={idx} className="inline-flex items-center gap-0.5 text-[11px] font-mono">
+                            <span className="font-serif">{m.star}</span>
+                            <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                              m.mutagen === '祿' ? 'bg-[#15803d] text-white' :
+                              m.mutagen === '權' ? 'bg-[#b91c1c] text-white' :
+                              m.mutagen === '科' ? 'bg-[#0284c7] text-white ring-1 ring-sky-300/50 shadow-2xs font-bold' :
+                              'bg-[#7e22ce] text-white'
+                            }`}>
+                              {m.mutagen}
+                            </span>
+                          </span>
+                        ))}
                       </span>
                     )}
                   </>
@@ -243,8 +256,21 @@ export const HoroscopeTimeWheel: React.FC<HoroscopeTimeWheelProps> = ({
                   <>
                     當前流年：<b className="text-[#9c2e22] dark:text-[#e07b72]">{horoscope.selectedYear}年 ({horoscope.yearlyInfo?.stem}{horoscope.yearlyInfo?.branch}) · 虛歲 {horoscope.yearlyInfo?.nominalAge}歲</b>
                     {horoscope.yearlyInfo?.mutagens && horoscope.yearlyInfo.mutagens.length > 0 && (
-                      <span className="ml-2">
-                        流年四化：{horoscope.yearlyInfo.mutagens.map(m => `${m.star}${m.mutagen}`).join('、')}
+                      <span className="ml-2 inline-flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-[#736859] dark:text-[#a8a193]">流年四化：</span>
+                        {horoscope.yearlyInfo.mutagens.map((m, idx) => (
+                          <span key={idx} className="inline-flex items-center gap-0.5 text-[11px] font-mono">
+                            <span className="font-serif">{m.star}</span>
+                            <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                              m.mutagen === '祿' ? 'bg-[#15803d] text-white' :
+                              m.mutagen === '權' ? 'bg-[#b91c1c] text-white' :
+                              m.mutagen === '科' ? 'bg-[#0284c7] text-white ring-1 ring-sky-300/50 shadow-2xs font-bold' :
+                              'bg-[#7e22ce] text-white'
+                            }`}>
+                              {m.mutagen}
+                            </span>
+                          </span>
+                        ))}
                       </span>
                     )}
                   </>
