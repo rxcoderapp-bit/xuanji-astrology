@@ -307,13 +307,13 @@ export const BaziHologramPanel: React.FC<BaziHologramPanelProps> = ({ bazi }) =>
 
       </div>
 
-      {/* 4. 青嵐八字費曼學習法：十神公司體制心智模型 */}
+      {/* 4. 子平十神現代心智模型：公司體制與商業架構 */}
       {hologramResult.companyModel && (
         <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3d] space-y-4 shadow-sm">
           <div className="flex items-center justify-between border-b pb-2.5 border-[#eee6d6] dark:border-[#272938] flex-wrap gap-2">
             <div className="font-bold text-xs sm:text-sm text-[#333] dark:text-[#ddd] flex items-center gap-1.5">
               <span className="p-1 rounded bg-amber-600 text-white text-[11px]">🏢</span>
-              <span>青嵐十神公司體制模型 · 商業模式與組織架構</span>
+              <span>十神公司體制心智模型 · 商業模式與組織架構</span>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-300/40">
               {hologramResult.companyModel.founderRole}

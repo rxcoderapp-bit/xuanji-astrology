@@ -384,7 +384,7 @@ export const CLASSICAL_METAPHYSICS_CORPUS: ClassicalCorpusItem[] = [
   },
   {
     id: 'fx_001',
-    title: '梁若瑜飛星特殊忌格：逆水忌、入庫忌、拆馬忌、反弓忌之大破大立',
+    title: '飛星派正統特殊忌格：逆水忌、入庫忌、拆馬忌、反弓忌之大破大立',
     category: 'ziwei',
     categoryName: '飛星派',
     sourceBook: '《飛星紫微斗數全書》',
@@ -396,14 +396,14 @@ export const CLASSICAL_METAPHYSICS_CORPUS: ClassicalCorpusItem[] = [
   },
   {
     id: 'bz_006',
-    title: '青嵐八字費曼十神公司體制模型：將命局轉化為現代商業運營',
+    title: '子平十神現代公司體制心智模型：將命局轉化為現代商業運營',
     category: 'bazi',
     categoryName: '子平八字',
-    sourceBook: '《青嵐八字費曼學習法全集》',
+    sourceBook: '《子平十神現代心智模型全鑑》',
     dynastyEra: '當代易經命理心智模型',
-    keywords: ['八字費曼', '十神體制', '商業模式', '月令提綱', '董事會', '現金流', '產品研發'],
+    keywords: ['十神體制', '商業模式', '月令提綱', '董事會', '現金流', '產品研發', '心智模型'],
     originalText: '命局者，宇宙大市場中之商業公司也。日主為創始人CEO，月令提綱為特許經營牌照。官殺為董事會合規法規與特種危機部隊，印星為專利技術智庫與品牌護城河，財星為日常現金流與商業擴張版圖，食傷為產品創新實驗室與公關行銷，比劫為合夥同盟與渠道分銷戰隊。格成則商業模式運轉流暢，格破則組織內耗。',
-    vernacularMeaning: '運用費曼學習法，將深奧枯燥的天干地支轉化為每個人都看得懂的「現代企業組織架構」。算命不再是迷信推測，而是對個人人生這家「無限責任公司」進行商業模式體檢與戰略重塑。',
+    vernacularMeaning: '運用現代心智模型，將深奧枯燥的天干地支轉化為每個人都看得懂的「現代企業組織架構」。算命不再是迷信推測，而是對個人人生這家「無限責任公司」進行商業模式體檢與戰略重塑。',
     practicalGuidance: '檢視自身八字最強之十神，精確卡位人生職場賽道（食傷強者搞產品行銷，官印強者深耕體制專業，財星強者做資源整合與現金流），將命格稟賦發揮至極致。'
   },
   {
@@ -420,7 +420,7 @@ export const CLASSICAL_METAPHYSICS_CORPUS: ClassicalCorpusItem[] = [
   },
   {
     id: 'fs_001',
-    title: '形巒風水堪輿天機：外局形煞深層破譯與青嵐獨門中藥草本氣場安鎮',
+    title: '形巒風水堪輿天機：外局形煞深層破譯與玄微本草氣場安鎮',
     category: 'iching',
     categoryName: '陽宅風水',
     sourceBook: '《形巒風水堪輿天機》',

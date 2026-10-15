@@ -279,7 +279,7 @@ export const FengshuiPanel: React.FC<FengshuiPanelProps> = ({
         )}
       </div>
 
-      {/* 4. 青嵐獨門中藥草本氣場安鎮全鑑 */}
+      {/* 4. 玄微秘傳中藥草本氣場安鎮全鑑 */}
       <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3d] space-y-4 shadow-sm">
         <div className="flex items-center justify-between border-b pb-2.5 border-[#eee6d6] dark:border-[#272938] flex-wrap gap-2">
           <div className="font-bold text-xs sm:text-sm text-[#333] dark:text-[#ddd] flex items-center gap-1.5">

@@ -351,7 +351,7 @@ export function computeBaziHologram(bazi: BaziData): BaziHologramAnalysisResult 
     lifestyleGuidance: lifestyle
   };
 
-  // 5. 青嵐八字費曼學習法：十神現代公司體制心智模型 (Feynman Company Model)
+  // 5. 子平十神現代心智模型：公司體制與商業架構 (Feynman Company Model)
   let coreBizModel = '資本運作與現金流分銷模型';
   let opAdvice = '';
   if (['寅', '卯', '巳', '午'].includes(monthBranch) && (shuiPct <= 15 || jinPct <= 15)) {
@@ -436,7 +436,7 @@ export function computeBaziHologram(bazi: BaziData): BaziHologramAnalysisResult 
     }
   };
 
-  const synthesis = `本命子平全息模型採用現代動態量化演算法，月令提綱與地支藏干權重精密計算。日主【${dayStem}${dmElem}】綜合判定為【${strengthLevel}】。五行之中以【${maxElem.element}】力量最雄厚（佔比 ${maxElem.percentage}%）。四大用神中，扶抑最喜【${xiYong.join('、')}】，${tiaoHouNeed ? `調候急需【${tiaoHouGod}】，` : ''}${tongGuanNeed ? `通關喜【${mediator}】以化解對峙。` : ''}青嵐費曼體制診斷為【${coreBizModel}】，《窮通寶鑑》氣候舒適度評分【${thermoScore}/100】，中醫時空基因提示首要固護【${organ}】，身心調泰則萬事興隆。`;
+  const synthesis = `本命子平全息模型採用現代動態量化演算法，月令提綱與地支藏干權重精密計算。日主【${dayStem}${dmElem}】綜合判定為【${strengthLevel}】。五行之中以【${maxElem.element}】力量最雄厚（佔比 ${maxElem.percentage}%）。四大用神中，扶抑最喜【${xiYong.join('、')}】，${tiaoHouNeed ? `調候急需【${tiaoHouGod}】，` : ''}${tongGuanNeed ? `通關喜【${mediator}】以化解對峙。` : ''}十神商業架構診斷為【${coreBizModel}】，《窮通寶鑑》氣候舒適度評分【${thermoScore}/100】，中醫時空基因提示首要固護【${organ}】，身心調泰則萬事興隆。`;
 
   return {
     elements,

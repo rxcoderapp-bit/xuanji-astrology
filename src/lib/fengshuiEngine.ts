@@ -54,7 +54,7 @@ export interface FengshuiAnalysisResult {
   overallFengshuiSummary: string;
 }
 
-// 青嵐獨門中藥草本化煞藥方與外局形煞全鑑
+// 玄微秘傳中藥草本化煞藥方與外局形煞全鑑
 export const EXTERIOR_SHA_REMEDIES: ExteriorShaRemedy[] = [
   {
     id: 'sha_jianjiao',

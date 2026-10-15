@@ -49,6 +49,7 @@ import { MasterPatternPanel } from './MasterPatternPanel';
 import { ThreeLayerPanel } from './ThreeLayerPanel';
 import { FengshuiPanel } from './FengshuiPanel';
 import { BaziHologramPanel } from './BaziHologramPanel';
+import { TrinityMasterPanel } from './TrinityMasterPanel';
 
 interface InterpretationStudioProps {
   selectedPalace: PalaceData;
@@ -114,6 +115,7 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
   const [retrievedCitations, setRetrievedCitations] = useState<ClassicalCorpusItem[]>([]);
 
   const [horoscopeSubTab, setHoroscopeSubTab] = useState<'yearly' | 'monthly' | 'decadal' | 'all'>('yearly');
+  const [dualTrackSubTab, setDualTrackSubTab] = useState<'matrix' | 'trinity'>('matrix');
 
   // Synchronize sub-tab when user changes activeLayer from horoscope time wheel or board
   useEffect(() => {
@@ -779,190 +781,199 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
               </p>
             </div>
 
-            {/* 1. 歲運雙軌吉凶共振探測 (Timing Resonance) */}
-            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
-              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
-                <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b] flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  當前歲運雙軌吉凶共振 ({activeResonance.year}年 · {activeResonance.yearlyStemBranch}歲君)
-                </h3>
-                <span className={`px-2 py-0.5 rounded text-xs font-bold border ${
-                  activeResonance.score >= 50
-                    ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
-                    : activeResonance.score <= -30
-                    ? 'bg-[#fff1f2] dark:bg-[#311317] text-[#e11d48] dark:text-[#fb7185] border-[#fecdd3] dark:border-[#881337]'
-                    : 'bg-[#fefce8] dark:bg-[#2b2713] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
-                }`}>
-                  {activeResonance.grade} ({activeResonance.score > 0 ? `+${activeResonance.score}` : activeResonance.score}分)
-                </span>
-              </div>
-
-              {/* Triggers Breakdown */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#1f202b] border border-[#e8dfcf] dark:border-[#2c2e3f] space-y-1">
-                  <span className="font-bold text-[#b85d18] dark:text-[#e58a44] block">✦ 八字五行歲運引動：</span>
-                  <div className="text-[#443e37] dark:text-[#c4beb4] text-[11px]">
-                    {activeResonance.baziTriggers.length > 0 
-                      ? activeResonance.baziTriggers.map((t, idx) => <div key={idx}>• {t}</div>) 
-                      : '• 五行歲運進氣平和'}
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#1f202b] border border-[#e8dfcf] dark:border-[#2c2e3f] space-y-1">
-                  <span className="font-bold text-[#2a5d7c] dark:text-[#64b5f6] block">✦ 紫微流年星曜化吉化忌：</span>
-                  <div className="text-[#443e37] dark:text-[#c4beb4] text-[11px]">
-                    {activeResonance.keyStars.length > 0 
-                      ? activeResonance.keyStars.map((s, idx) => <span key={idx} className="mr-2 inline-block">• {s}</span>) 
-                      : '• 流年四化常規運轉'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Verdict & Strategy */}
-              <div className="space-y-2 pt-1 text-xs">
-                <div>
-                  <b className="text-[#8d271c] dark:text-[#df756b]">【宗師共振斷語】：</b>
-                  <span className="text-[#333] dark:text-[#ddd]">{activeResonance.verdict}</span>
-                </div>
-                <div>
-                  <b className="text-[#1b7a4f] dark:text-[#4ade80]">【趨吉避凶現代心法】：</b>
-                  <span className="text-[#333] dark:text-[#ddd]">{activeResonance.strategicAdvice}</span>
-                </div>
-              </div>
+            {/* Sub-Navigation: 雙軌能量星神同頻 vs 天地人三才宗師心法 */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#ede7d8] dark:bg-[#181922] border border-[#dcd3bf] dark:border-[#2b2d3c] text-xs font-bold">
+              <button
+                onClick={() => setDualTrackSubTab('matrix')}
+                className={`flex-1 py-1.5 px-2 rounded-lg transition text-center cursor-pointer truncate ${
+                  dualTrackSubTab === 'matrix'
+                    ? 'bg-[#8d271c] text-white shadow-xs'
+                    : 'text-[#635a4f] dark:text-[#b4aea4] hover:bg-white/50 dark:hover:bg-[#202230]'
+                }`}
+              >
+                ⚡ 歲運共振 ✕ 五行星神同頻
+              </button>
+              <button
+                onClick={() => setDualTrackSubTab('trinity')}
+                className={`flex-1 py-1.5 px-2 rounded-lg transition text-center cursor-pointer truncate ${
+                  dualTrackSubTab === 'trinity'
+                    ? 'bg-[#8d271c] text-white shadow-xs'
+                    : 'text-[#635a4f] dark:text-[#b4aea4] hover:bg-white/50 dark:hover:bg-[#202230]'
+                }`}
+              >
+                ☯️ 天地人三才宗師預測心法手冊 (三位一體)
+              </button>
             </div>
 
-            {/* 2. 五行全息動態能量分佈 (SVG Radar) */}
-            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
-              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
-                <h3 className="font-bold text-sm text-[#1b7a4f] dark:text-[#4ade80] flex items-center gap-1.5">
-                  <Flame className="w-4 h-4" />
-                  五行全息動態能量分佈與喜忌神
-                </h3>
-                <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
-                  日主【{activeEnergy.dayMaster}】({activeEnergy.dayMasterStrength})
-                </span>
-              </div>
+            {/* SubTab 1: 歲運共振 ✕ 五行星神同頻 */}
+            {dualTrackSubTab === 'matrix' && (
+              <div className="space-y-4">
+                {/* 1. 歲運雙軌吉凶共振探測 (Timing Resonance) */}
+                <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+                  <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                    <h3 className="font-bold text-sm text-[#8d271c] dark:text-[#df756b] flex items-center gap-1.5">
+                      <Clock className="w-4 h-4" />
+                      當前歲運雙軌吉凶共振 ({activeResonance.year}年 · {activeResonance.yearlyStemBranch}歲君)
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold border ${
+                      activeResonance.score >= 50
+                        ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
+                        : activeResonance.score <= -30
+                        ? 'bg-[#fff1f2] dark:bg-[#311317] text-[#e11d48] dark:text-[#fb7185] border-[#fecdd3] dark:border-[#881337]'
+                        : 'bg-[#fefce8] dark:bg-[#2b2713] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
+                    }`}>
+                      {activeResonance.grade} ({activeResonance.score > 0 ? `+${activeResonance.score}` : activeResonance.score}分)
+                    </span>
+                  </div>
 
-              {/* Embed Pure SVG Radar */}
-              <DualTrackRadar energy={activeEnergy} />
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#f0e8db] dark:border-[#262835] text-xs">
-                <div className="p-2.5 rounded-lg bg-[#f0fdf4] dark:bg-[#14261b] border border-[#bbf7d0] dark:border-[#1e462c]">
-                  <span className="font-bold text-[#15803d] dark:text-[#4ade80] block mb-0.5">✦ 命中喜用五行：</span>
-                  <span className="text-xs font-semibold text-[#166534] dark:text-[#86efac]">
-                    {activeEnergy.favorableElements.join('、') || '平和流通'}
-                  </span>
-                  <p className="text-[10px] text-[#4b7a5a] dark:text-[#80ad91] mt-0.5">逢此五行生旺歲運，百事順遂亨通</p>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#fff1f2] dark:bg-[#2b1417] border border-[#fecdd3] dark:border-[#4c1d24]">
-                  <span className="font-bold text-[#be123c] dark:text-[#fb7185] block mb-0.5">✦ 命中忌仇五行：</span>
-                  <span className="text-xs font-semibold text-[#9f1239] dark:text-[#fda4af]">
-                    {activeEnergy.unfavorableElements.join('、') || '無強烈忌神'}
-                  </span>
-                  <p className="text-[10px] text-[#91505c] dark:text-[#bd7e8c] mt-0.5">逢此五行過盛歲運，宜守成謹慎避險</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. 星神同頻矩陣 (Star-God Synastry Matrix) */}
-            <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
-              <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
-                <h3 className="font-bold text-sm text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1.5">
-                  <Compass className="w-4 h-4" />
-                  星神同頻矩陣 (六大要宮互證)
-                </h3>
-                <span className="text-xs text-[#706456] dark:text-[#9e978d]">
-                  紫微主星 ✕ 八字十神
-                </span>
-              </div>
-
-              <div className="space-y-2.5 text-xs">
-                {starGodSynastry.map((item, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-[#faf7f0] dark:bg-[#1d1f2a] border border-[#e8dfce] dark:border-[#2e3142] space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm text-[#8d271c] dark:text-[#df756b]">【{item.palaceName}】</span>
-                        <span className="text-xs text-[#554e44] dark:text-[#b4aea4]">
-                          {item.starNames.join('、') || '吉曜拱會'}
-                        </span>
-                        {item.tenGods.length > 0 && (
-                          <span className="text-[11px] px-1.5 py-0.2 rounded bg-[#ebe4d6] dark:bg-[#282a3a] text-[#706456] dark:text-[#a0a8be]">
-                            {item.tenGods.slice(0, 2).join(' ')}
-                          </span>
-                        )}
+                  {/* Triggers Breakdown */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#1f202b] border border-[#e8dfcf] dark:border-[#2c2e3f] space-y-1">
+                      <span className="font-bold text-[#b85d18] dark:text-[#e58a44] block">✦ 八字五行歲運引動：</span>
+                      <div className="text-[#443e37] dark:text-[#c4beb4] text-[11px]">
+                        {activeResonance.baziTriggers.length > 0 
+                          ? activeResonance.baziTriggers.map((t, idx) => <div key={idx}>• {t}</div>) 
+                          : '• 五行歲運進氣平和'}
                       </div>
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
-                        item.resonanceLevel === '天作之合'
-                          ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
-                          : item.resonanceLevel === '剛柔並濟'
-                          ? 'bg-[#eff6ff] dark:bg-[#132035] text-[#2563eb] dark:text-[#60a5fa] border-[#bfdbfe] dark:border-[#1e3a8a]'
-                          : 'bg-[#fefce8] dark:bg-[#282413] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
-                      }`}>
-                        {item.resonanceLevel} ({item.resonanceScore}分)
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#1f202b] border border-[#e8dfcf] dark:border-[#2c2e3f] space-y-1">
+                      <span className="font-bold text-[#2a5d7c] dark:text-[#64b5f6] block">✦ 紫微流年星曜化吉化忌：</span>
+                      <div className="text-[#443e37] dark:text-[#c4beb4] text-[11px]">
+                        {activeResonance.keyStars.length > 0 
+                          ? activeResonance.keyStars.map((s, idx) => <span key={idx} className="mr-2 inline-block">• {s}</span>) 
+                          : '• 流年四化常規運轉'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Verdict & Strategy */}
+                  <div className="space-y-2 pt-1 text-xs">
+                    <div>
+                      <b className="text-[#8d271c] dark:text-[#df756b]">【宗師共振斷語】：</b>
+                      <span className="text-[#333] dark:text-[#ddd]">{activeResonance.verdict}</span>
+                    </div>
+                    <div>
+                      <b className="text-[#1b7a4f] dark:text-[#4ade80]">【趨吉避凶現代心法】：</b>
+                      <span className="text-[#333] dark:text-[#ddd]">{activeResonance.strategicAdvice}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. 五行全息動態能量分佈 (SVG Radar) */}
+                <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+                  <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                    <h3 className="font-bold text-sm text-[#1b7a4f] dark:text-[#4ade80] flex items-center gap-1.5">
+                      <Flame className="w-4 h-4" />
+                      五行全息動態能量分佈與喜忌神
+                    </h3>
+                    <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
+                      日主【{activeEnergy.dayMaster}】({activeEnergy.dayMasterStrength})
+                    </span>
+                  </div>
+
+                  {/* Embed Pure SVG Radar */}
+                  <DualTrackRadar energy={activeEnergy} />
+
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#f0e8db] dark:border-[#262835] text-xs">
+                    <div className="p-2.5 rounded-lg bg-[#f0fdf4] dark:bg-[#14261b] border border-[#bbf7d0] dark:border-[#1e462c]">
+                      <span className="font-bold text-[#15803d] dark:text-[#4ade80] block mb-0.5">✦ 命中喜用五行：</span>
+                      <span className="text-xs font-semibold text-[#166534] dark:text-[#86efac]">
+                        {activeEnergy.favorableElements.join('、') || '平和流通'}
                       </span>
+                      <p className="text-[10px] text-[#4b7a5a] dark:text-[#80ad91] mt-0.5">逢此五行生旺歲運，百事順遂亨通</p>
                     </div>
-                    <div className="font-semibold text-xs text-[#2b2723] dark:text-[#e4e0d7]">
-                      {item.title}
+                    <div className="p-2.5 rounded-lg bg-[#fff1f2] dark:bg-[#2b1417] border border-[#fecdd3] dark:border-[#4c1d24]">
+                      <span className="font-bold text-[#be123c] dark:text-[#fb7185] block mb-0.5">✦ 命中忌仇五行：</span>
+                      <span className="text-xs font-semibold text-[#9f1239] dark:text-[#fda4af]">
+                        {activeEnergy.unfavorableElements.join('、') || '無強烈忌神'}
+                      </span>
+                      <p className="text-[10px] text-[#91505c] dark:text-[#bd7e8c] mt-0.5">逢此五行過盛歲運，宜守成謹慎避險</p>
                     </div>
-                    <p className="text-[11px] text-[#554e44] dark:text-[#b4aea4] leading-relaxed text-justify">
-                      {item.verdict}
+                  </div>
+                </div>
+
+                {/* 3. 星神同頻矩陣 (Star-God Synastry Matrix) */}
+                <div className="p-4 rounded-xl border bg-white dark:bg-[#1a1b23] border-[#ded6c5] dark:border-[#2c2e3c] space-y-3.5">
+                  <div className="flex items-center justify-between border-b pb-2 border-[#eee6d7] dark:border-[#262835]">
+                    <h3 className="font-bold text-sm text-[#2a5d7c] dark:text-[#64b5f6] flex items-center gap-1.5">
+                      <Compass className="w-4 h-4" />
+                      星神同頻矩陣 (六大要宮互證)
+                    </h3>
+                    <span className="text-xs text-[#706456] dark:text-[#9e978d]">
+                      紫微主星 ✕ 八字十神
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs">
+                    {starGodSynastry.map((item, idx) => (
+                      <div key={idx} className="p-3 rounded-xl bg-[#faf7f0] dark:bg-[#1d1f2a] border border-[#e8dfce] dark:border-[#2e3142] space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-sm text-[#8d271c] dark:text-[#df756b]">【{item.palaceName}】</span>
+                            <span className="text-xs text-[#554e44] dark:text-[#b4aea4]">
+                              {item.starNames.join('、') || '吉曜拱會'}
+                            </span>
+                            {item.tenGods.length > 0 && (
+                              <span className="text-[11px] px-1.5 py-0.2 rounded bg-[#ebe4d6] dark:bg-[#282a3a] text-[#706456] dark:text-[#a0a8be]">
+                                {item.tenGods.slice(0, 2).join(' ')}
+                              </span>
+                            )}
+                          </div>
+                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
+                            item.resonanceLevel === '天作之合'
+                              ? 'bg-[#ecfdf5] dark:bg-[#132d21] text-[#059669] dark:text-[#34d399] border-[#a7f3d0] dark:border-[#065f46]'
+                              : item.resonanceLevel === '剛柔並濟'
+                              ? 'bg-[#eff6ff] dark:bg-[#132035] text-[#2563eb] dark:text-[#60a5fa] border-[#bfdbfe] dark:border-[#1e3a8a]'
+                              : 'bg-[#fefce8] dark:bg-[#282413] text-[#ca8a04] dark:text-[#facc15] border-[#fef08a] dark:border-[#854d0e]'
+                          }`}>
+                            {item.resonanceLevel} ({item.resonanceScore}分)
+                          </span>
+                        </div>
+                        <div className="font-semibold text-xs text-[#2b2723] dark:text-[#e4e0d7]">
+                          {item.title}
+                        </div>
+                        <p className="text-[11px] text-[#554e44] dark:text-[#b4aea4] leading-relaxed text-justify">
+                          {item.verdict}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3.5 點擊直達天地人三才宗師心法手冊引導卡 */}
+                <div className="p-4 rounded-xl border bg-gradient-to-br from-[#faf7ef] to-[#f4ebe0] dark:from-[#1b1c28] dark:to-[#14151f] border-[#ded4bf] dark:border-[#2f3246] flex items-center justify-between gap-3 shadow-xs">
+                  <div>
+                    <div className="font-bold text-xs sm:text-sm text-[#8d271c] dark:text-[#ef5350] flex items-center gap-1.5">
+                      <span>☯️ 天地人三才宗師預測心法手冊 · 即時三才診斷</span>
+                    </div>
+                    <p className="text-[11px] text-[#6d6152] dark:text-[#a59e91] mt-0.5">
+                      深入查閱五步閉環 SOP、吉凶衝突仲裁法則矩陣、四大實戰決策指南與宗師修煉心法
                     </p>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 3.5 命理三位一體大師預測心法手冊（天地人三才合參） */}
-            <div className="p-4 rounded-xl border bg-gradient-to-br from-[#faf7ef] to-[#f4ebe0] dark:from-[#1b1c28] dark:to-[#14151f] border-[#ded4bf] dark:border-[#2f3246] space-y-3 shadow-xs">
-              <div className="flex items-center justify-between border-b pb-2.5 border-[#e8ded0] dark:border-[#2b2d3e]">
-                <div className="flex items-center gap-2">
-                  <span className="p-1 rounded bg-[#8d271c] text-white text-[11px]">☯️</span>
-                  <h4 className="font-bold text-xs sm:text-sm text-[#2b2723] dark:text-[#f2efe9]">
-                    命理三位一體大師預測心法 · 天地人三才合參
-                  </h4>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-[#8d271c]/10 text-[#8d271c] dark:text-[#ef5350]">
-                  大師高階心法
-                </span>
-              </div>
-
-              <p className="text-xs text-[#554e44] dark:text-[#b4aea4] leading-relaxed">
-                《易經》云：「天垂象，見吉凶，聖人象之。」真正精深的命理絕非單一術數瞎猜，而是**「八字紫微知天命、陽宅形巒調地利、易經機先盡人謀」**的三位一體大成之道：
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
-                <div className="p-3 rounded-lg bg-white/80 dark:bg-[#181924] border border-[#e5dccb] dark:border-[#2b2d3d] space-y-1">
-                  <div className="font-bold text-[#8d271c] dark:text-[#ef5350] flex items-center gap-1">
-                    <span>① 識天命 (八字 ✕ 紫微)</span>
-                  </div>
-                  <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
-                    定生命先天藍圖與上限，明晰十年大運起伏。知何時當順勢攻堅，何時當蟄伏守蓄，此乃宏觀戰略導航。
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-white/80 dark:bg-[#181924] border border-[#e5dccb] dark:border-[#2b2d3d] space-y-1">
-                  <div className="font-bold text-[#15803d] dark:text-[#4ade80] flex items-center gap-1">
-                    <span>② 據地利 (形巒 ✕ 中藥)</span>
-                  </div>
-                  <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
-                    居所為生命能量培養皿。察外局形煞（尖角、路沖、天斬），配中藥草本氣場安鎮，聚氣安宅以固本培元。
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-white/80 dark:bg-[#181924] border border-[#e5dccb] dark:border-[#2b2d3d] space-y-1">
-                  <div className="font-bold text-[#0284c7] dark:text-[#38bdf8] flex items-center gap-1">
-                    <span>③ 盡人謀 (機先 ✕ 決策)</span>
-                  </div>
-                  <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed">
-                    抓當下瞬時機先（如文王六爻斷事）。在重大投資、簽約、轉職關鍵時點設立停損機制，以理性前行。
-                  </p>
+                  <button
+                    onClick={() => setDualTrackSubTab('trinity')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#8d271c] hover:bg-[#782017] transition flex items-center gap-1 shrink-0 shadow-xs cursor-pointer"
+                  >
+                    <span>開啟心法手冊</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
+            )}
 
-              <div className="p-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/40 text-[11px] text-[#78350f] dark:text-[#fde68a] italic leading-relaxed">
-                ✦ 宗師心法真諦：八字看大方向知進退，六爻測具體事辨虛實，風水調環境增生氣。明乎此三者，方能擺脫宿命束縛，真正成就命運掌舵者！
-              </div>
-            </div>
+            {/* SubTab 2: 天地人三才宗師預測心法手冊 (三位一體合參) */}
+            {dualTrackSubTab === 'trinity' && (
+              <TrinityMasterPanel
+                bazi={bazi}
+                allPalaces={allPalaces}
+                horoscope={horoscope}
+                activeEnergy={activeEnergy}
+                activeResonance={activeResonance}
+                onSelectPalace={onSelectPalace}
+              />
+            )}
+
 
             {/* 4. AI Deep Reading CTA Banner */}
             <div className="p-3.5 rounded-xl border bg-gradient-to-r from-[#fbf5eb] to-[#f4ebe1] dark:from-[#211a14] dark:to-[#221c26] border-[#ecdac0] dark:border-[#423328] flex items-center justify-between gap-3">
