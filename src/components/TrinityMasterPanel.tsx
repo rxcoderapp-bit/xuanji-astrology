@@ -191,27 +191,28 @@ export const TrinityMasterPanel: React.FC<TrinityMasterPanelProps> = ({
           </p>
         </div>
 
-        {/* Navigation Tabs within Trinity Panel */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 pt-1 text-[11px] sm:text-xs font-bold">
+        {/* Navigation Tabs within Trinity Panel (Spacious 2x3 Grid on sm, 3x2 on mobile) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 pt-1 text-xs font-bold">
           {[
-            { id: 'diagnostic', label: '🧭當前三才診斷', desc: '即時動態評估' },
-            { id: 'sop', label: '🔄五步閉環SOP', desc: '實戰推演流程' },
-            { id: 'arbitration', label: '⚖️吉凶仲裁矩陣', desc: '衝突大師裁決' },
-            { id: 'scenarios', label: '🎯四大實戰主題', desc: '財職情病指南' },
-            { id: 'framework', label: '🌌三才立體架構', desc: '時間空間機先' },
-            { id: 'creed', label: '📜宗師修行箴言', desc: '學易六大戒律' },
+            { id: 'diagnostic', icon: '🧭', label: '當前三才診斷', desc: '即時動態評估' },
+            { id: 'sop', icon: '🔄', label: '五步閉環 SOP', desc: '實戰推演流程' },
+            { id: 'arbitration', icon: '⚖️', label: '吉凶仲裁矩陣', desc: '衝突大師裁決' },
+            { id: 'scenarios', icon: '🎯', label: '四大實戰主題', desc: '財職情病指南' },
+            { id: 'framework', icon: '🌌', label: '三才立體架構', desc: '時間空間機先' },
+            { id: 'creed', icon: '📜', label: '宗師修行箴言', desc: '學易六大戒律' },
           ].map(tab => {
             const isActive = activeTrinityTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTrinityTab(tab.id as any)}
-                className={`py-2 px-1 rounded-xl border text-center transition flex flex-col items-center justify-center cursor-pointer shadow-xs
+                className={`py-2.5 px-3 rounded-xl border text-center transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs
                   ${isActive
                     ? 'bg-[#8d271c] text-white border-[#701e15] font-black shadow-sm ring-1 ring-black/10'
-                    : 'bg-white/80 dark:bg-[#1c1d27] border-[#dcd3bf] dark:border-[#2b2d3c] text-[#554e44] dark:text-[#b4aea4] hover:bg-white dark:hover:bg-[#252734]'}`}
+                    : 'bg-white/90 dark:bg-[#1c1d27] border-[#dcd3bf] dark:border-[#2b2d3c] text-[#554e44] dark:text-[#b4aea4] hover:bg-white dark:hover:bg-[#252734]'}`}
               >
-                <span className="truncate">{tab.label}</span>
+                <span className="text-sm shrink-0">{tab.icon}</span>
+                <span className="font-bold tracking-wide whitespace-nowrap">{tab.label}</span>
               </button>
             );
           })}
@@ -665,24 +666,24 @@ export const TrinityMasterPanel: React.FC<TrinityMasterPanelProps> = ({
               </p>
             </div>
 
-            {/* Scenario Navigation Tabs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {/* Scenario Navigation Tabs (2 columns on mobile/tablet, 4 columns on desktop) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5">
               {[
-                { id: 'wealth', label: '💰 財富投資與債務危機', color: 'text-amber-700 dark:text-amber-400' },
-                { id: 'career', label: '💼 職場晉升與合約糾紛', color: 'text-sky-700 dark:text-sky-400' },
-                { id: 'love', label: '💖 親密關係與婚戀危機', color: 'text-rose-700 dark:text-rose-400' },
-                { id: 'health', label: '🌿 身心體質與頑疾調養', color: 'text-emerald-700 dark:text-emerald-400' },
+                { id: 'wealth', label: '💰 財富投資 ✕ 債務危機' },
+                { id: 'career', label: '💼 職場晉升 ✕ 合約糾紛' },
+                { id: 'love', label: '💖 親密關係 ✕ 婚戀危機' },
+                { id: 'health', label: '🌿 身心體質 ✕ 頑疾調養' },
               ].map(s => (
                 <button
                   key={s.id}
                   onClick={() => setActiveScenario(s.id as any)}
-                  className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition text-center cursor-pointer ${
+                  className={`py-2.5 px-2.5 sm:px-3 rounded-xl border text-xs font-bold transition text-center cursor-pointer shadow-xs ${
                     activeScenario === s.id
-                      ? 'bg-[#8d271c] text-white border-[#701e15] shadow-sm'
+                      ? 'bg-[#8d271c] text-white border-[#701e15] shadow-sm font-black'
                       : 'bg-[#faf7f0] dark:bg-[#1f202c] border-[#e5dccb] dark:border-[#2f3246] text-[#635a4f] dark:text-[#b0a99c] hover:bg-white dark:hover:bg-[#252838]'
                   }`}
                 >
-                  <span className="truncate">{s.label}</span>
+                  <span className="whitespace-nowrap">{s.label}</span>
                 </button>
               ))}
             </div>

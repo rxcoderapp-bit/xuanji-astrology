@@ -782,26 +782,28 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
             </div>
 
             {/* Sub-Navigation: 雙軌能量星神同頻 vs 天地人三才宗師心法 */}
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#ede7d8] dark:bg-[#181922] border border-[#dcd3bf] dark:border-[#2b2d3c] text-xs font-bold">
+            <div className="flex items-center gap-2 p-1.5 rounded-xl bg-[#ede7d8] dark:bg-[#181922] border border-[#dcd3bf] dark:border-[#2b2d3c] text-xs font-bold">
               <button
                 onClick={() => setDualTrackSubTab('matrix')}
-                className={`flex-1 py-1.5 px-2 rounded-lg transition text-center cursor-pointer truncate ${
+                className={`flex-1 py-2 px-2.5 rounded-lg transition text-center cursor-pointer shadow-xs ${
                   dualTrackSubTab === 'matrix'
-                    ? 'bg-[#8d271c] text-white shadow-xs'
-                    : 'text-[#635a4f] dark:text-[#b4aea4] hover:bg-white/50 dark:hover:bg-[#202230]'
+                    ? 'bg-[#8d271c] text-white font-black'
+                    : 'text-[#635a4f] dark:text-[#b4aea4] hover:bg-white/60 dark:hover:bg-[#202230]'
                 }`}
               >
-                ⚡ 歲運共振 ✕ 五行星神同頻
+                <span className="sm:hidden">⚡ 歲運星神同頻</span>
+                <span className="hidden sm:inline">⚡ 歲運共振 ✕ 五行星神同頻</span>
               </button>
               <button
                 onClick={() => setDualTrackSubTab('trinity')}
-                className={`flex-1 py-1.5 px-2 rounded-lg transition text-center cursor-pointer truncate ${
+                className={`flex-1 py-2 px-2.5 rounded-lg transition text-center cursor-pointer shadow-xs ${
                   dualTrackSubTab === 'trinity'
-                    ? 'bg-[#8d271c] text-white shadow-xs'
-                    : 'text-[#635a4f] dark:text-[#b4aea4] hover:bg-white/50 dark:hover:bg-[#202230]'
+                    ? 'bg-[#8d271c] text-white font-black'
+                    : 'text-[#635a4f] dark:text-[#b4aea4] hover:bg-white/60 dark:hover:bg-[#202230]'
                 }`}
               >
-                ☯️ 天地人三才宗師預測心法手冊 (三位一體)
+                <span className="sm:hidden">☯️ 三才宗師手冊</span>
+                <span className="hidden sm:inline">☯️ 天地人三才宗師心法手冊</span>
               </button>
             </div>
 
