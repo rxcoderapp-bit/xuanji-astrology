@@ -5,6 +5,7 @@
  */
 
 import type { BaziData } from '../types';
+import { calculateDynamicBaziStrength } from './baziStrengthEngine';
 
 export interface ElementQuantitativeMetric {
   element: '金' | '木' | '水' | '火' | '土';
@@ -93,22 +94,6 @@ export interface BaziHologramAnalysisResult {
   synthesisText: string;
 }
 
-// 地支藏干與力量權重表 (本氣: 1.0, 中氣: 0.5, 餘氣: 0.25)
-const BRANCH_CANGGAN_WEIGHTS: Record<string, Array<{ stem: string; weight: number; elem: '金' | '木' | '水' | '火' | '土' }>> = {
-  '子': [{ stem: '癸', weight: 1.0, elem: '水' }],
-  '丑': [{ stem: '己', weight: 0.6, elem: '土' }, { stem: '癸', weight: 0.3, elem: '水' }, { stem: '辛', weight: 0.2, elem: '金' }],
-  '寅': [{ stem: '甲', weight: 0.7, elem: '木' }, { stem: '丙', weight: 0.3, elem: '火' }, { stem: '戊', weight: 0.1, elem: '土' }],
-  '卯': [{ stem: '乙', weight: 1.0, elem: '木' }],
-  '辰': [{ stem: '戊', weight: 0.6, elem: '土' }, { stem: '乙', weight: 0.3, elem: '木' }, { stem: '癸', weight: 0.2, elem: '水' }],
-  '巳': [{ stem: '丙', weight: 0.7, elem: '火' }, { stem: '戊', weight: 0.2, elem: '土' }, { stem: '庚', weight: 0.2, elem: '金' }],
-  '午': [{ stem: '丁', weight: 0.7, elem: '火' }, { stem: '己', weight: 0.3, elem: '土' }],
-  '未': [{ stem: '己', weight: 0.6, elem: '土' }, { stem: '丁', weight: 0.3, elem: '火' }, { stem: '乙', weight: 0.2, elem: '木' }],
-  '申': [{ stem: '庚', weight: 0.7, elem: '金' }, { stem: '壬', weight: 0.3, elem: '水' }, { stem: '戊', weight: 0.1, elem: '土' }],
-  '酉': [{ stem: '辛', weight: 1.0, elem: '金' }],
-  '戌': [{ stem: '戊', weight: 0.6, elem: '土' }, { stem: '辛', weight: 0.3, elem: '金' }, { stem: '丁', weight: 0.2, elem: '火' }],
-  '亥': [{ stem: '壬', weight: 0.7, elem: '水' }, { stem: '甲', weight: 0.3, elem: '木' }]
-};
-
 const STEM_TO_ELEM: Record<string, '金' | '木' | '水' | '火' | '土'> = {
   '甲': '木', '乙': '木',
   '丙': '火', '丁': '火',
@@ -118,100 +103,69 @@ const STEM_TO_ELEM: Record<string, '金' | '木' | '水' | '火' | '土'> = {
 };
 
 export function computeBaziHologram(bazi: BaziData): BaziHologramAnalysisResult {
-  const fourPillars = [bazi.year, bazi.month, bazi.day, bazi.hour];
   const monthBranch = bazi.month.branch;
   const dayStem = bazi.day.stem;
   const dmElem = STEM_TO_ELEM[dayStem] || '木';
 
-  // 1. 動態精密量化計算五行能量
-  const rawScores: Record<'金' | '木' | '水' | '火' | '土', number> = {
-    '金': 0, '木': 0, '水': 0, '火': 0, '土': 0
+  // 1. 動態精密量化計算五行能量與動態旺衰 (四維度合化演算法)
+  const dynamicStrength = calculateDynamicBaziStrength({
+    year: bazi.year,
+    month: bazi.month,
+    day: bazi.day,
+    hour: bazi.hour
+  });
+
+  const colors = {
+    '木': '#22c55e',
+    '火': '#ef4444',
+    '土': '#f59e0b',
+    '金': '#94a3b8',
+    '水': '#3b82f6'
   };
 
-  // 天干分數 (透干各給 10 分)
-  fourPillars.forEach(p => {
-    const elem = STEM_TO_ELEM[p.stem];
-    if (elem) rawScores[elem] += 10;
-  });
+  const elemKeyMap: Record<'木' | '火' | '土' | '金' | '水', keyof typeof dynamicStrength.normalizedElements> = {
+    '木': 'wood',
+    '火': 'fire',
+    '土': 'earth',
+    '金': 'metal',
+    '水': 'water'
+  };
 
-  // 月令提綱加權 (月令權重高達 45 分)
-  const monthCangGan = BRANCH_CANGGAN_WEIGHTS[monthBranch] || [];
-  monthCangGan.forEach(cg => {
-    rawScores[cg.elem] += cg.weight * 45;
-  });
-
-  // 年日時支通根加權 (年支20分、日支25分、時支20分)
-  const branchWeights = [
-    { b: bazi.year.branch, w: 20 },
-    { b: bazi.day.branch, w: 25 },
-    { b: bazi.hour.branch, w: 20 }
-  ];
-
-  branchWeights.forEach(item => {
-    const cgs = BRANCH_CANGGAN_WEIGHTS[item.b] || [];
-    cgs.forEach(cg => {
-      rawScores[cg.elem] += cg.weight * item.w;
-    });
-  });
-
-  const totalRaw = Object.values(rawScores).reduce((a, b) => a + b, 0);
   const elements: ElementQuantitativeMetric[] = (['木', '火', '土', '金', '水'] as const).map(elem => {
-    const score = rawScores[elem];
-    const pct = totalRaw > 0 ? Math.round((score / totalRaw) * 100) : 20;
+    const pct = dynamicStrength.normalizedElements[elemKeyMap[elem]];
     let status: ElementQuantitativeMetric['status'] = '適中';
     if (pct >= 38) status = '極旺';
     else if (pct >= 26) status = '偏旺';
     else if (pct <= 8) status = '極弱';
     else if (pct <= 14) status = '偏弱';
 
-    const colors = {
-      '木': '#22c55e',
-      '火': '#ef4444',
-      '土': '#f59e0b',
-      '金': '#94a3b8',
-      '水': '#3b82f6'
-    };
-
     return {
       element: elem,
       percentage: pct,
-      powerScore: Math.round(score),
+      powerScore: pct,
       status,
       color: colors[elem]
     };
   });
 
-  // 2. 日主強弱精密判定
-  // 同黨（比劫＋印星）
-  const shengDmElem: Record<'金' | '木' | '水' | '火' | '土', '金' | '木' | '水' | '火' | '土'> = {
-    '木': '水', '火': '木', '土': '火', '金': '土', '水': '金'
-  };
-  const friendElem = dmElem;
-  const motherElem = shengDmElem[dmElem];
-
-  const friendPct = elements.find(e => e.element === friendElem)?.percentage || 0;
-  const motherPct = elements.find(e => e.element === motherElem)?.percentage || 0;
-  const allyScore = friendPct + motherPct; // 同黨總百分比
-
-  const deLing = (BRANCH_CANGGAN_WEIGHTS[monthBranch] || []).some(cg => cg.elem === dmElem || cg.elem === motherElem);
-  const deDi = (BRANCH_CANGGAN_WEIGHTS[bazi.day.branch] || []).some(cg => cg.elem === dmElem);
-  const deSheng = fourPillars.some((p, i) => i !== 2 && (STEM_TO_ELEM[p.stem] === dmElem || STEM_TO_ELEM[p.stem] === motherElem));
-
+  // 2. 日主強弱精密判定 (100 分制標準)
+  const allyScore = dynamicStrength.score;
   let strengthLevel: DayMasterStrength['level'] = '身中和';
-  if (allyScore >= 75) strengthLevel = '專旺/極旺';
-  else if (allyScore >= 52) strengthLevel = '身偏強';
-  else if (allyScore <= 15) strengthLevel = '從格/極弱';
-  else if (allyScore <= 38) strengthLevel = '身偏弱';
+  if (allyScore >= 80) strengthLevel = '專旺/極旺';
+  else if (allyScore > 55) strengthLevel = '身偏強';
+  else if (allyScore >= 45) strengthLevel = '身中和';
+  else if (allyScore >= 20) strengthLevel = '身偏弱';
+  else strengthLevel = '從格/極弱';
 
   const dayMasterStrength: DayMasterStrength = {
     dayMaster: dayStem,
     element: dmElem,
     score: allyScore,
     level: strengthLevel,
-    deLing,
-    deDi,
-    deSheng,
-    description: `日主【${dayStem}${dmElem}】在八字動態模型中綜合得分 ${allyScore} 分。判定為【${strengthLevel}】。${deLing ? '得月令提綱之生助，' : '失月令生扶，'}${deDi ? '坐支通根穩固，' : '坐支無強根，'}${deSheng ? '天干透印比相助。' : '天干少幫扶。'}`
+    deLing: dynamicStrength.deLing,
+    deDi: dynamicStrength.deDi,
+    deSheng: dynamicStrength.deSheng,
+    description: dynamicStrength.description
   };
 
   // 3. 四大用神判定
@@ -277,9 +231,16 @@ export function computeBaziHologram(bazi: BaziData): BaziHologramAnalysisResult 
 
   // 病藥用神
   const maxElem = [...elements].sort((a, b) => b.percentage - a.percentage)[0];
+  const MEDICINE_MAP: Record<'金' | '木' | '水' | '火' | '土', string> = {
+    '木': '金（官殺制木）或火（食傷洩秀）',
+    '火': '水（官殺滅火）或土（食傷洩火）',
+    '土': '木（官殺疏土）或金（食傷洩秀）',
+    '金': '火（官殺煉金）或水（食傷洩秀）',
+    '水': '土（官殺阻水）或木（食傷洩秀）'
+  };
   const bingYao = {
     disease: `${maxElem.element}氣過盛（佔比達 ${maxElem.percentage}%）`,
-    medicine: `${shengDmElem[maxElem.element]}或剋制${maxElem.element}之五行`,
+    medicine: MEDICINE_MAP[maxElem.element] || '剋洩制化之五行',
     explanation: `命局中五行最偏枯過旺之處即為「病」。歲運逢抑制此病之五行即為「良藥」，得藥之年必迎來事業突破。`
   };
 

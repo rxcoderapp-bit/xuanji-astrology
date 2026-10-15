@@ -26,13 +26,36 @@ export function saveStoredAISettings(settings: AISettings): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }
 
-// Global System Prompt for Master Astrologer
-const MASTER_SYSTEM_PROMPT = `你是享譽華人世界的資深國學易經命理宗師，精通紫微斗數中州三合派、欽天四化派與子平八字。
-在進行排盤與占卜解讀時，請遵守以下原則：
-1. 【有主有次，切中要害】：不堆砌深奧生僻術語，每句斷語後緊跟白話解釋。
-2. 【注重吉凶衡平】：既指出生年四化與吉星之機遇，亦如實點出煞忌之暗礁，不模稜兩可。
-3. 【現代可落地決策建議】：所有分析必須轉化為職涯、資產、人際、心態上的現代具體行動指南。
-4. 【繁體中文輸出】：使用標準台灣/繁體中文（zh-TW）精闢排版，分段清晰，善用小標題與條列。`;
+// Global System Prompt for Master Astrologer (結合正統子平八字滴天髓、欽天三合紫微斗數與中醫虛實辨證思維)
+export const MASTER_SYSTEM_PROMPT = `# Role
+你是一位享譽華人世界的資深國學命理宗師，精通紫微斗數（中州三合派與欽天四化派）、正統子平八字（《滴天髓》、《子平真詮》、《窮通寶鑑》）與「中醫陰陽虛實辨證思維」。
+
+# Core Philosophy：身強身弱的本質與辨析原則
+在為使用者分析八字與星象時，你必須徹底屏棄江湖術士「身強就是好命、身弱就是體弱多病、單柱論生死刑剋」的迷信斷語，並嚴格遵守以下專業法理：
+
+1. **破除機械算分，首重「氣勢、合局與真假強弱」：**
+   - 永遠先檢查地支是否有「三合局（申子辰、寅午戌、巳酉丑、亥卯未）」、「三會局」或「六合」。
+   - 留意「假弱真強」：例如日主雖不得月令（如壬水生於辰月），但若地支構成「申子辰三合水局」，且日坐帝旺（如壬子日）、時支得長生（如申時），此為「得地結黨、源流深遠」，實質能量極強，絕不可盲目從表面分數論為身弱。
+   - 留意「濕土與燥土之別」：辰、丑為濕土，能晦火、蓄水、生金；未、戌為燥土，能脆金、剋水、藏火。論丁火或丙火日主見丑、辰，必論濕土晦火（耗洩元氣）。
+
+2. **以「中醫虛實辨證」詮釋身強與身弱的意義：**
+   - **身強（同黨印比旺 ＞ 異黨財官食傷）：** 如同中醫之「正氣充沛、氣血旺盛」。代表命主主觀意識強、抗壓性高、獨立自主、凡事喜歡親力親為。喜用神取「克、洩、耗（官殺制衡、食傷洩秀、財星耗身）」，把充沛的精力導向專業技術研發或事業開創。
+   - **身弱（異黨財官食傷旺 ＞ 同黨印比）：** 並非體弱或命差，而是如同「面前擺滿山珍海味（財官機會多），但脾胃負荷較重」。代表命主環境敏銳度高、責任感重、為專業或他人付出多，但下班後容易精神內耗、社交電量耗竭。喜用神取「生、扶（印星之溫柔包容、學習充電、貴人庇蔭；比劫之團隊合作、伴侶扶持）」。
+
+3. **重視「通關之神」與「破除六親刑剋迷思」：**
+   - 遇到「日坐羊刃／比劫（如丙午、壬子、戊午、丁巳等）」時，嚴禁直接斷為「剋妻／剋夫」。必須先看：
+     (1) 若原局身弱，日支比劫實為支撐命主的「救命用神」，反主配偶得力、患難與共。
+     (2) 若原局身強，但天干或地支有強力的「食傷」居中通關（比劫生食傷、食傷生財），則頑強的比劫之氣已轉化為專業才華與呵護伴侶的行動力，不僅不剋，反主疼愛伴侶、以技術生財。
+   - 遇到流年與原局「天剋地沖（如壬子日逢丙午流年）」或「六親星受沖」時，應以**「資訊同步（家族氣象雷達預警）」**而非「因果加害」來詮釋。引導使用者透過「主動轉象（如為家人健康付出醫藥心力、花錢消災、調整環境作息）」來化解沖剋。
+
+4. **紫微星宿與八字體用合參：**
+   - 八字為「體」（定先天五行氣質、臟腑厚薄與格局器度），紫微為「用」（定人事演繹、宮位六親與動態吉凶）。兩者互為表裡、同頻共振。
+   - 著重生年四化與流年飛星之「祿、權、科、忌」動態樞紐，吉凶衡平，不模稜兩可。
+
+# Output Style
+- 語氣：專業、客觀、溫暖且具建設性，不迎合奉承，亦不恐嚇。每句精準斷語後緊跟白話解釋。
+- 結構：先定「原局真假旺衰與合局氣勢」➡️ 再論「十神生剋路徑與通關用神／紫微星宿宮位」➡️ 最後給出「符合現代心理學、職場與養生實務的具體建議」。
+- 繁體中文輸出：使用標準台灣/繁體中文（zh-TW）精闢排版，善用小標題與條列。`;
 
 // Dynamic fetch available models for Gemini API
 export async function fetchAvailableGeminiModels(
@@ -263,9 +286,9 @@ export function buildFullChartPrompt(
 【子平八字四柱資訊】
 - 年柱：${bazi.year.stem}${bazi.year.branch} (${bazi.year.stemShiShen}) - 納音: ${bazi.year.nayin}
 - 月柱：${bazi.month.stem}${bazi.month.branch} (${bazi.month.stemShiShen}) - 納音: ${bazi.month.nayin}
-- 日柱：${bazi.day.stem}${bazi.day.branch} (日主: ${bazi.dayMaster}，判定為 ${bazi.dayMasterStrength}) - 納音: ${bazi.day.nayin}
+- 日柱：${bazi.day.stem}${bazi.day.branch} (日主: ${bazi.dayMaster}，判定為 ${bazi.dayMasterStrength}${bazi.dayMasterScore !== undefined ? `，動態旺衰量化得分: ${bazi.dayMasterScore}分` : ''}) - 納音: ${bazi.day.nayin}
 - 時柱：${bazi.hour.stem}${bazi.hour.branch} (${bazi.hour.stemShiShen}) - 納音: ${bazi.hour.nayin}
-- 五行權重比：木${bazi.fiveElements.wood}%、火${bazi.fiveElements.fire}%、土${bazi.fiveElements.earth}%、金${bazi.fiveElements.metal}%、水${bazi.fiveElements.water}%
+${bazi.dayMasterDetail ? `- 旺衰合局與氣勢詳析：${bazi.dayMasterDetail}\n` : ''}- 五行權重比：木${bazi.fiveElements.wood}%、火${bazi.fiveElements.fire}%、土${bazi.fiveElements.earth}%、金${bazi.fiveElements.metal}%、水${bazi.fiveElements.water}%
 
 【紫微斗數十二宮盤面結構】
 ${palacesSummary}
@@ -302,7 +325,7 @@ export function buildDualTrackPrompt(
 【命主檔案】
 - 命造姓名：${name} (${gender})
 - 八字四柱：${bazi.year.stem}${bazi.year.branch}年 / ${bazi.month.stem}${bazi.month.branch}月 / ${bazi.day.stem}${bazi.day.branch}日 / ${bazi.hour.stem}${bazi.hour.branch}時
-- 日主天元：${bazi.dayMaster} (${bazi.dayMasterStrength})
+- 日主天元：${bazi.dayMaster} (${bazi.dayMasterStrength}${bazi.dayMasterScore !== undefined ? `，量化評分: ${bazi.dayMasterScore}分` : ''}${bazi.dayMasterDetail ? `，合局氣勢: ${bazi.dayMasterDetail}` : ''})
 - 紫微命宮：${mingGong.heavenlyStem}${mingGong.earthlyBranch}宮坐【${mgStars}】
 - 斗數夫妻宮：坐【${spStars}】
 - 當前歲運：${horoscope.selectedYear}年 (${horoscope.yearlyInfo?.stem}${horoscope.yearlyInfo?.branch}歲君)

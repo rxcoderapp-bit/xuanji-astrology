@@ -13,6 +13,7 @@ import type {
   StarGodResonanceItem,
   TimingResonanceItem
 } from '../types';
+import { calculateDynamicBaziStrength } from './baziStrengthEngine';
 
 // 五行映射與生剋表
 const ELEMENT_MAP: Record<string, '木' | '火' | '土' | '金' | '水'> = {
@@ -55,38 +56,23 @@ export function computeDualTrackEnergy(
   decadeGanZhi?: string,
   yearlyGanZhi?: string
 ): DualTrackEnergyData {
+  // 1. 基於四維度動態合化演算法獲取命局五行能量基準
+  const dynamicBase = calculateDynamicBaziStrength({
+    year: bazi.year,
+    month: bazi.month,
+    day: bazi.day,
+    hour: bazi.hour
+  });
+
   const scores: Record<'木' | '火' | '土' | '金' | '水', number> = {
-    '木': 0, '火': 0, '土': 0, '金': 0, '水': 0
+    '木': dynamicBase.normalizedElements.wood,
+    '火': dynamicBase.normalizedElements.fire,
+    '土': dynamicBase.normalizedElements.earth,
+    '金': dynamicBase.normalizedElements.metal,
+    '水': dynamicBase.normalizedElements.water
   };
 
-  // 1. 天干基礎分 (年干 12, 月干 18, 日主 20, 時干 12)
-  const stems = [
-    { stem: bazi.year.stem, weight: 12 },
-    { stem: bazi.month.stem, weight: 18 },
-    { stem: bazi.day.stem, weight: 20 },
-    { stem: bazi.hour.stem, weight: 12 },
-  ];
-  stems.forEach(item => {
-    const elem = ELEMENT_MAP[item.stem];
-    if (elem) scores[elem] += item.weight;
-  });
-
-  // 2. 地支藏干分 (月令最重 45 分, 日支 25 分, 年支 15 分, 時支 15 分)
-  const branches = [
-    { branch: bazi.month.branch, totalWeight: 45 },
-    { branch: bazi.day.branch, totalWeight: 25 },
-    { branch: bazi.year.branch, totalWeight: 15 },
-    { branch: bazi.hour.branch, totalWeight: 15 },
-  ];
-  branches.forEach(item => {
-    const hiddens = BRANCH_HIDDEN_WEIGHTS[item.branch] || [];
-    hiddens.forEach(h => {
-      const elem = ELEMENT_MAP[h.stem];
-      if (elem) scores[elem] += item.totalWeight * h.weight;
-    });
-  });
-
-  // 3. 大運與流年動態進氣加權 (大運 15 分, 流年 15 分)
+  // 2. 大運與流年動態進氣加權 (大運 15 分, 流年 15 分)
   if (decadeGanZhi && decadeGanZhi.length >= 2) {
     const dStemElem = ELEMENT_MAP[decadeGanZhi[0]];
     const dBranchElem = ELEMENT_MAP[decadeGanZhi[1]];
@@ -137,10 +123,10 @@ export function computeDualTrackEnergy(
   const allyRatio = allyScore / totalScore;
 
   let dmStrength: '極旺' | '偏旺' | '中和' | '偏弱' | '極弱' = '中和';
-  if (allyRatio >= 0.65) dmStrength = '極旺';
+  if (allyRatio >= 0.75) dmStrength = '極旺';
   else if (allyRatio >= 0.52) dmStrength = '偏旺';
   else if (allyRatio >= 0.44) dmStrength = '中和';
-  else if (allyRatio >= 0.32) dmStrength = '偏弱';
+  else if (allyRatio >= 0.20) dmStrength = '偏弱';
   else dmStrength = '極弱';
 
   // 判定喜忌神
@@ -196,6 +182,8 @@ export function computeDualTrackEnergy(
     dayMaster,
     dayMasterElement: dmElem,
     dayMasterStrength: dmStrength,
+    dayMasterScore: dynamicBase.score,
+    dayMasterDetail: dynamicBase.detailDescription,
     favorableElements: favorable,
     unfavorableElements: unfavorable,
     patternName: pattern,

@@ -223,7 +223,7 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
 命造基本資訊：
 - 姓名：${name || '命主'} (${gender || '男'})
 - 五行局：${fiveElementsClass} | 命主：${soul} | 身主：${body}
-- 八字日主：${bazi.dayMaster} (${bazi.dayMasterStrength})
+- 八字日主：${bazi.dayMaster} (${bazi.dayMasterStrength}${bazi.dayMasterScore !== undefined ? ` [動態量化得分: ${bazi.dayMasterScore}分]` : ''}${bazi.dayMasterDetail ? `，氣勢分析: ${bazi.dayMasterDetail}` : ''})
 
 宮位星曜配置：
 - 宮位名稱：${selectedPalace.name}
@@ -869,8 +869,8 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
                       <Flame className="w-4 h-4" />
                       五行全息動態能量分佈與喜忌神
                     </h3>
-                    <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
-                      日主【{activeEnergy.dayMaster}】({activeEnergy.dayMasterStrength})
+                    <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]" title={activeEnergy.dayMasterDetail || ''}>
+                      日主【{activeEnergy.dayMaster}】({activeEnergy.dayMasterStrength}{activeEnergy.dayMasterScore !== undefined ? ` · ${activeEnergy.dayMasterScore}分` : ''})
                     </span>
                   </div>
 
@@ -1094,8 +1094,8 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
                   <Flame className="w-4 h-4" />
                   子平八字日主五行與喜用神調候 (千字精解)
                 </h3>
-                <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]">
-                  日主【{bazi.dayMaster}】({bazi.dayMasterStrength})
+                <span className="text-xs font-mono font-bold text-[#8d271c] dark:text-[#df756b]" title={bazi.dayMasterDetail || ''}>
+                  日主【{bazi.dayMaster}】({bazi.dayMasterStrength}{bazi.dayMasterScore !== undefined ? ` · ${bazi.dayMasterScore}分` : ''})
                 </span>
               </div>
 

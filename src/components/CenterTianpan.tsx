@@ -122,8 +122,8 @@ export const CenterTianpan: React.FC<CenterTianpanProps> = ({
             <span>★ 五行全息雷達</span>
           </button>
         </div>
-        <span className="text-[10px] text-[#8c8477] dark:text-[#777] hidden sm:inline">
-          日主：<b className="text-[#8d271c] dark:text-[#df756b]">{bazi.dayMaster} ({bazi.dayMasterStrength})</b>
+        <span className="text-[10px] text-[#8c8477] dark:text-[#777] hidden sm:inline" title={bazi.dayMasterDetail || ''}>
+          日主：<b className="text-[#8d271c] dark:text-[#df756b]">{bazi.dayMaster} ({bazi.dayMasterStrength}{bazi.dayMasterScore !== undefined ? ` · ${bazi.dayMasterScore}分` : ''})</b>
         </span>
       </div>
 

@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Solar, Lunar, LunarUtil } from 'lunar-javascript';
 import type { BaziData, BaziPillar, BirthInput } from '../types';
+import { calculateDynamicBaziStrength } from './baziStrengthEngine';
 
 // Ten Gods calculation matrix
 const STEM_ELEMENT: Record<string, string> = {
@@ -19,10 +20,6 @@ const STEM_YINYANG: Record<string, '陽' | '陰'> = {
   '壬': '陽', '癸': '陰',
 };
 
-const ZHI_ELEMENT: Record<string, string> = {
-  '子': '水', '丑': '土', '寅': '木', '卯': '木', '辰': '土', '巳': '火',
-  '午': '火', '未': '土', '申': '金', '酉': '金', '戌': '土', '亥': '水'
-};
 
 const SHISHEN_MAP: Record<string, Record<string, string>> = {
   '同': { '同': '比肩', '異': '劫財' },
@@ -141,43 +138,18 @@ export function computeBazi(input: BirthInput): BaziData {
   const hourPillar = makePillar(lunar.getTimeGan(), lunar.getTimeZhi(), eightChar.getTimeNaYin());
 
   // Count Five Elements weights
-  const counts: Record<string, number> = { '木': 0, '火': 0, '土': 0, '金': 0, '水': 0 };
-  [yearPillar, monthPillar, dayPillar, hourPillar].forEach(p => {
-    if (STEM_ELEMENT[p.stem]) counts[STEM_ELEMENT[p.stem]] += 1.0;
-    if (ZHI_ELEMENT[p.branch]) counts[ZHI_ELEMENT[p.branch]] += 1.0;
-    p.hiddenStems.forEach(h => {
-      if (STEM_ELEMENT[h.stem]) counts[STEM_ELEMENT[h.stem]] += 0.3;
-    });
+  // 精密四維度子平動態旺衰與合局氣勢演算法
+  const dynamicStrength = calculateDynamicBaziStrength({
+    year: yearPillar,
+    month: monthPillar,
+    day: dayPillar,
+    hour: hourPillar
   });
 
-  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
-  const fiveElements = {
-    wood: Math.round((counts['木'] / total) * 100),
-    fire: Math.round((counts['火'] / total) * 100),
-    earth: Math.round((counts['土'] / total) * 100),
-    metal: Math.round((counts['金'] / total) * 100),
-    water: Math.round((counts['水'] / total) * 100),
-  };
-
-  // Day Master Strength Approximation
-  const dmElem = STEM_ELEMENT[dayMaster];
-  const sameElem = dmElem;
-  const produceElem = (
-    dmElem === '木' ? '水' :
-    dmElem === '火' ? '木' :
-    dmElem === '土' ? '火' :
-    dmElem === '金' ? '土' : '金'
-  );
-
-  const supportPct = (fiveElements[sameElem as keyof typeof fiveElements] || 0) +
-                     (fiveElements[produceElem as keyof typeof fiveElements] || 0);
-
-  let dayMasterStrength: '極旺' | '偏旺' | '中和' | '偏弱' | '極弱' = '中和';
-  if (supportPct >= 65) dayMasterStrength = '極旺';
-  else if (supportPct >= 50) dayMasterStrength = '偏旺';
-  else if (supportPct >= 35) dayMasterStrength = '中和';
-  else if (supportPct >= 20) dayMasterStrength = '偏弱';
-  else dayMasterStrength = '極弱';
+  const dayMasterStrength = dynamicStrength.level;
+  const dayMasterScore = dynamicStrength.score;
+  const dayMasterDetail = dynamicStrength.levelDetail;
+  const fiveElements = dynamicStrength.normalizedElements;
 
   // DaYun
   const yun = eightChar.getYun(input.gender === '男' ? 1 : 0);
@@ -198,6 +170,8 @@ export function computeBazi(input: BirthInput): BaziData {
     hour: hourPillar,
     dayMaster,
     dayMasterStrength,
+    dayMasterScore,
+    dayMasterDetail,
     fiveElements,
     taiYuan: eightChar.getTaiYuan(),
     mingGong: eightChar.getMingGong(),

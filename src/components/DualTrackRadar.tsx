@@ -50,8 +50,8 @@ export const DualTrackRadar: React.FC<DualTrackRadarProps> = ({ data, energy }) 
           <span className="font-bold text-[#8d271c] dark:text-[#df756b]">
             日主【{dayMaster}{dayMasterElement}】
           </span>
-          <span className="px-1.5 py-0.2 rounded border text-[10px] bg-[#f5ede4] dark:bg-[#231b1a] text-[#8d271c] dark:text-[#f87171] border-[#dfcdb8] dark:border-[#4d2822]">
-            {dayMasterStrength}
+          <span className="px-1.5 py-0.2 rounded border text-[10px] bg-[#f5ede4] dark:bg-[#231b1a] text-[#8d271c] dark:text-[#f87171] border-[#dfcdb8] dark:border-[#4d2822]" title={currentData.dayMasterDetail || ''}>
+            {dayMasterStrength}{currentData.dayMasterScore !== undefined ? ` · ${currentData.dayMasterScore}分` : ''}
           </span>
         </div>
         <span className="text-[10px] text-[#554e44] dark:text-[#b4aca0] truncate max-w-[130px]">

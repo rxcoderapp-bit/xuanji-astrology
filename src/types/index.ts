@@ -143,6 +143,8 @@ export interface BaziData {
   hour: BaziPillar;
   dayMaster: string;
   dayMasterStrength: '極旺' | '偏旺' | '中和' | '偏弱' | '極弱';
+  dayMasterScore?: number;
+  dayMasterDetail?: string;
   fiveElements: {
     wood: number;
     fire: number;
@@ -296,6 +298,8 @@ export interface DualTrackEnergyData {
   dayMaster: string;
   dayMasterElement: string;
   dayMasterStrength: '極旺' | '偏旺' | '中和' | '偏弱' | '極弱';
+  dayMasterScore?: number;
+  dayMasterDetail?: string;
   favorableElements: string[];   // 喜用神 (如: 木、火)
   unfavorableElements: string[]; // 忌仇神 (如: 金、水)
   patternName: string;           // 先天格局 (如: 正印格、食神生財格、從旺格)

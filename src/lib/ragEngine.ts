@@ -199,7 +199,7 @@ export async function callRAGMetaphysicsStudio(
     contextDesc = `
 【當前諮詢命造檔案】
 - 命主姓名：${chartContext.name || '求問者'} (${chartContext.gender || '男'})
-- 八字四柱：${chartContext.bazi.year.stem}${chartContext.bazi.year.branch} / ${chartContext.bazi.month.stem}${chartContext.bazi.month.branch} / ${chartContext.bazi.day.stem}${chartContext.bazi.day.branch} / ${chartContext.bazi.hour.stem}${chartContext.bazi.hour.branch} (日主${chartContext.bazi.dayMaster}，${chartContext.bazi.dayMasterStrength})
+- 八字四柱：${chartContext.bazi.year.stem}${chartContext.bazi.year.branch} / ${chartContext.bazi.month.stem}${chartContext.bazi.month.branch} / ${chartContext.bazi.day.stem}${chartContext.bazi.day.branch} / ${chartContext.bazi.hour.stem}${chartContext.bazi.hour.branch} (日主${chartContext.bazi.dayMaster}，${chartContext.bazi.dayMasterStrength}${chartContext.bazi.dayMasterScore !== undefined ? ` [量化得分: ${chartContext.bazi.dayMasterScore}分]` : ''}${chartContext.bazi.dayMasterDetail ? `，氣勢分析: ${chartContext.bazi.dayMasterDetail}` : ''})
 - 當前聚焦宮位：【${chartContext.palace.name}】(${chartContext.palace.heavenlyStem}${chartContext.palace.earthlyBranch})，主星：${chartContext.palace.majorStars.map(s => s.name).join('、') || '借對宮'}
 - 當前歲運：${chartContext.horoscope?.selectedYear || new Date().getFullYear()}年
 `;
