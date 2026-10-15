@@ -188,7 +188,46 @@ ${starArchetypeText}`;
     selfMutagenText = `\n\n宮干【${pStem}】自化檢測：無自化現象，代表此宮之能量守恆度高、不易受外界挑釁而突發性情緒洩露，結構扎實穩固。`;
   }
 
-  const modernManifestation = `${mutagenAnalysis}\n\n${luSuiJiText}${selfMutagenText}`;
+  // 欽天門同宮生年雙象與平方象即時精批
+  let doubleMutagenPalaceText = '';
+  const palaceMuts = majorStars.filter(s => s.mutagen).map(s => s.mutagen as string);
+  if (palaceMuts.length >= 2) {
+    const setM = new Set(palaceMuts);
+    let dmName = '';
+    let dmVerdict = '';
+    if (setM.has('祿') && setM.has('權')) {
+      dmName = '【祿權同宮（開疆拓土·名利雙收）】';
+      dmVerdict = '兼具化祿之機遇敏銳度與化權之鐵腕實施力，在此領域自主開創新局面，極具領袖風範！';
+    } else if (setM.has('祿') && setM.has('科')) {
+      dmName = '【祿科同宮（儒雅才華·名望兼美）】';
+      dmVerdict = '兼具化祿之人緣財氣與化科之清雅口碑，走文化、專業、信譽變現之路最易大展宏圖！';
+    } else if (setM.has('祿') && setM.has('忌')) {
+      dmName = '【祿忌同宮（成中帶破·心理代償）】';
+      dmVerdict = '熱愛與焦慮激烈交纏，得而復失、先成後敗之考驗多。凡事必須「見好就收、分段結算」，切忌盲目全倉加碼！';
+    } else if (setM.has('權') && setM.has('科')) {
+      dmName = '【權科同宮（專業權威·名實相符）】';
+      dmVerdict = '化權之技術硬實力搭配化科之證照公信力，言出法隨，為該領域受眾人敬仰的頂級專家！';
+    } else if (setM.has('權') && setM.has('忌')) {
+      dmName = '【權忌同宮（剛烈交鋒·大起大落）】';
+      dmVerdict = '化權之掌控遇上化忌之危機，行事剛猛不服輸。需戒除獨斷專行，學會以柔克剛方能打破僵局。';
+    } else if (setM.has('科') && setM.has('忌')) {
+      dmName = '【科忌同宮（思慮深沉·藕斷絲連）】';
+      dmVerdict = '理智與情感反覆拉扯，文書合約宜慎，人際關係宜果斷物理切割，以超然理性驅散腦中反芻。';
+    }
+    if (dmName) {
+      doubleMutagenPalaceText = `\n\n欽天門同宮生年雙象秘儀破譯：\n✦ ${dmName}：${dmVerdict}`;
+    }
+  }
+
+  // 平方象檢測
+  selfMutagens.forEach(sm => {
+    const matchNatal = majorStars.find(ms => ms.name === sm.star && ms.mutagen === sm.mutagen);
+    if (matchNatal) {
+      doubleMutagenPalaceText += `\n\n✦ 欽天門「${sm.mutagen}自化${sm.mutagen}」平方象爆發：\n本宮【${matchNatal.name}】坐生年${sm.mutagen}，又逢宮干自化${sm.mutagen}出氣，形成極端同象共振（平方能量）。凡事注意「同象向外發散與能量守恆」，需在亢奮之際保持清醒，設立實體資產與制度邊界保護！`;
+    }
+  });
+
+  const modernManifestation = `${mutagenAnalysis}\n\n${luSuiJiText}${selfMutagenText}${doubleMutagenPalaceText}`;
 
   // ---------------------------------------------------------
   // Part 3: 【吉凶星配置：「煞星是生命加速引擎」實戰剖析】(~300字)

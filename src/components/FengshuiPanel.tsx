@@ -279,6 +279,101 @@ export const FengshuiPanel: React.FC<FengshuiPanelProps> = ({
         )}
       </div>
 
+      {/* 4. 青嵐獨門中藥草本氣場安鎮全鑑 */}
+      <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3d] space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b pb-2.5 border-[#eee6d6] dark:border-[#272938] flex-wrap gap-2">
+          <div className="font-bold text-xs sm:text-sm text-[#333] dark:text-[#ddd] flex items-center gap-1.5">
+            <span className="p-1 rounded bg-emerald-600 text-white text-[11px]">🌿</span>
+            <span>形巒風水堪輿天機 · 外局形煞 ✕ 中藥草本氣場安鎮全鑑</span>
+          </div>
+          <span className="text-[10px] text-[#706456] dark:text-[#a09a8f]">
+            中藥性味歸經 · 氣場能量物理防護
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+          {fengshuiResult.exteriorShaRemedies?.map((sha) => (
+            <div
+              key={sha.id}
+              className="p-3.5 rounded-xl border bg-[#fbf9f4] dark:bg-[#161722] border-[#e5dcce] dark:border-[#2c2e3f] space-y-2 shadow-2xs"
+            >
+              <div className="flex items-center justify-between font-bold text-rose-800 dark:text-rose-400">
+                <span className="text-xs sm:text-sm">{sha.name}</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300">
+                  外局重煞
+                </span>
+              </div>
+
+              <p className="text-[11px] text-[#555] dark:text-[#aaa] leading-relaxed">
+                <span className="font-bold text-[#443e37] dark:text-[#cfc8bd]">形貌危害：</span>
+                {sha.shapeDescription} {sha.harmAndRisk}
+              </p>
+
+              <div className="p-2.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 space-y-1">
+                <div className="font-bold text-[#2e7d32] dark:text-[#81c784] text-[11px] flex items-center gap-1">
+                  <span>💊 獨門中藥化煞藥方：</span>
+                </div>
+                <div className="font-mono text-emerald-900 dark:text-emerald-200 text-[11px] font-bold">
+                  {sha.herbalFormula}
+                </div>
+                <p className="text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  <span className="font-bold">藥理原理：</span>{sha.herbalPharmacology}
+                </p>
+              </div>
+
+              <div className="text-[10px] text-[#666] dark:text-[#999] leading-relaxed pt-0.5">
+                <span className="font-bold text-[#444] dark:text-[#ccc]">佈設指南：</span>{sha.deploymentMethod}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5. 八宅九宮缺角與家庭成員臟腑病變對照表 */}
+      <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3d] space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b pb-2.5 border-[#eee6d6] dark:border-[#272938] flex-wrap gap-2">
+          <div className="font-bold text-xs sm:text-sm text-[#333] dark:text-[#ddd] flex items-center gap-1.5">
+            <span className="p-1 rounded bg-indigo-600 text-white text-[11px]">📐</span>
+            <span>八宅九宮缺角診斷 · 家庭成員 ✕ 臟腑病變 ✕ 草本安鎮</span>
+          </div>
+          <span className="text-[10px] text-[#706456] dark:text-[#a09a8f]">
+            住宅方正為吉 · 缺角氣場物理補缺
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-[#e2d8c5] dark:border-[#2d3042] bg-[#f7f3e8] dark:bg-[#1c1d29] text-[#443e37] dark:text-[#cfc8bd]">
+                <th className="p-2 font-bold whitespace-nowrap">方位卦位</th>
+                <th className="p-2 font-bold whitespace-nowrap">受損家庭成員</th>
+                <th className="p-2 font-bold whitespace-nowrap">易發臟腑病變</th>
+                <th className="p-2 font-bold">草本與氣場補缺方藥</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#f0ebd9] dark:divide-[#242636]">
+              {fengshuiResult.ninePalaceMissingGuas?.map((item) => (
+                <tr key={item.gua} className="hover:bg-[#faf7f0] dark:hover:bg-[#1e202d] transition">
+                  <td className="p-2 font-bold text-[#8d271c] dark:text-[#ef5350] whitespace-nowrap">
+                    {item.gua} ({item.direction})
+                  </td>
+                  <td className="p-2 font-bold text-[#333] dark:text-[#eee] whitespace-nowrap">
+                    {item.memberAffected}
+                  </td>
+                  <td className="p-2 text-[#555] dark:text-[#aaa]">
+                    <span className="font-bold text-rose-700 dark:text-rose-400">{item.organsVulnerable}</span>
+                    <div className="text-[10px] text-[#777] dark:text-[#888]">{item.diseaseSymptoms}</div>
+                  </td>
+                  <td className="p-2 text-[11px] text-[#443e37] dark:text-[#cfc8bd]">
+                    {item.remedyHerbAndCrystal}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   );
 };

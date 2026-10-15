@@ -58,11 +58,38 @@ export interface HolisticHealthProfile {
   lifestyleGuidance: string;
 }
 
+export interface FeynmanCompanyModel {
+  founderRole: string; // 創始人角色 (CEO)
+  coreBusinessModel: string; // 商業運營模型
+  companyHierarchy: {
+    boardAndCompliance: string; // 官殺：董事會監管與法規防火牆
+    rAndDAndPatents: string; // 印星：專利研發智庫與品牌商譽
+    capitalAndCashflow: string; // 財星：現金流與商業版圖擴張
+    innovationAndMarketing: string; // 食傷：產品創新與公關爆款
+    partnersAndDistribution: string; // 比劫：合夥同盟與渠道分銷
+  };
+  operationalAdvice: string; // 企業商業模式診斷與改進方針
+}
+
+export interface QiongTongComfortGuide {
+  thermodynamicComfortScore: number; // 0..100 舒適度評分
+  climateStatus: '極寒冰封' | '極炎燥熱' | '氣候溫潤' | '土燥濕滯';
+  seasonThermodynamics: string; // 生物熱力學深度剖析
+  classicalFormula: string; // 《窮通寶鑑》黃金調候救贖神
+  lifeGuidance: {
+    ambientTemperature: string; // 居住環境與溫濕度建議
+    dietaryHarmony: string; // 五行飲食調和
+    emotionalRelief: string; // 心理與壓力調候心法
+  };
+}
+
 export interface BaziHologramAnalysisResult {
   elements: ElementQuantitativeMetric[];
   dayMasterStrength: DayMasterStrength;
   fourGods: FourGodsSystem;
   healthProfile: HolisticHealthProfile;
+  companyModel: FeynmanCompanyModel;
+  comfortGuide: QiongTongComfortGuide;
   synthesisText: string;
 }
 
@@ -324,13 +351,100 @@ export function computeBaziHologram(bazi: BaziData): BaziHologramAnalysisResult 
     lifestyleGuidance: lifestyle
   };
 
-  const synthesis = `本命子平全息模型採用現代動態量化演算法，月令提綱與地支藏干權重精密計算。日主【${dayStem}${dmElem}】綜合判定為【${strengthLevel}】。五行之中以【${maxElem.element}】力量最雄厚（佔比 ${maxElem.percentage}%）。四大用神中，扶抑最喜【${xiYong.join('、')}】，${tiaoHouNeed ? `調候急需【${tiaoHouGod}】，` : ''}${tongGuanNeed ? `通關喜【${mediator}】以化解對峙。` : ''}中醫時空基因提示首要固護【${organ}】，順應天地運化，則福壽綿長。`;
+  // 5. 青嵐八字費曼學習法：十神現代公司體制心智模型 (Feynman Company Model)
+  let coreBizModel = '資本運作與現金流分銷模型';
+  let opAdvice = '';
+  if (['寅', '卯', '巳', '午'].includes(monthBranch) && (shuiPct <= 15 || jinPct <= 15)) {
+    coreBizModel = '技術產品創新與爆款研發模型 (食傷生財/智識變現)';
+    opAdvice = '公司研發部（食傷）產能旺盛，但極度欠缺風控合規（印星）與長期現金儲備（水）。切忌擴張太快導致資金鏈緊繃，必須引入冷靜客觀的財務總監設立停損點。';
+  } else if (['申', '酉', '亥', '子'].includes(monthBranch) && (huoPct <= 15 || muPct <= 15)) {
+    coreBizModel = '合規體制深耕與品牌商譽模型 (官印相生/特許經營)';
+    opAdvice = '公司擁有極高政策門檻或專利技術（印星），底層基礎穩固。但市場行銷與產品熱度（火木）較為保守，宜大膽開拓年輕化新渠道，避免因過度謹慎而錯失時代風口。';
+  } else if (['辰', '戌', '丑', '未'].includes(monthBranch)) {
+    coreBizModel = '資源整合與合夥平台裂變模型 (雜氣承載/生態協同)';
+    opAdvice = '公司宛如大型孵化器或平台型企業，容納各方資源（土庫重疊）。核心在於股權激勵機制要透明清晰，切忌權責不明、多頭管理，以制度化流程代替人情羈絆。';
+  } else {
+    coreBizModel = '穩健價值投資與實業經營模型 (身財兩停/實幹興邦)';
+    opAdvice = '商業模式健康平衡，具備穩健穿越經濟週期的能力。專注於本業護城河的精細化運營，避免跨界涉足自身看不懂的高槓桿金融投機。';
+  }
+
+  const companyModel: FeynmanCompanyModel = {
+    founderRole: `身主【${dayStem}${dmElem}】· 創始人兼首席執行官 (CEO) - ${strengthLevel}`,
+    coreBusinessModel: coreBizModel,
+    companyHierarchy: {
+      boardAndCompliance: `【官殺（${jinPct}% 權重）】：董事會法規合規與外部危機特種部隊。${jinPct > 25 ? '監管與法規壓力沈重，需注重合規合法。' : '外部束縛較少，自主探索空間大。'}`,
+      rAndDAndPatents: `【印星（${shuiPct}% 權重）】：技術專利智庫與商譽防火牆。${shuiPct > 20 ? '專利儲備豐厚，後盾堅實。' : '欠缺體制庇護，需靠自身自力更生。'}`,
+      capitalAndCashflow: `【財星（${huoPct}% 權重）】：企業日常現金流與商業版圖擴張。${huoPct > 25 ? '市場商機無限，資金週轉頻繁。' : '財源需深耕細作，重在細水長流。'}`,
+      innovationAndMarketing: `【食傷（${muPct}% 權重）】：產品創新實驗室與公關傳播引擎。${muPct > 20 ? '創意爆發力強，能快速引爆市場。' : '行事求穩，偏好成熟商業模式。'}`,
+      partnersAndDistribution: `【比劫（${elements.find(e => e.element === dmElem)?.percentage || 20}% 權重）】：聯合創始人與渠道裂變戰隊。${allyScore > 55 ? '個人號召力強，能統御大兵團作戰。' : '宜借助強勢合夥人，採用合縱連橫之策。'}`
+    },
+    operationalAdvice: opAdvice
+  };
+
+  // 6. 《窮通寶鑑》寒暖燥濕生態熱力學舒適度全鑑 (Qiong Tong Comfort Guide)
+  let climateStatus: QiongTongComfortGuide['climateStatus'] = '氣候溫潤';
+  let thermoScore = 80;
+  let seasonThermo = '';
+  let classicalFormula = '';
+  let ambientTemp = '保持室內 22-25°C，定時開窗通風';
+  let dietaryHarm = '飲食五行均衡，順應時節多食新鮮蔬果';
+  let emotionalRelief = '維持規律運動與作息，每日定時靜思';
+
+  if (['亥', '子', '丑'].includes(monthBranch)) {
+    climateStatus = '極寒冰封';
+    thermoScore = huoPct >= 15 ? 85 : 55;
+    seasonThermo = '西伯利亞冰原生態：北半球太陽能量匱乏，水結成冰，木氣凝滯。日主身處極寒時空，生命第一救贖之神為「丙火太陽核聚變解凍」！若缺丙火，易陷入抑鬱體寒、勞碌而身心焦慮。';
+    classicalFormula = '《窮通寶鑑》：冬月嚴寒，非丙火不解其凍。丙火有根高透，則解凍開春、富貴安泰；若缺火而格成，亦是冰雪原野上奔波受凍。';
+    ambientTemp = '居所務必注重保暖防寒，冬季室溫維持 22°C 以上，避免長期處於陰冷潮濕地下室或背陽處。';
+    dietaryHarm = '多食溫補甘溫之品（生薑、肉桂、紅棗、羊肉、桂圓），忌過食刺身冰鎮飲料與生冷瓜果。';
+    emotionalRelief = '多曬清晨 8-10 點陽光以振奮胸陽氣魄，多參與熱烈溫馨之社群交流，以光明之火驅散內在孤寒。';
+  } else if (['巳', '午', '未'].includes(monthBranch)) {
+    climateStatus = '極炎燥熱';
+    thermoScore = (shuiPct >= 15 && jinPct >= 12) ? 88 : 58;
+    seasonThermo = '撒哈拉熱力學沙漠生態：地表達到沸點，草木焦枯。急需「壬癸水甘霖」滋潤，更需「庚辛金作為源頭活水」持續生發！缺金水則心浮氣躁、易有心腦血管隱患。';
+    classicalFormula = '《窮通寶鑑》：夏令炎烈，非壬癸不潤其燥，非庚辛不發其源。水源不斷，方能身心舒暢、福祿綿長。';
+    ambientTemp = '室內保持清涼通風與適度濕度（50%-60%），夏日冷氣配合加濕器，避免過度乾燥。';
+    dietaryHarm = '多食綠豆百合蓮子、冬瓜湯、烏梅汁、酸梅湯生津止渴，切忌通宵暴飲辛辣燒烤或酗酒。';
+    emotionalRelief = '每日靜坐冥想 15 分鐘以平息心火急躁，修習「泰山崩於前而色不變」之定力，心靜自然涼。';
+  } else if (['辰', '戌', '丑', '未'].includes(monthBranch)) {
+    climateStatus = '土燥濕滯';
+    thermoScore = 75;
+    seasonThermo = '四季雜氣土承載生態：土重濕滯或土燥生塵，水火轉換交替。需木氣疏通土壤以行生氣，金水火相互通融，方得舒適之境。';
+    classicalFormula = '《窮通寶鑑》：雜氣月中藏萬象，土旺得木疏方能成林，水火互濟乃定安泰。';
+    ambientTemp = '注重居家防潮除濕與空氣流通，避免梅雨潮濕季節室內發霉滋生細菌。';
+    dietaryHarm = '宜食四神湯、山藥、茯苓、芡實、薏仁以健脾化濕，三餐定時不過飽。';
+    emotionalRelief = '維持生活作息規律，避免長時間過度反芻焦慮，多親近大自然森林散步。';
+  } else {
+    climateStatus = '氣候溫潤';
+    thermoScore = 88;
+    seasonThermo = '天地陰陽交泰溫和生態：寒暖適中，萬物生長肅降得宜。熱力學生態自然暢達，重點在於五行生剋不至偏頗過度。';
+    classicalFormula = '《窮通寶鑑》：春秋交替，氣候均和，順時應物，水火中正，最利身心調暢。';
+    ambientTemp = '隨四季早晚溫差適時增減衣物，春防風邪、秋防涼燥，常保居處陽光通暢。';
+    dietaryHarm = '順應時令進食當季蔬果，春食芽菜疏肝，秋食雪梨百合潤燥。';
+    emotionalRelief = '多接觸自然山水與人文藝術，修持中庸之德，身心長保平和淡泊。';
+  }
+
+  const comfortGuide: QiongTongComfortGuide = {
+    thermodynamicComfortScore: thermoScore,
+    climateStatus,
+    seasonThermodynamics: seasonThermo,
+    classicalFormula,
+    lifeGuidance: {
+      ambientTemperature: ambientTemp,
+      dietaryHarmony: dietaryHarm,
+      emotionalRelief
+    }
+  };
+
+  const synthesis = `本命子平全息模型採用現代動態量化演算法，月令提綱與地支藏干權重精密計算。日主【${dayStem}${dmElem}】綜合判定為【${strengthLevel}】。五行之中以【${maxElem.element}】力量最雄厚（佔比 ${maxElem.percentage}%）。四大用神中，扶抑最喜【${xiYong.join('、')}】，${tiaoHouNeed ? `調候急需【${tiaoHouGod}】，` : ''}${tongGuanNeed ? `通關喜【${mediator}】以化解對峙。` : ''}青嵐費曼體制診斷為【${coreBizModel}】，《窮通寶鑑》氣候舒適度評分【${thermoScore}/100】，中醫時空基因提示首要固護【${organ}】，身心調泰則萬事興隆。`;
 
   return {
     elements,
     dayMasterStrength,
     fourGods,
     healthProfile,
+    companyModel,
+    comfortGuide,
     synthesisText: synthesis
   };
 }

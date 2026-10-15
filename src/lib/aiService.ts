@@ -74,11 +74,16 @@ export async function fetchAvailableGeminiModels(
       };
     });
 
-  // Sort so gemini-2.0, gemini-1.5 come first
+  // Sort so gemini-4-argon, gemini-2.5, gemini-2.0 come first
   supported.sort((a: any, b: any) => {
-    const aScore = a.id.includes('2.0') ? 2 : a.id.includes('1.5') ? 1 : 0;
-    const bScore = b.id.includes('2.0') ? 2 : b.id.includes('1.5') ? 1 : 0;
-    return bScore - aScore;
+    const getScore = (id: string) => {
+      if (id.includes('4-argon') || id.includes('gemini-4')) return 5;
+      if (id.includes('2.5')) return 4;
+      if (id.includes('2.0')) return 3;
+      if (id.includes('1.5')) return 2;
+      return 1;
+    };
+    return getScore(b.id) - getScore(a.id);
   });
 
   return supported;

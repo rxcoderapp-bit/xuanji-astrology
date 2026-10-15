@@ -112,6 +112,23 @@ export const LoveMarriagePanel: React.FC<LoveMarriagePanelProps> = ({
             </p>
           </div>
         </div>
+
+        {/* 2.5 夫官一體對鏡正緣時空定位 */}
+        <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-[#fff9f5] to-[#fbf3eb] dark:from-[#1e1716] dark:to-[#1b171c] border border-[#f5dfcf] dark:border-[#3d2c2c] space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-[#c2410c] dark:text-[#fb923c]">
+            <div className="flex items-center gap-1.5">
+              <span>🪞 欽天太微秘儀：夫官一體對鏡正緣時空定位</span>
+            </div>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#ffedd5] dark:bg-[#431407] text-[#9a3412] dark:text-[#fed7aa]">
+              體用互映 · 照妖鏡法則
+            </span>
+          </div>
+          <p className="text-[11px] text-[#554e44] dark:text-[#cfc8bd] leading-relaxed">
+            斗數以「夫妻宮為體、官祿宮為用」。夫妻宮主私密情感與伴侶性情，官祿宮主社會展示面與公眾事業。
+            <strong className="text-[#9a3412] dark:text-[#fb923c]">「夫官一體」</strong>意味著你的事業高度決定了吸引伴侶的頻率，而伴侶的心態亦是檢視你事業動能的照妖鏡。
+            當大限或流年引動官祿化祿入夫妻，主在工作職場、商務出差或高階論壇中迎來命中正緣；若夫妻宮化忌沖官祿，則需防私人情感糾紛撕裂職場專注，宜以「邊界感與共同事業目標」作為定海神針。
+          </p>
+        </div>
       </div>
 
       {/* 3. 未來十年正緣桃花黃金時空軸 */}

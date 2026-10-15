@@ -5,6 +5,7 @@
  */
 
 import type { PalaceData, HoroscopeState } from '../types';
+import { analyzeDoubleMutagensAndSpecialJi, type DoubleMutagenPattern } from './doubleMutagenEngine';
 
 export interface DetectedPattern {
   id: string;
@@ -41,6 +42,7 @@ export interface LuSuiJiZouDiagnosis {
 
 export interface MasterPatternAnalysisResult {
   detectedPatterns: DetectedPattern[];
+  doubleMutagens: DoubleMutagenPattern[];
   luSuiJiZou: LuSuiJiZouDiagnosis | null;
   overallBreakthroughSummary: string;
 }
@@ -351,12 +353,15 @@ export function analyzeMasterPatterns(
     };
   }
 
-  const overall = detected.length > 0
-    ? `命盤共成功偵測到 ${detected.length} 大核心格局（涵蓋 ${detected.filter(d => d.category === 'auspicious').length} 吉格、${detected.filter(d => d.category === 'challenging').length} 破局挑戰格）。命運不是宿命判決，而是原廠設定與行為棋局。善用吉格之風口，將煞忌之張力轉化為攻堅引擎，方為大師級改運之真諦。`
+  const doubleMutagens = analyzeDoubleMutagensAndSpecialJi(palaces, _horoscope);
+
+  const overall = detected.length > 0 || doubleMutagens.length > 0
+    ? `命盤共成功偵測到 ${detected.length} 大核心格局與 ${doubleMutagens.length} 項欽天同宮雙象/飛星特殊忌格（涵蓋 ${detected.filter(d => d.category === 'auspicious').length + doubleMutagens.filter(d => d.category === 'auspicious').length} 吉格、${detected.filter(d => d.category === 'challenging').length + doubleMutagens.filter(d => d.category === 'challenging').length} 破局挑戰格）。命運不是宿命判決，而是原廠設定與行為棋局。善用吉格之風口，將煞忌之張力轉化為攻堅引擎，方為大師級改運之真諦。`
     : `本命盤星曜配置趨於平衡隨和，無極端偏枯之重煞大格，亦無過度冒險之橫發暴跌。此乃「平淡是真、細水長流」之福氣命格，重在順應時運大限、穩中求進。`;
 
   return {
     detectedPatterns: detected,
+    doubleMutagens,
     luSuiJiZou: luSuiJiZouResult,
     overallBreakthroughSummary: overall
   };

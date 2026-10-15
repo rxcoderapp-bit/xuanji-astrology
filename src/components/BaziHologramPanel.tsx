@@ -307,6 +307,120 @@ export const BaziHologramPanel: React.FC<BaziHologramPanelProps> = ({ bazi }) =>
 
       </div>
 
+      {/* 4. 青嵐八字費曼學習法：十神公司體制心智模型 */}
+      {hologramResult.companyModel && (
+        <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3d] space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b pb-2.5 border-[#eee6d6] dark:border-[#272938] flex-wrap gap-2">
+            <div className="font-bold text-xs sm:text-sm text-[#333] dark:text-[#ddd] flex items-center gap-1.5">
+              <span className="p-1 rounded bg-amber-600 text-white text-[11px]">🏢</span>
+              <span>青嵐十神公司體制模型 · 商業模式與組織架構</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-300/40">
+              {hologramResult.companyModel.founderRole}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 space-y-1 text-xs">
+            <div className="font-bold text-[#b45309] dark:text-[#f59e0b] flex items-center gap-1">
+              <span>✦ 企業主幹商業模式：</span>
+              <span className="underline decoration-amber-400 font-black">{hologramResult.companyModel.coreBusinessModel}</span>
+            </div>
+            <p className="text-[11px] text-[#554e44] dark:text-[#aba498] leading-relaxed">
+              {hologramResult.companyModel.operationalAdvice}
+            </p>
+          </div>
+
+          {/* 5 Departments Grid */}
+          <div className="space-y-2 text-xs">
+            <div className="font-bold text-[#443e37] dark:text-[#cfc8bd] text-[11px]">
+              五大核心部門權責與戰力診斷：
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+              <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e]">
+                <div className="font-bold text-[#2a5d7c] dark:text-[#64b5f6] mb-0.5">⚖️ 董事會監管（官殺）</div>
+                <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.companyModel.companyHierarchy.boardAndCompliance}</p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e]">
+                <div className="font-bold text-[#0284c7] dark:text-[#38bdf8] mb-0.5">📚 專利研發智庫（印星）</div>
+                <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.companyModel.companyHierarchy.rAndDAndPatents}</p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e]">
+                <div className="font-bold text-[#b45309] dark:text-[#f59e0b] mb-0.5">💰 財務與現金流（財星）</div>
+                <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.companyModel.companyHierarchy.capitalAndCashflow}</p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e]">
+                <div className="font-bold text-[#15803d] dark:text-[#4ade80] mb-0.5">💡 產品創新實驗室（食傷）</div>
+                <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.companyModel.companyHierarchy.innovationAndMarketing}</p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e] md:col-span-2">
+                <div className="font-bold text-[#8d271c] dark:text-[#ef5350] mb-0.5">🤝 聯合創始人與同盟裂變（比劫）</div>
+                <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.companyModel.companyHierarchy.partnersAndDistribution}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. 《窮通寶鑑》寒暖燥濕生態舒適度全鑑 */}
+      {hologramResult.comfortGuide && (
+        <div className="p-4 sm:p-5 rounded-2xl border bg-white dark:bg-[#191a24] border-[#ded5c3] dark:border-[#2a2c3d] space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b pb-2.5 border-[#eee6d6] dark:border-[#272938] flex-wrap gap-2">
+            <div className="font-bold text-xs sm:text-sm text-[#333] dark:text-[#ddd] flex items-center gap-1.5">
+              <span className="p-1 rounded bg-teal-600 text-white text-[11px]">🌡️</span>
+              <span>《窮通寶鑑》氣候熱力學 ✕ 身心舒適度全鑑</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                hologramResult.comfortGuide.climateStatus === '極寒冰封'
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300'
+                  : hologramResult.comfortGuide.climateStatus === '極炎燥熱'
+                  ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'
+                  : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300'
+              }`}>
+                {hologramResult.comfortGuide.climateStatus}
+              </span>
+              <span className="font-mono text-xs font-bold text-[#8d271c] dark:text-[#ef5350]">
+                舒適度 {hologramResult.comfortGuide.thermodynamicComfortScore} / 100
+              </span>
+            </div>
+          </div>
+
+          {/* Comfort Score Bar */}
+          <div className="space-y-1">
+            <div className="w-full h-2.5 rounded-full bg-[#eee7d8] dark:bg-[#252838] overflow-hidden p-0.5">
+              <div 
+                className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-cyan-500 via-emerald-500 to-amber-500"
+                style={{ width: `${hologramResult.comfortGuide.thermodynamicComfortScore}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-[#666] dark:text-[#aaa] leading-relaxed pt-1">
+              {hologramResult.comfortGuide.seasonThermodynamics}
+            </p>
+          </div>
+
+          {/* Classical Quote */}
+          <div className="p-2.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/20 border border-teal-200/50 dark:border-teal-900/40 text-xs text-teal-900 dark:text-teal-200 italic leading-relaxed">
+            {hologramResult.comfortGuide.classicalFormula}
+          </div>
+
+          {/* Modern Living Comfort Tips */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-[11px]">
+            <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e] space-y-1">
+              <div className="font-bold text-[#2a5d7c] dark:text-[#64b5f6]">🏠 居所溫濕度調控</div>
+              <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.comfortGuide.lifeGuidance.ambientTemperature}</p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e] space-y-1">
+              <div className="font-bold text-[#15803d] dark:text-[#4ade80]">🥗 五行時令飲食</div>
+              <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.comfortGuide.lifeGuidance.dietaryHarmony}</p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-[#faf7f0] dark:bg-[#151620] border border-[#e8dfcb] dark:border-[#2b2d3e] space-y-1">
+              <div className="font-bold text-[#b45309] dark:text-[#f59e0b]">🧘 情志心靈解套</div>
+              <p className="text-[#555] dark:text-[#aaa] leading-relaxed">{hologramResult.comfortGuide.lifeGuidance.emotionalRelief}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

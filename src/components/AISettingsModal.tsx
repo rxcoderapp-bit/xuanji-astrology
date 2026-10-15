@@ -15,7 +15,10 @@ interface AISettingsModalProps {
 }
 
 const DEFAULT_GEMINI_MODELS = [
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (極速新一代 · 官方推薦)' },
+  { id: 'gemini-4-argon', name: 'Gemini 4 Argon (最新旗艦 · 1M 上下文深度推理 · 推薦)' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (最新旗艦 · 長思維複雜推理)' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (次世代旗艦極速)' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (極速新一代 · 官方標配)' },
   { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite (輕量極速)' },
   { id: 'gemini-2.0-pro-exp-02-05', name: 'Gemini 2.0 Pro 實驗版 (最強推理)' },
   { id: 'gemini-2.0-flash-thinking-exp-01-21', name: 'Gemini 2.0 Flash 思考版 (深度推理)' },
@@ -189,6 +192,17 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({ isOpen, onClos
           {/* Provider Specific Configs */}
           {settings.provider === 'gemini' ? (
             <div className="space-y-3 p-3.5 rounded-xl bg-[#f7f4eb] dark:bg-[#1f212b] border border-[#e2d8c5] dark:border-[#2f3140]">
+              {/* Gemini 4 Argon Feature Callout */}
+              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-[#78350f] dark:text-[#fde68a] flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <span className="font-bold">★ 支援 Google 最新旗艦「Gemini 4 Argon」！</span>
+                  <p className="mt-0.5 text-[#854d0e] dark:text-[#fef08a]">
+                    預設已加入 <code className="font-mono bg-amber-200/50 dark:bg-amber-900/40 px-1 py-0.2 rounded">gemini-4-argon</code>。只要您的 Google AI Studio 帳號或 Google Cloud 具備權限，填入 Key 即可直接呼叫 100 萬 Token 旗艦深度推理！亦可於自訂端點綁定 Vertex AI 代理。
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="font-bold text-[#554e44] dark:text-[#aaa]">
