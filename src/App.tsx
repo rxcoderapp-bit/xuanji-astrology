@@ -19,6 +19,7 @@ import { DivinationModal } from './components/DivinationModal';
 import { AISettingsModal } from './components/AISettingsModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { KnowledgeBaseModal } from './components/KnowledgeBaseModal';
+import { HemingModal } from './components/HemingModal';
 import { Footer } from './components/Footer';
 import { saveCaseRecord } from './lib/caseStorage';
 import { registerPWA, subscribeToUpdate, applyUpdate } from './lib/pwaService';
@@ -58,6 +59,7 @@ export default function App() {
   const [isAISettingsModalOpen, setIsAISettingsModalOpen] = useState(false);
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [isKnowledgeBaseModalOpen, setIsKnowledgeBaseModalOpen] = useState(false);
+  const [isHemingModalOpen, setIsHemingModalOpen] = useState(false);
 
   // Cloud Sync & Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(cloudSync.currentUser);
@@ -296,6 +298,7 @@ export default function App() {
         onOpenBirthModal={() => setIsBirthModalOpen(true)}
         onOpenDatabase={() => setIsDatabaseModalOpen(true)}
         onOpenDivination={() => setIsDivinationModalOpen(true)}
+        onOpenHeming={() => setIsHemingModalOpen(true)}
         onOpenKnowledgeBase={() => setIsKnowledgeBaseModalOpen(true)}
         onOpenAISettings={() => setIsAISettingsModalOpen(true)}
         onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
@@ -369,6 +372,7 @@ export default function App() {
           lunarDate={chartResult.lunarDate}
           laiYinIndex={chartResult.laiYinIndex}
           onOpenAISettings={() => setIsAISettingsModalOpen(true)}
+          onOpenHeming={() => setIsHemingModalOpen(true)}
           timingResonance={timingResonance}
           loveMarriageAnalysis={loveMarriageAnalysis}
           dualTrackEnergy={dualTrackEnergy}
@@ -432,6 +436,13 @@ export default function App() {
         name={birthInput.name}
         gender={birthInput.gender}
         onOpenAISettings={() => setIsAISettingsModalOpen(true)}
+      />
+
+      {/* 11. Dual-Chart Synastry (雙人合盤・天命體用互看) Modal */}
+      <HemingModal
+        isOpen={isHemingModalOpen}
+        onClose={() => setIsHemingModalOpen(false)}
+        currentChartInput={birthInput}
       />
 
       {/* 10. Mobile Floating Fast-Jump between Chart Board and Interpretation Studio */}

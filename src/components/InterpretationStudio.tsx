@@ -66,6 +66,7 @@ interface InterpretationStudioProps {
   lunarDate?: string;
   laiYinIndex?: number;
   onOpenAISettings?: () => void;
+  onOpenHeming?: () => void;
   timingResonance?: TimingResonanceItem;
   loveMarriageAnalysis?: LoveMarriageAnalysis;
   dualTrackEnergy?: DualTrackEnergyData;
@@ -88,6 +89,7 @@ export const InterpretationStudio: React.FC<InterpretationStudioProps> = ({
   lunarDate,
   laiYinIndex = 0,
   onOpenAISettings,
+  onOpenHeming,
   timingResonance,
   loveMarriageAnalysis,
   dualTrackEnergy,
@@ -1005,6 +1007,31 @@ ${pMutagens ? `- 宮干自化：${pMutagens}` : ''}
         {/* ==================== TAB: 太微緣局 (正緣桃花應期) ==================== */}
         {activeTab === 'loveMarriage' && (
           <div className="space-y-4">
+            {onOpenHeming && (
+              <div className="p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/20 border-rose-200 dark:border-rose-900/50 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0">
+                    <Heart className="w-4 h-4 fill-rose-200" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-rose-900 dark:text-rose-200">
+                      欲合看另一半八字與紫微星盤？
+                    </h4>
+                    <p className="text-[11px] text-[#706466] dark:text-[#a89ea0]">
+                      支援夫妻福德雙宮聯參、天作主星對應、雙向生年四化飛渡與婚期三階推導
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onOpenHeming}
+                  className="w-full sm:w-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm shrink-0 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>開啟雙人合盤</span>
+                </button>
+              </div>
+            )}
+
             <LoveMarriagePanel
               analysis={activeLoveAnalysis}
               selectedYear={horoscope.selectedYear}

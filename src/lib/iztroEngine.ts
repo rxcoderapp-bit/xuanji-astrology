@@ -9,6 +9,9 @@ import type {
   SanFangSiZheng,
   MutagenType
 } from '../types';
+import { calculateTrueSolarTime, shiftGregorianDate, type TrueSolarTimeResult } from './trueSolarTime';
+import { getBoshiShen, getJiangQianShen, getSuiQianShen } from './shierShen';
+import { getStoredSchoolConfig } from './schoolConfig';
 
 // Standard WenMo TianJi configuration for iztro
 astro.config({
@@ -66,14 +69,41 @@ export interface ChartExecutionResult {
   mingGongIndex: number;
   shenGongIndex: number;
   laiYinIndex: number;
+  trueSolarTimeResult?: TrueSolarTimeResult;
 }
 
 export function computeAstrolabe(input: BirthInput): ChartExecutionResult {
-  const safeYear = isNaN(Number(input.year)) || Number(input.year) < 1900 || Number(input.year) > 2100 ? 2000 : Math.floor(Number(input.year));
-  const safeMonth = isNaN(Number(input.month)) || Number(input.month) < 1 || Number(input.month) > 12 ? 1 : Math.floor(Number(input.month));
-  const safeDay = isNaN(Number(input.day)) || Number(input.day) < 1 || Number(input.day) > 31 ? 1 : Math.floor(Number(input.day));
-  const safeHour = isNaN(Number(input.hour)) ? 0 : Math.max(0, Math.min(23, Math.floor(Number(input.hour))));
-  const safeMinute = isNaN(Number(input.minute)) ? 0 : Math.max(0, Math.min(59, Math.floor(Number(input.minute))));
+  let safeYear = isNaN(Number(input.year)) || Number(input.year) < 1900 || Number(input.year) > 2100 ? 2000 : Math.floor(Number(input.year));
+  let safeMonth = isNaN(Number(input.month)) || Number(input.month) < 1 || Number(input.month) > 12 ? 1 : Math.floor(Number(input.month));
+  let safeDay = isNaN(Number(input.day)) || Number(input.day) < 1 || Number(input.day) > 31 ? 1 : Math.floor(Number(input.day));
+  let safeHour = isNaN(Number(input.hour)) ? 0 : Math.max(0, Math.min(23, Math.floor(Number(input.hour))));
+  let safeMinute = isNaN(Number(input.minute)) ? 0 : Math.max(0, Math.min(59, Math.floor(Number(input.minute))));
+
+  // 真太陽時計算 (若輸入包含經度且為公曆)
+  const schoolConfig = getStoredSchoolConfig();
+  let trueSolarRes: TrueSolarTimeResult | undefined = undefined;
+
+  if (schoolConfig.useTrueSolarTime && input.longitude !== undefined && input.calendar === 'solar') {
+    trueSolarRes = calculateTrueSolarTime({
+      year: safeYear,
+      month: safeMonth,
+      day: safeDay,
+      clockHour: safeHour,
+      clockMinute: safeMinute,
+      longitude: input.longitude
+    });
+
+    if (trueSolarRes.dateValid && trueSolarRes.corrected) {
+      safeHour = trueSolarRes.hour;
+      safeMinute = trueSolarRes.minute;
+      if (trueSolarRes.dayOffset !== 0) {
+        const shifted = shiftGregorianDate({ year: safeYear, month: safeMonth, day: safeDay }, trueSolarRes.dayOffset);
+        safeYear = shifted.year;
+        safeMonth = shifted.month;
+        safeDay = shifted.day;
+      }
+    }
+  }
 
   const timeIndex = hourToTimeIndex(safeHour, safeMinute);
   const dateStr = `${safeYear}-${safeMonth}-${safeDay}`;
@@ -92,6 +122,7 @@ export function computeAstrolabe(input: BirthInput): ChartExecutionResult {
 
   // Find Lai-Yin Palace (來因宮: Heavenly Stem matches Birth Year Stem)
   const birthYearStem = astrolabe.rawDates.chineseDate.yearly[0];
+  const birthYearBranch = astrolabe.rawDates.chineseDate.yearly[1];
   let laiYinIndex = 0;
 
   let mingGongIdx = 0;
@@ -155,9 +186,9 @@ export function computeAstrolabe(input: BirthInput): ChartExecutionResult {
       decadalRange: p.decadal ? [p.decadal.range[0], p.decadal.range[1]] : [0, 0],
       ages: p.ages || [],
       changsheng12: p.changsheng12 || '',
-      boshi12: p.boshi12 || '',
-      jiangqian12: p.jiangqian12 || '',
-      suiqian12: p.suiqian12 || '',
+      boshi12: p.boshi12 || getBoshiShen(birthYearStem, input.gender || '男', p.earthlyBranch),
+      jiangqian12: p.jiangqian12 || getJiangQianShen(birthYearBranch, p.earthlyBranch),
+      suiqian12: p.suiqian12 || getSuiQianShen(birthYearBranch, p.earthlyBranch),
       selfMutagens
     };
   });
@@ -181,7 +212,8 @@ export function computeAstrolabe(input: BirthInput): ChartExecutionResult {
     sign: astrolabe.sign,
     mingGongIndex: mingGongIdx,
     shenGongIndex: shenGongIdx,
-    laiYinIndex
+    laiYinIndex,
+    trueSolarTimeResult: trueSolarRes
   };
 }
 

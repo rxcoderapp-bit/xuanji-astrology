@@ -18,6 +18,10 @@ export interface BirthInput {
   hour: number;
   minute: number;
   isLeapMonth?: boolean;
+  city?: string;
+  longitude?: number;
+  isDSTApplied?: boolean;
+  trueSolarMinutesCorrection?: number;
 }
 
 export interface CaseRecord extends BirthInput {

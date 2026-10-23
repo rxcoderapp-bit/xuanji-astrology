@@ -1,11 +1,25 @@
 /**
- * 大師級紫微格局破局與現代改運演算法 (Master Ziwei Breakthrough & Modern Remedy Engine)
- * 知識底座源自：《紫微格局改運心法》、《紫微現代心理學全鑑》
- * （嚴格去除所有個人姓名，純粹正統現代心理學派與玄微心法體系）
+ * 大師級紫微斗數分層格局辨識與現代破局改運演算法 (Master Pattern & Breakthrough Engine)
+ * 
+ * 核心原典依據：《紫微斗數全書》、《紫微斗數全集》、《紫微斗數骨髓賦》
+ * 導入全新四維分層條件機制：
+ * 1. 必備條件 (required)：古書成格不可或缺之核心星曜與宮位拓撲
+ * 2. 吉化加分項 (bonus)：再會吉曜、生年吉化、廟旺加乘
+ * 3. 破格警示 (breaking)：空劫夾忌、坐煞星、落陷無光、化忌沖照
+ * 4. 權威古籍出處 (source)：逐字考證之古典篇目出處
+ * 
+ * 同時融合現代心理學破局指南，杜絕消極宿命恐嚇，引導知命造運！
+ * （嚴格去除所有個人姓名，純粹正統古典術數與現代認知心理學傳承）
  */
 
-import type { PalaceData, HoroscopeState } from '../types';
+import type { PalaceData, HoroscopeState, StarInfo } from '../types';
 import { analyzeDoubleMutagensAndSpecialJi, type DoubleMutagenPattern } from './doubleMutagenEngine';
+
+export interface PatternConditions {
+  required: string[];   // 必須滿足條件
+  bonus?: string[];     // 吉化加分項
+  breaking?: string[];  // 破格警示項
+}
 
 export interface DetectedPattern {
   id: string;
@@ -18,6 +32,8 @@ export interface DetectedPattern {
   modernPsychology: string;
   breakthroughAdvice: string;
   actionGuidance: string[];
+  conditions?: PatternConditions;
+  source?: string;
 }
 
 export interface LuSuiJiZouDiagnosis {
@@ -47,29 +63,84 @@ export interface MasterPatternAnalysisResult {
   overallBreakthroughSummary: string;
 }
 
-// 輔助檢查星曜是否在宮位中
-function hasStar(palace: PalaceData, starName: string): boolean {
-  return [...palace.majorStars, ...palace.minorStars, ...palace.adjectiveStars].some(
-    s => s.name === starName
-  );
+// 輔助獲取宮位中所有星曜物件
+function getAllStars(palace: PalaceData): StarInfo[] {
+  if (!palace) return [];
+  return [...palace.majorStars, ...palace.minorStars, ...palace.adjectiveStars];
 }
 
-// 輔助檢查三方四正是否包含特定星曜
-function hasStarInSanFang(palaces: PalaceData[], sanFangIndices: number[], starName: string): boolean {
-  return sanFangIndices.some(idx => {
-    const p = palaces[idx];
-    return p && hasStar(p, starName);
-  });
+// 輔助檢查星曜是否在宮位中
+function hasStar(palace: PalaceData, starName: string): boolean {
+  if (!palace) return false;
+  return getAllStars(palace).some(s => s.name === starName);
+}
+
+// 獲取宮位中特定星曜物件
+function findStar(palace: PalaceData, starName: string): StarInfo | undefined {
+  if (!palace) return undefined;
+  return getAllStars(palace).find(s => s.name === starName);
+}
+
+// 判斷星曜是否廟旺 (廟/旺/得/利)
+function isBright(palace: PalaceData, starName: string): boolean {
+  const s = findStar(palace, starName);
+  if (!s || !s.brightness) return false;
+  return ['廟', '旺', '得', '利'].includes(s.brightness);
+}
+
+// 判斷星曜是否落陷 (陷/不)
+function isDim(palace: PalaceData, starName: string): boolean {
+  const s = findStar(palace, starName);
+  if (!s || !s.brightness) return false;
+  return ['陷', '不'].includes(s.brightness);
 }
 
 // 輔助檢查四化
-function hasMutagen(palace: PalaceData, mutagenType: '祿' | '權' | '科' | '忌'): { has: boolean; star: string } {
-  for (const s of [...palace.majorStars, ...palace.minorStars]) {
-    if (s.mutagen === mutagenType) {
-      return { has: true, star: s.name };
-    }
-  }
-  return { has: false, star: '' };
+function getStarMutagen(palace: PalaceData, starName: string): '祿' | '權' | '科' | '忌' | undefined {
+  const s = findStar(palace, starName);
+  return (s?.mutagen as any) || undefined;
+}
+
+// 煞星集合
+const SHA_HARD = ['擎羊', '陀羅', '火星', '鈴星'];
+const SHA_KONG = ['地空', '地劫'];
+const SHA_ALL = [...SHA_HARD, ...SHA_KONG];
+
+function countSha(palace: PalaceData, shaList: string[] = SHA_HARD): number {
+  if (!palace) return 0;
+  return [...palace.majorStars, ...palace.minorStars].filter(s => shaList.includes(s.name)).length;
+}
+
+function hasSha(palace: PalaceData, shaList: string[] = SHA_ALL): boolean {
+  return countSha(palace, shaList) > 0;
+}
+
+// 獲取三方四正宮位陣列
+function getSanFangPalaces(palaces: PalaceData[], mingIdx: number): PalaceData[] {
+  const qianIdx = (mingIdx + 6) % 12;
+  const caiIdx = (mingIdx + 8) % 12;
+  const guanIdx = (mingIdx + 4) % 12;
+  return [palaces[mingIdx], palaces[qianIdx], palaces[caiIdx], palaces[guanIdx]].filter(Boolean);
+}
+
+function sanFangAllStars(palaces: PalaceData[], mingIdx: number): Set<string> {
+  const sf = getSanFangPalaces(palaces, mingIdx);
+  const set = new Set<string>();
+  sf.forEach(p => {
+    [...p.majorStars, ...p.minorStars, ...p.adjectiveStars].forEach(s => set.add(s.name));
+  });
+  return set;
+}
+
+function sanFangShaCount(palaces: PalaceData[], mingIdx: number, list: string[] = SHA_HARD): number {
+  return getSanFangPalaces(palaces, mingIdx).reduce((acc, p) => acc + countSha(p, list), 0);
+}
+
+// 獲取前後夾宮
+function getJiaPalaces(palaces: PalaceData[], targetIdx: number): { prev: PalaceData; next: PalaceData } {
+  const prevIdx = (targetIdx - 1 + 12) % 12;
+  const nextIdx = (targetIdx + 1) % 12;
+  return { prev: palaces[prevIdx], next: palaces[nextIdx] };
 }
 
 export function analyzeMasterPatterns(
@@ -79,290 +150,515 @@ export function analyzeMasterPatterns(
   const detected: DetectedPattern[] = [];
   const mingGong = palaces.find(p => p.name === '命宮') || palaces[0];
   const mingIdx = mingGong.index;
+  const sfStars = sanFangAllStars(palaces, mingIdx);
+  const sfPalaces = getSanFangPalaces(palaces, mingIdx);
 
-  // 三方四正索引（命、財、官、遷）
-  const qianIdx = (mingIdx + 6) % 12;
-  const caiIdx = (mingIdx + 8) % 12;
-  const guanIdx = (mingIdx + 4) % 12;
-  const mingSanFang = [mingIdx, qianIdx, caiIdx, guanIdx];
+  // 1. 君臣慶會格：紫微入命，左輔右弼同會
+  if (hasStar(mingGong, '紫微') && sfStars.has('左輔') && sfStars.has('右弼')) {
+    const required = ['紫微星坐守命宮', '左輔、右弼齊會命宮三方四正'];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    if (sfStars.has('文昌') || sfStars.has('文曲')) bonus.push('同會文昌或文曲，文采風流');
+    if (sfStars.has('天魁') || sfStars.has('天鉞')) bonus.push('天乙貴人加照，求名得利');
+    if (getStarMutagen(mingGong, '紫微') === '權') bonus.push('紫微化權，掌控力極強');
+    if (sanFangShaCount(palaces, mingIdx, SHA_KONG) >= 2) breaking.push('地空地劫雙會（帝星忌空劫，主內心虛耗）');
 
-  // 1. 三奇嘉會格 (祿、權、科會於命三方四正)
-  const hasLu = mingSanFang.some(idx => hasMutagen(palaces[idx], '祿').has);
-  const hasQuan = mingSanFang.some(idx => hasMutagen(palaces[idx], '權').has);
-  const hasKe = mingSanFang.some(idx => hasMutagen(palaces[idx], '科').has);
+    detected.push({
+      id: 'p_junchen',
+      name: '君臣慶會格',
+      category: 'auspicious',
+      categoryLabel: '極品貴顯名格',
+      palaceIndex: mingIdx,
+      palaceName: '命宮',
+      classicalQuote: '「君臣慶會，才德咸備。紫微得輔弼之助，威震山河。」——《紫微斗數全書》',
+      modernPsychology: '象徵天生具備跨界統御格局與群體號召力，身邊極易吸引能人志士共謀大業。',
+      breakthroughAdvice: '切忌剛愎自用與在野孤君之傲慢，善用群體協同力量方能成就事業巔峰。',
+      actionGuidance: [
+        '主動組建互補型事業合夥團隊，發揮各自專長',
+        '建立扁平透明的決策與分潤機制，廣納良言',
+        '在職場中勇於掛帥擔任大專案負責人或領導者'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數全書·君臣慶會格》'
+    });
+  }
+
+  // 2. 紫府同宮格：紫微天府同坐命宮（寅申位）
+  if (hasStar(mingGong, '紫微') && hasStar(mingGong, '天府')) {
+    const required = ['紫微、天府同宮坐守命宮（寅位或申位）'];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    if (sfStars.has('左輔') && sfStars.has('右弼')) bonus.push('左輔右弼齊會三方');
+    if (sfStars.has('化祿') || sfStars.has('祿存')) bonus.push('見祿存或化祿，富貴雙全');
+    if (hasSha(mingGong, SHA_KONG)) breaking.push('紫府宮坐地空地劫（孤君落空，聚財不易）');
+    if (countSha(mingGong, SHA_HARD) >= 2) breaking.push('命宮見雙煞同坐（威勢受挫）');
+
+    detected.push({
+      id: 'p_zifu',
+      name: '紫府同宮格',
+      category: 'auspicious',
+      categoryLabel: '帝相並臨格局',
+      palaceIndex: mingIdx,
+      palaceName: '命宮',
+      classicalQuote: '「紫微天府同宮，終身福厚。安居寅申，文武全才。」——《紫微斗數全書》',
+      modernPsychology: '紫微之尊貴開創與天府之持重沉穩在體內交織，兼具大局觀與風險防範意識。',
+      breakthroughAdvice: '防範因追求完美而猶豫不決，或過度在意顏面導致錯失市場轉型先機。',
+      actionGuidance: [
+        '宜任職大型組織高階管理層或實業投資',
+        '定期檢視資產負債表，攻守平衡兼顧',
+        '平衡理想與務實執行，避免過度端架子'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數全書·紫府同宮格》'
+    });
+  }
+
+  // 3. 府相朝垣格：天府、天相分守命宮三方四正
+  const hasTianFu = sfStars.has('天府');
+  const hasTianXiang = sfStars.has('天相');
+  if (hasTianFu && hasTianXiang && !(hasStar(mingGong, '天府') && hasStar(mingGong, '天相'))) {
+    const required = ['天府坐命三方', '天相坐命三方', '兩星不同宮分職拱照'];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    if (hasStar(mingGong, '祿存') || sfStars.has('化祿')) bonus.push('命宮見祿，財源昌隆');
+    if (sfStars.has('左輔') || sfStars.has('右弼')) bonus.push('輔弼會照，聲望崇高');
+    if (hasSha(mingGong, SHA_HARD)) breaking.push('命宮坐煞星（美中不足）');
+
+    detected.push({
+      id: 'p_fuxiang',
+      name: '府相朝垣格',
+      category: 'auspicious',
+      categoryLabel: '食祿千鍾名格',
+      palaceIndex: mingIdx,
+      palaceName: '命宮三方',
+      classicalQuote: '「府相朝垣千鍾食祿，文武承平，一生無匱。」——《紫微斗數全書》',
+      modernPsychology: '天相為印綬公信力，天府為國庫資產底蘊，雙星拱照主信譽卓著、做事四平八穩。',
+      breakthroughAdvice: '適合在成熟大體制中擔任執行長、財務長或專業合夥人，重視商譽勝於投機暴利。',
+      actionGuidance: [
+        '深耕公信力與專業合約，建立不可替代之品牌口碑',
+        '佈局多元穩健現金流投資組合',
+        '善用協調天賦，成為跨部門不可或缺之樞紐'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數全書·府相朝垣格》'
+    });
+  }
+
+  // 4. 陽梁昌祿格：太陽、天梁、文昌、祿存四星會照命宮三方
+  if (sfStars.has('太陽') && sfStars.has('天梁') && sfStars.has('文昌') && sfStars.has('祿存')) {
+    const required = ['太陽、天梁、文昌、祿存四星齊會命宮三方四正'];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    const sunPalace = palaces.find(p => hasStar(p, '太陽'));
+    if (sunPalace && isBright(sunPalace, '太陽')) bonus.push('太陽廟旺，光明盛大');
+    if (sfStars.has('化科')) bonus.push('再會化科，考運極品');
+    if (sunPalace && isDim(sunPalace, '太陽')) breaking.push('太陽落陷（陽梁失輝，功名多磨）');
+
+    detected.push({
+      id: 'p_yangliang',
+      name: '陽梁昌祿格',
+      category: 'auspicious',
+      categoryLabel: '金榜題名貴格',
+      palaceIndex: mingIdx,
+      palaceName: '命宮三方',
+      classicalQuote: '「陽梁昌祿傳臚第一，臚唱高第，名顯四海。」——《紫微斗數骨髓賦》',
+      modernPsychology: '天生具備深度邏輯思維與學術專精稟賦，考試運、考證運與評審答辯運極佳。',
+      breakthroughAdvice: '最宜走「知識變現、國際認證、技術專利與高端諮詢」之專業權威路線。',
+      actionGuidance: [
+        '持續考取行業頂級專業執照與國際級資格',
+        '將核心專業知識體系化，撰寫專書或發表原創研發',
+        '爭取學術、法律或行業標準制定委員會席位'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數骨髓賦·陽梁昌祿格》'
+    });
+  }
+
+  // 5. 三奇嘉會格：化祿、化權、化科齊會三方四正
+  const hasLu = sfPalaces.some(p => getAllStars(p).some(s => s.mutagen === '祿'));
+  const hasQuan = sfPalaces.some(p => getAllStars(p).some(s => s.mutagen === '權'));
+  const hasKe = sfPalaces.some(p => getAllStars(p).some(s => s.mutagen === '科'));
   if (hasLu && hasQuan && hasKe) {
+    const required = ['化祿、化權、化科三吉化齊會命宮三方四正'];
+    const breaking: string[] = [];
+    if (sfPalaces.some(p => getAllStars(p).some(s => s.mutagen === '忌'))) breaking.push('三方同見化忌沖破（吉處藏凶）');
+
     detected.push({
       id: 'p_sanqi',
       name: '三奇嘉會格',
       category: 'auspicious',
-      categoryLabel: '極品富貴吉格',
-      palaceIndex: mingIdx,
-      palaceName: '命宮三方四正',
-      classicalQuote: '三奇照命，富貴超倫，文武兼全，位極人臣。',
-      modernPsychology: '兼具「賺錢商機敏銳度（化祿）」、「掌控組織執行力（化權）」與「社會口碑公信力（化科）」的複合型超級精英，極具領袖魅力。',
-      breakthroughAdvice: '三奇最忌分散戰線或眼高手低導致資金鏈斷裂。應集中優勢兵力打造單一核心旗艦業務或個人標誌性品牌，切忌被多元繁雜誘惑分心。',
-      actionGuidance: [
-        '確立旗艦主業，嚴格拒絕不相關的邊緣投機項目',
-        '重視公眾信譽與法律合規，以化科之口碑庇護化權之擴張',
-        '獲利後提撥 30% 以上轉入穩健被動資產，防止過度樂觀開槓桿'
-      ]
-    });
-  }
-
-  // 2. 火貪格 / 鈴貪格
-  for (const idx of [mingIdx, caiIdx, guanIdx]) {
-    const p = palaces[idx];
-    if (hasStar(p, '貪狼') && hasStar(p, '火星')) {
-      detected.push({
-        id: `p_huotan_${idx}`,
-        name: '火貪格（爆發富貴格）',
-        category: 'auspicious',
-        categoryLabel: '橫發爆富吉格',
-        palaceIndex: idx,
-        palaceName: p.name,
-        classicalQuote: '火貪同度，威鎮邊疆；火貪照命，富貴橫來。',
-        modernPsychology: '新興風口敏感捕捉者，具備極強的商業賭性、冒險氣魄與瞬間整合突擊能力，往往在產業變革時一躍而起。',
-        breakthroughAdvice: '火貪主暴發，然而暴發背後必定潛藏「暴敗」之黑天鵝！貪心不知止、把運氣當實力是致命弱點。暴發之後必須立即轉攻為守。',
-        actionGuidance: [
-          '風口獲利後立即啟動「落袋為安」機制，鎖定 50% 利潤',
-          '將短期爆發財富轉移至不動產（田宅宮）或實業基金守成',
-          '切莫在同一牌桌上無節制加倍下注，見好即收方能長治久安'
-        ]
-      });
-    }
-    if (hasStar(p, '貪狼') && hasStar(p, '鈴星')) {
-      detected.push({
-        id: `p_lingtan_${idx}`,
-        name: '鈴貪格（暗發深謀格）',
-        category: 'auspicious',
-        categoryLabel: '暗中累積巨富格',
-        palaceIndex: idx,
-        palaceName: p.name,
-        classicalQuote: '鈴貪並照，名利雙收；多主暗中暴發，聲名不顯而家財萬貫。',
-        modernPsychology: '深謀遠慮、低調沈穩之獵手。善於幕後策劃、專利技術佈局或私密資本運作，不喜張揚卻收穫極其豐厚。',
-        breakthroughAdvice: '保持「低調悶聲發大財」之原始優勢，最忌被虛名或聚光燈誘惑。行事防範親友借貸與法律合同暗坑。',
-        actionGuidance: [
-          '維持隱密與低調作風，避免公開炫耀資產引發嫉妒與是非',
-          '簽署一切合約必須由兩名以上資深律師獨立審查',
-          '適合佈局長線複利專案與隱形冠軍型企業'
-        ]
-      });
-    }
-  }
-
-  // 3. 機月同梁格
-  if (
-    hasStarInSanFang(palaces, mingSanFang, '天機') &&
-    hasStarInSanFang(palaces, mingSanFang, '太陰') &&
-    hasStarInSanFang(palaces, mingSanFang, '天同') &&
-    hasStarInSanFang(palaces, mingSanFang, '天梁')
-  ) {
-    detected.push({
-      id: 'p_jiyuetongliang',
-      name: '機月同梁格',
-      category: 'auspicious',
-      categoryLabel: '上佳幕僚體制格',
+      categoryLabel: '極品富貴大格',
       palaceIndex: mingIdx,
       palaceName: '命宮三方',
-      classicalQuote: '機月同梁作吏人，一生衣食自然豐，處事體面，善於運籌。',
-      modernPsychology: '頂級戰略幕僚、體制高管、法規合規官與專業技術大師。思維縝密客觀，善於在既定體系中精準運籌帷幄。',
-      breakthroughAdvice: '切莫衝動放棄成熟平台去全職孤注一擲創業！最佳成功模式為「依託體系 ＋ 本業精進 ＋ 被動資產佈局」之穩定雙軌。',
+      classicalQuote: '「三奇嘉會，名譽昭彰。祿權科會，富貴雙全。」——《紫微斗數全書》',
+      modernPsychology: '財源機遇（祿）、開拓掌控力（權）與社會聲譽（科）形成完美良性閉環。',
+      breakthroughAdvice: '機遇豐沛時最宜居安思危，將事業版圖制度化，防範突發流年忌星沖破。',
       actionGuidance: [
-        '在現有大機構中尋求專業升遷，爭取資源最大化調配權',
-        '利用工餘時間建立被動版稅、股權或專利收益',
-        '切忌孤狼式冒險，善用團隊流程化解個人風險'
-      ]
+        '把握每十年大限機遇，果斷啟動人生關鍵躍遷',
+        '兼顧財富累積、專業話語權與社會聲譽',
+        '建立強大合規法務與資金防火牆'
+      ],
+      conditions: { required, breaking },
+      source: '《紫微斗數全書·三奇嘉會格》'
     });
   }
 
-  // 4. 日月並明格（太陽在巳、太陰在酉）
-  const siPalace = palaces[3]; // 巳宮
-  const youPalace = palaces[7]; // 酉宮
-  if (siPalace && hasStar(siPalace, '太陽') && youPalace && hasStar(youPalace, '太陰')) {
+  // 6. 火貪格 / 鈴貪格：貪狼遇火星或鈴星
+  const tanPalace = palaces.find(p => hasStar(p, '貪狼'));
+  const huoPalace = palaces.find(p => hasStar(p, '火星'));
+  const lingPalace = palaces.find(p => hasStar(p, '鈴星'));
+  if (tanPalace) {
+    const isHuoTan = huoPalace && (tanPalace.index === huoPalace.index || sfPalaces.some(p => p.index === tanPalace.index) && sfPalaces.some(p => p.index === huoPalace.index));
+    const isLingTan = lingPalace && (tanPalace.index === lingPalace.index || sfPalaces.some(p => p.index === tanPalace.index) && sfPalaces.some(p => p.index === lingPalace.index));
+    if (isHuoTan || isLingTan) {
+      const pName = isHuoTan ? '火貪格' : '鈴貪格';
+      const required = [`貪狼星與${isHuoTan ? '火星' : '鈴星'}同宮或在三方會照`];
+      const bonus: string[] = [];
+      const breaking: string[] = [];
+      if (getStarMutagen(tanPalace, '貪狼') === '祿') bonus.push('貪狼化祿，橫發機遇最旺');
+      if (hasSha(tanPalace, ['擎羊', '陀羅'])) breaking.push('貪狼逢羊陀沖破（暴發後防暴敗）');
+      if (hasSha(tanPalace, SHA_KONG)) breaking.push('遇地空地劫（財來財去不聚）');
+
+      detected.push({
+        id: isHuoTan ? 'p_huotan' : 'p_lingtan',
+        name: pName,
+        category: 'auspicious',
+        categoryLabel: '橫發爆款格局',
+        palaceIndex: tanPalace.index,
+        palaceName: tanPalace.name,
+        classicalQuote: '「貪狼火星居廟旺，名振諸邦。貪鈴並照，英雄拓土。」——《紫微斗數骨髓賦》',
+        modernPsychology: '思維敏銳、善抓市場突發紅利，具備極強的爆發力與破圈營銷本能。',
+        breakthroughAdvice: '發財之後務必將高風險獲利快速沉澱為低槓桿實體資產，杜絕盲目加槓桿博弈。',
+        actionGuidance: [
+          '抓住新創風口與爆款紅利迅速獲利',
+          '賺取第一桶金後設立資本止盈線，轉入信託或房產',
+          '戒絕賭博、投機合約與灰色地帶交易'
+        ],
+        conditions: { required, bonus, breaking },
+        source: '《紫微斗數骨髓賦·火貪鈴貪》'
+      });
+    }
+  }
+
+  // 7. 機月同梁格：天機、太陰、天同、天梁齊會三方四正
+  if (sfStars.has('天機') && sfStars.has('太陰') && sfStars.has('天同') && sfStars.has('天梁')) {
+    const required = ['天機、太陰、天同、天梁四星齊入命遷財官三方四正'];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    if (sfStars.has('文昌') || sfStars.has('文曲')) bonus.push('昌曲相會，儒雅非凡');
+    if (sanFangShaCount(palaces, mingIdx, SHA_HARD) >= 3) breaking.push('煞星過多（機月同梁最忌煞曜侵蝕）');
+
     detected.push({
-      id: 'p_riyuebingming',
-      name: '日月並明格（丹墀墀桂）',
+      id: 'p_jiyue',
+      name: '機月同梁格',
       category: 'auspicious',
-      categoryLabel: '光彩照人名揚格',
+      categoryLabel: '文職能臣格局',
       palaceIndex: mingIdx,
-      palaceName: '命身宮位',
-      classicalQuote: '日月並明，名曰丹墀墀桂，早歲科名，生平磊落，萬方折服。',
-      modernPsychology: '天生自帶公信力光環與群眾號召力，行事心胸開闊、坦蕩光明，極易獲得社會名望與大眾追隨。',
-      breakthroughAdvice: '行事必須恪守「完全透明合規」之準則。越是公開透明，名望氣場越強；凡一切灰色暗盤與投機私慾均為命格大忌。',
+      palaceName: '命宮三方',
+      classicalQuote: '「機月同梁作吏人，文職安泰，一生溫厚。」——《紫微斗數全書》',
+      modernPsychology: '細緻周全、謀定而後動，最適合在專業技術體系中憑藉智慧與長期主義深耕。',
+      breakthroughAdvice: '切忌過度保守安逸而錯失時代躍升良機，宜在大平台上爭取核心專案主導權。',
       actionGuidance: [
-        '投身公共品牌、公眾傳播、教育出版或行業標竿領域',
-        '遇到是非爭議時以公開透明的真相直面公眾，不搞私下公關遮掩',
-        '注重心理界限，防止因好心幫助他人過度消耗自身健康'
-      ]
+        '選擇公職、大型跨國集團、高階科研或醫療健康領域',
+        '建立精細化之工作流程與標準化運作手冊',
+        '多涉獵宏觀戰略規劃，補足開創魄力'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數全書·機月同梁格》'
     });
   }
 
-  // 5. 羊陀夾忌格（凶格破局核心）
-  for (let i = 0; i < 12; i++) {
-    const cur = palaces[i];
-    const prev = palaces[(i + 11) % 12];
-    const next = palaces[(i + 1) % 12];
-    const curJi = hasMutagen(cur, '忌');
-    const prevYangTuo = hasStar(prev, '擎羊') || hasStar(prev, '陀羅');
-    const nextYangTuo = hasStar(next, '擎羊') || hasStar(next, '陀羅');
+  // 8. 殺破狼格：七殺、破軍、貪狼齊會三方四正
+  if (sfStars.has('七殺') && sfStars.has('破軍') && sfStars.has('貪狼')) {
+    const required = ['七殺、破軍、貪狼三星齊入命宮三方四正'];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    if (sfStars.has('化祿') || sfStars.has('化權')) bonus.push('逢生年祿權引動，開創得力');
+    if (hasSha(mingGong, SHA_HARD)) breaking.push('命宮坐煞曜（波折多起伏）');
 
-    if (curJi.has && prevYangTuo && nextYangTuo) {
+    detected.push({
+      id: 'p_shapolang',
+      name: '殺破狼格',
+      category: 'special',
+      categoryLabel: '開拓變革星系',
+      palaceIndex: mingIdx,
+      palaceName: '命宮三方',
+      classicalQuote: '「七殺破軍貪狼，動蕩開闢之局。不入平凡，志在四方。」——《紫微斗數全書》',
+      modernPsychology: '生命充滿革命開創動能，敢破敢立，在動態環境與不確定性中反而如魚得水。',
+      breakthroughAdvice: '年輕時需戒驕戒躁、避免意氣用事，隨年齡增長逐步學會妥協與守成智慧。',
+      actionGuidance: [
+        '投身新興賽道、創業拓荒或高挑戰性業務崗位',
+        '大動盪時保持清醒，設立止損安全邊界',
+        '學會傾聽團隊回饋，避免獨斷專行'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數全書·殺破狼》'
+    });
+  }
+
+  // 9. 石中隱玉格：巨門坐命子宮或午宮
+  if (hasStar(mingGong, '巨門') && (mingGong.earthlyBranch === '子' || mingGong.earthlyBranch === '午')) {
+    const required = [`巨門星入命於${mingGong.earthlyBranch}宮`];
+    const bonus: string[] = [];
+    const breaking: string[] = [];
+    if (getStarMutagen(mingGong, '巨門') === '祿' || getStarMutagen(mingGong, '巨門') === '權') {
+      bonus.push('巨門化祿或化權，口才生財、權威得立');
+    }
+    if (getStarMutagen(mingGong, '巨門') === '忌') breaking.push('巨門化忌（玉藏泥沼，是非叢生）');
+
+    detected.push({
+      id: 'p_shizhong',
+      name: '石中隱玉格',
+      category: 'auspicious',
+      categoryLabel: '韜光養晦格局',
+      palaceIndex: mingIdx,
+      palaceName: '命宮',
+      classicalQuote: '「石中隱玉，早年沉潛，晚成大器。巨門在子午，才華內蘊。」——《紫微斗數骨髓賦》',
+      modernPsychology: '早年多遭誤解或懷才不遇，歷經磨練後方顯深邃智慧與一語中的之口才威力。',
+      breakthroughAdvice: '早期宜低調蓄積能量，切勿爭一時口舌之快；中年後以專業洞察一戰成名。',
+      actionGuidance: [
+        '從事諮詢顧問、涉外談判、法務研發或深度傳播',
+        '說話三思後行，將批判本能轉為建設性洞見',
+        '堅持長期主義，靜待三十歲後厚積薄發'
+      ],
+      conditions: { required, bonus, breaking },
+      source: '《紫微斗數骨髓賦·石中隱玉》'
+    });
+  }
+
+  // 10. 明珠出海格：命在未宮無主星，對宮丑宮太陽太陰同度朝照
+  if (mingGong.earthlyBranch === '未' && mingGong.majorStars.length === 0) {
+    const chouPalace = palaces.find(p => p.earthlyBranch === '丑');
+    if (chouPalace && hasStar(chouPalace, '太陽') && hasStar(chouPalace, '太陰')) {
       detected.push({
-        id: `p_yangtuojiaji_${i}`,
-        name: '羊陀夾忌格（重重困局）',
-        category: 'challenging',
-        categoryLabel: '重點破局挑戰格',
-        palaceIndex: i,
-        palaceName: cur.name,
-        classicalQuote: '羊陀夾忌，為禍最烈，進退維谷，孤立無援。',
-        modernPsychology: '在該宮位所代表的人生領域容易陷入四面楚歌的窒息感，內心充滿焦慮與自我懷疑，越是掙扎越容易被泥淖困死。',
-        breakthroughAdvice: '《紫微格局改運心法》破局方針：【絕對不要在此宮位硬碰硬加碼！】暫時冷凍該領域，將注意力徹底轉向化祿宮位，並引入第三方客觀專業力量（如法律顧問、心理專家）打破封閉僵局。',
+        id: 'p_mingzhu',
+        name: '明珠出海格',
+        category: 'auspicious',
+        categoryLabel: '白手起家名格',
+        palaceIndex: mingIdx,
+        palaceName: '命宮',
+        classicalQuote: '「命坐未宮無正曜，丑宮日月同臨照。號曰明珠出海，前程似錦。」——《紫微斗數全集》',
+        modernPsychology: '善於虛懷若谷借力使力，吸收各方資源為己所用，中晚年遠赴外鄉開創新天地。',
+        breakthroughAdvice: '宜大膽跨出舒適圈，至沿海或國際大都市發展，事業版圖將豁然開朗。',
         actionGuidance: [
-          '立即停止在該宮位相關項目盲目砸錢或加大情感投入',
-          '主動尋求客觀中立之外部專家介入，切斷內部互相消耗之情緒死結',
-          '將精力轉向本命化祿所照之宮位，以新賽道的利他成果換取轉身空間'
-        ]
+          '主動尋求跨國出差、外派或跨地域業務拓展',
+          '善用對象思維，保持靈活機動的合作身段',
+          '強化自媒體或公眾傳播影響力'
+        ],
+        conditions: { required: ['命宮在未為空宮', '對宮丑宮太陽太陰同宮拱照'] },
+        source: '《紫微斗數全集·明珠出海》'
       });
     }
   }
 
-  // 6. 鈴昌陀武格
-  for (let i = 0; i < 12; i++) {
-    const p = palaces[i];
-    if (hasStar(p, '武曲') && (hasStar(p, '文昌') || hasStar(p, '陀羅') || hasStar(p, '鈴星'))) {
-      const sanFangIdxs = [i, (i + 4) % 12, (i + 6) % 12, (i + 8) % 12];
-      const hasLing = hasStarInSanFang(palaces, sanFangIdxs, '鈴星');
-      const hasChang = hasStarInSanFang(palaces, sanFangIdxs, '文昌');
-      const hasTuo = hasStarInSanFang(palaces, sanFangIdxs, '陀羅');
-      const hasWu = hasStarInSanFang(palaces, sanFangIdxs, '武曲');
-      if (hasLing && hasChang && hasTuo && hasWu) {
-        detected.push({
-          id: `p_lingchangtuowu_${i}`,
-          name: '鈴昌陀武格（合約危機）',
-          category: 'challenging',
-          categoryLabel: '合約資金警訊格',
-          palaceIndex: i,
-          palaceName: p.name,
-          classicalQuote: '鈴昌陀武，限至投河。主文書破敗、資金斷裂、重大官非。',
-          modernPsychology: '在財務合約、對賭協議或法務條款上容易因疏忽或急於求成而埋下巨大定時炸彈，引發資金鏈劇烈震盪。',
-          breakthroughAdvice: '嚴禁為任何人作保、借貸！凡遇重大投資與合約簽署，必須強制留出 72 小時冷靜期，並設立底線停損機制，寧可少賺絕不冒穿倉風險。',
-          actionGuidance: [
-            '本命或大限遇此格，徹底拒絕任何作保、共同簽字或灰色對賭協議',
-            '對現有所有合同、債務、借據進行全面合規清查與及時解套',
-            '若已遭遇重大虧損，果斷「割肉停損認賠」，嚴禁借高利轉貸試圖翻本'
-          ]
-        });
-        break;
-      }
-    }
-  }
-
-  // 7. 巨火羊格
-  for (let i = 0; i < 12; i++) {
-    const p = palaces[i];
-    if (hasStar(p, '巨門') && (hasStar(p, '火星') || hasStar(p, '擎羊'))) {
+  // 11. 輔弼夾命格 / 昌曲夾命格 / 魁鉞夾命格 / 日月夾命格
+  const { prev: prevPalace, next: nextPalace } = getJiaPalaces(palaces, mingIdx);
+  if (prevPalace && nextPalace) {
+    // 輔弼夾命
+    if ((hasStar(prevPalace, '左輔') && hasStar(nextPalace, '右弼')) || (hasStar(prevPalace, '右弼') && hasStar(nextPalace, '左輔'))) {
       detected.push({
-        id: `p_juhuoyang_${i}`,
-        name: '巨火羊格（口舌官非刃）',
-        category: 'challenging',
-        categoryLabel: '言辭交鋒挑戰格',
-        palaceIndex: i,
-        palaceName: p.name,
-        classicalQuote: '巨火羊，多主口舌是非、橫發橫破、言多必失。',
-        modernPsychology: '言辭犀利如刀，洞察力極其毒辣，能在短時間內戳中他人致命痛處；然而在未經修煉時極易因口無遮攔樹敵無數。',
-        breakthroughAdvice: '《紫微現代解盤邏輯》改運法門：將尖銳的批判能量投射於專業領域（如法務審計、專利訴訟、公關質檢、醫療外科），私生活中修持「閉嘴禪」，只說建言不吐是非。',
+        id: 'p_fubi_jia',
+        name: '輔弼夾命格',
+        category: 'auspicious',
+        categoryLabel: '終身福厚貴格',
+        palaceIndex: mingIdx,
+        palaceName: '命宮兩夾',
+        classicalQuote: '「左輔右弼夾命宮，終身福厚貴人逢。逢難有救，一生安泰。」——《紫微斗數全書》',
+        modernPsychology: '人際信任資產極高，行事常能左右逢源，身旁總有得力摯友與長輩默默護航。',
+        breakthroughAdvice: '廣結善緣、重視團隊利益分潤，善用強大人脈護城河實現穩健擴張。',
         actionGuidance: [
-          '嚴格將犀利言辭限縮於客觀工作業務中，不對身邊親友施加批判性審判',
-          '生氣或焦慮時奉行「十秒深呼吸不發言」原則，避免在情緒頂點發送訊息',
-          '多修持讚美他人微小優點的習慣，以柔和之聲化解火羊煞氣'
-        ]
+          '建立日常人脈感謝與價值互通機制',
+          '多主導協調溝通型專案，居中整合資源',
+          '在組織中以德服人，構建堅實信賴同盟'
+        ],
+        conditions: { required: ['左輔、右弼分居命宮前後兩宮夾照'] },
+        source: '《紫微斗數全書·輔弼夾命》'
       });
-      break;
+    }
+
+    // 昌曲夾命
+    if ((hasStar(prevPalace, '文昌') && hasStar(nextPalace, '文曲')) || (hasStar(prevPalace, '文曲') && hasStar(nextPalace, '文昌'))) {
+      detected.push({
+        id: 'p_changqu_jia',
+        name: '昌曲夾命格',
+        category: 'auspicious',
+        categoryLabel: '才華橫溢貴格',
+        palaceIndex: mingIdx,
+        palaceName: '命宮兩夾',
+        classicalQuote: '「文昌文曲夾命宮，才名高顯翰墨通。科甲連登，文華四海。」——《紫微斗數全書》',
+        modernPsychology: '文思泉湧、感知力超群，具備卓越之文化審美、文案策劃與文字表達天賦。',
+        breakthroughAdvice: '將才華轉化為商業專利或版權資產，避免沉溺於空想文人情懷。',
+        actionGuidance: [
+          '重視智慧財產權與原創著作商標保護',
+          '將專業內容透過數位媒體高效傳播',
+          '培養理性商業變現與定價思維'
+        ],
+        conditions: { required: ['文昌、文曲分居命宮前後兩宮夾照'] },
+        source: '《紫微斗數全書·昌曲夾命》'
+      });
+    }
+
+    // 日月夾命
+    if ((hasStar(prevPalace, '太陽') && hasStar(nextPalace, '太陰')) || (hasStar(prevPalace, '太陰') && hasStar(nextPalace, '太陽'))) {
+      detected.push({
+        id: 'p_riyue_jia',
+        name: '日月夾命格',
+        category: 'auspicious',
+        categoryLabel: '光輝照耀名格',
+        palaceIndex: mingIdx,
+        palaceName: '命宮兩夾',
+        classicalQuote: '「日月夾命，不貴即富。光明相照，前程萬里。」——《紫微斗數全書》',
+        modernPsychology: '父母雙親或男女貴人庇蔭深厚，眼界格局開闊，行事光明磊落。',
+        breakthroughAdvice: '珍惜先天資源優勢，在正道上開疆拓土，切忌因優渥環境而懈怠奮鬥。',
+        actionGuidance: [
+          '爭取社會公眾度高或主流產業之標竿專案',
+          '行事坦蕩公正，建立正向公信力形象',
+          '傳承家庭優良門風與資本經驗'
+        ],
+        conditions: { required: ['太陽、太陰分居命宮前後兩宮夾照'] },
+        source: '《紫微斗數全書·日月夾命》'
+      });
     }
   }
 
-  // 8. 祿隨忌走心理動力學診斷 (生年化忌 vs 生年化祿)
-  let jiPalaceInfo: LuSuiJiZouDiagnosis['jiPalace'] | null = null;
-  let luPalaceInfo: LuSuiJiZouDiagnosis['luPalace'] | null = null;
-
-  for (let i = 0; i < 12; i++) {
-    const p = palaces[i];
-    const mJi = hasMutagen(p, '忌');
-    if (mJi.has) {
-      const voidDesc: Record<string, string> = {
-        '命宮': '對自身價值感懷疑，缺乏天生安全感，總覺得自己不夠好，有強烈的自我苛求與自卑陰影。',
-        '兄弟宮': '總覺得手足或緊密夥伴不可靠，容易因資源分配或情感不均產生被孤立感。',
-        '夫妻宮': '對親密關係既渴望又恐懼，總害怕被伴侶辜負或拋棄，容易產生窒息式猜疑與控制。',
-        '子女宮': '對晚輩、下屬或創作成果感到極度焦慮，操心過度，容易在親子教育中陷入緊繃。',
-        '財帛宮': '天生對金錢極度匱乏與不安，無論戶頭有多少積蓄總覺得隨時會破產，生活難以真正放鬆享受。',
-        '疾厄宮': '對身體健康或潛意識精神狀態感到脆弱，容易受自律神經與情緒壓力內耗困擾。',
-        '遷移宮': '在公眾場合或陌生環境中容易感到格格不入、缺乏庇護，出門在外常常神經緊繃。',
-        '交友宮': '對大眾人際或社交圈充滿防禦戒心，害怕被背叛或利用，難以向外人完全敞開心扉。',
-        '官祿宮': '對職場地位與事業成就充滿巨大危機感，害怕落後於同儕，往往把自己逼至工作狂極限。',
-        '田宅宮': '對家的穩定與實體資產極度渴望，常有「無家可歸」的心靈流浪感，執著於購置不動產。',
-        '福德宮': '精神世界容易陷入悲觀反芻與無端焦慮，難以體會純粹當下的快樂，思慮極為深重。',
-        '父母宮': '對長輩或權威機構的認可感到自卑或沈重壓力，背負著必須證明自己的心理重擔。'
-      };
-      jiPalaceInfo = {
-        index: i,
-        name: p.name,
-        branch: p.earthlyBranch,
-        star: mJi.star,
-        psychologicalVoid: voidDesc[p.name] || '對該宮位領域充滿深層匱乏感與不安全感。'
-      };
-    }
-
-    const mLu = hasMutagen(p, '祿');
-    if (mLu.has) {
-      const desireDesc: Record<string, string> = {
-        '命宮': '極度渴望展現自我風采，追求生活品質與自由自在，試圖用個人光芒證明自身存在感。',
-        '兄弟宮': '將大量熱情與金錢投入兄弟同儕或合作夥伴身上，試圖用江湖義氣換取歸屬感。',
-        '夫妻宮': '把人生的救贖全盤寄託於浪漫愛情，試圖以伴侶的極致寵愛來療癒內在匱乏。',
-        '子女宮': '熱衷於投資後代或開拓新專案，試圖用培育新生命的繁茂來感受自我價值。',
-        '財帛宮': '瘋狂渴望賺取財富與現金流，認為錢能擺平一切問題，把所有精力投入搞錢。',
-        '疾厄宮': '追求身心極致的感官享受與生活舒適，試圖用美食休閒麻醉內心的精神焦慮。',
-        '遷移宮': '渴望遠走高飛、環遊世界或在異鄉開拓新天地，試圖在遠方尋找人生的自由解答。',
-        '交友宮': '狂熱結交各路朋友與人脈社群，試圖以賓客盈門的熱鬧驅散內心深處的孤獨。',
-        '官祿宮': '無休止追求更高的事業頭銜與企業規模，試圖用世俗功名換取眾人的景仰。',
-        '田宅宮': '狂熱收藏實體房產或營造奢華溫馨家園，試圖以實體圍牆築造心靈堡壘。',
-        '福德宮': '追求精神哲學、玄學或藝術享受，渴望在心靈世界獲得純粹的福分與超脫。',
-        '父母宮': '渴望獲得名校文憑、體制背書或長輩讚賞，試圖用體面的社會身份包裝自己。'
-      };
-      luPalaceInfo = {
-        index: i,
-        name: p.name,
-        branch: p.earthlyBranch,
-        star: mLu.star,
-        desireProjection: desireDesc[p.name] || '在該領域充滿強烈熱情與過度付出的追求。'
-      };
+  // 12. 惡格/破格深度識別（附現代改運破局指南）
+  // 羊陀夾忌格
+  const hasJiInMing = getAllStars(mingGong).some(s => s.mutagen === '忌');
+  if (hasJiInMing && prevPalace && nextPalace) {
+    const isYangTuo = (hasStar(prevPalace, '擎羊') && hasStar(nextPalace, '陀羅')) || (hasStar(prevPalace, '陀羅') && hasStar(nextPalace, '擎羊'));
+    if (isYangTuo) {
+      detected.push({
+        id: 'p_yangtuo_jiaji',
+        name: '羊陀夾忌格',
+        category: 'challenging',
+        categoryLabel: '身心重壓破局格',
+        palaceIndex: mingIdx,
+        palaceName: '命宮',
+        classicalQuote: '「羊陀夾忌為敗局，勞碌奔波，內外交困。」——《紫微斗數骨髓賦》',
+        modernPsychology: '主觀焦慮與客觀現實阻力（左右為難、小人掣肘）雙重夾擊，易陷入精神內耗。',
+        breakthroughAdvice: '古法視為凶格，現代認知實為「倒逼深度修為之淬鍊機遇」。最宜斷捨離，收斂戰線專注單點突破。',
+        actionGuidance: [
+          '大幅簡化人際關係圈，遠離消耗型社交',
+          '建立客觀風險防火牆，杜絕借貸與高槓桿投機',
+          '修煉心理抗壓定力，凡事給自己預留緩衝彈性'
+        ],
+        conditions: { required: ['化忌星坐命宮', '擎羊、陀羅分居命宮前後兩宮夾照'] },
+        source: '《紫微斗數骨髓賦·羊陀夾忌》'
+      });
     }
   }
 
-  let luSuiJiZouResult: LuSuiJiZouDiagnosis | null = null;
-  if (jiPalaceInfo && luPalaceInfo) {
-    const interplay = `命盤中化忌落在【${jiPalaceInfo.name}】（以${jiPalaceInfo.star}引動），化祿落在【${luPalaceInfo.name}】（以${luPalaceInfo.star}引動）。在現代心理動力學上，這形成了典型的「祿隨忌走」心理代償死循環：命主內心深處最焦慮自卑的黑洞在【${jiPalaceInfo.name}】，卻潛意識瘋狂試圖透過在【${luPalaceInfo.name}】的大量投入與成功來「填補」這個缺口。然而，外在的化祿永遠無法填滿內在化忌的黑洞，反而容易導致精力過度傾斜、心力交瘁。`;
-    const keRational = `【化科解套策略】：化忌不需要消滅，也不可能消滅！接納【${jiPalaceInfo.name}】的不完美與脆弱，將其定位為「劃清心理邊界與打磨專業深度」的磨刀石。停止利用【${luPalaceInfo.name}】過度代償，學會向自己妥協，接納「人生有些領域本就無需十全十美」。`;
-    const quanExecution = `【化權掌控行動】：在【${luPalaceInfo.name}】建立不可替代的專業技術壁壘，而非情緒性無節制擴張；在【${jiPalaceInfo.name}】設立制度化防火牆，凡遇恐懼之事以流程化、法律化、理性化方式應對，切忌意氣用事。`;
+  // 鈴昌陀武格
+  if (sfStars.has('鈴星') && sfStars.has('文昌') && sfStars.has('陀羅') && sfStars.has('武曲')) {
+    detected.push({
+      id: 'p_lingchangtuowu',
+      name: '鈴昌陀武格',
+      category: 'challenging',
+      categoryLabel: '重大決策防線格',
+      palaceIndex: mingIdx,
+      palaceName: '命宮三方',
+      classicalQuote: '「鈴昌陀武，限至投河。戒在衝動，慎守定力。」——《紫微斗數骨髓賦》',
+      modernPsychology: '在極端壓力或合同文書交界之際，容易因情緒壓抑過度而產生非理性決策衝動。',
+      breakthroughAdvice: '古文「投河」為古典警示語，現代意指「財務流動性或合約重大違約斷裂」。嚴格遵守契約審查與情緒冷靜期。',
+      actionGuidance: [
+        '凡遇重大法律、投資或財務契約，必請專業律師審閱',
+        '重大決策設定「48小時強制冷靜思考期」',
+        '重視水上安全與交通行車安全管理'
+      ],
+      conditions: { required: ['鈴星、文昌、陀羅、武曲四星齊會三方四正'] },
+      source: '《紫微斗數骨髓賦·鈴昌陀武》'
+    });
+  }
 
-    luSuiJiZouResult = {
-      jiPalace: jiPalaceInfo,
-      luPalace: luPalaceInfo,
-      interplaySummary: interplay,
-      keRationalBoundary: keRational,
-      quanExecutionPower: quanExecution
+  // 巨火羊格
+  if (sfStars.has('巨門') && sfStars.has('火星') && sfStars.has('擎羊')) {
+    detected.push({
+      id: 'p_juhuoyang',
+      name: '巨火羊格',
+      category: 'challenging',
+      categoryLabel: '情緒口舌防破格',
+      palaceIndex: mingIdx,
+      palaceName: '命宮三方',
+      classicalQuote: '「巨火羊星同度會，終身口舌，戒怒防禍。」——《紫微斗數骨髓賦》',
+      modernPsychology: '個性剛直激烈、言辭銳利如刀，易在無意間得罪小人或引發公關對立危機。',
+      breakthroughAdvice: '修口德即是修財富，將銳利的辨識力轉為客觀學術研究或產品除錯，私下待人以溫厚為本。',
+      actionGuidance: [
+        '生氣時嚴禁即時發送郵件、訊息或公開發文',
+        '學習非暴力溝通，多肯定他人努力',
+        '將敏銳的批判力投入至精密代碼、審計或品管領域'
+      ],
+      conditions: { required: ['巨門、火星、擎羊三星齊會三方四正'] },
+      source: '《紫微斗數骨髓賦·巨火羊》'
+    });
+  }
+
+  // 馬頭帶箭格
+  if (mingGong.earthlyBranch === '午' && hasStar(mingGong, '擎羊')) {
+    const hasLucky = sfStars.has('七殺') || sfStars.has('天魁') || sfStars.has('天鉞');
+    detected.push({
+      id: 'p_matou',
+      name: '馬頭帶箭格',
+      category: hasLucky ? 'special' : 'challenging',
+      categoryLabel: '鎮守邊關將星格',
+      palaceIndex: mingIdx,
+      palaceName: '命宮',
+      classicalQuote: '「馬頭帶箭，鎮守邊疆。擎羊在午，武職崢嶸。」——《紫微斗數骨髓賦》',
+      modernPsychology: '魄力雷厲風行、敢打硬仗，能在極度艱困或充滿敵意的競爭環境中殺出一條血路。',
+      breakthroughAdvice: '殺氣太重易折，需培養慈悲溫和之心，大成之時多行社會善舉以化解血光之氣。',
+      actionGuidance: [
+        '適合高風險高回報開創、救難醫療、法官檢察或重工領域',
+        '定期主動捐血、從事慈善醫療救助以轉化金煞',
+        '學會急流勇退，不可窮兵黷武過度消耗身體'
+      ],
+      conditions: { 
+        required: ['擎羊星於午宮坐命'],
+        bonus: hasLucky ? ['再會七殺或天魁天鉞，威震邊界'] : undefined
+      },
+      source: '《紫微斗數骨髓賦·馬頭帶箭》'
+    });
+  }
+
+  // 雙星同宮與自化深入剖析
+  const doubleMutagens = analyzeDoubleMutagensAndSpecialJi(palaces);
+
+  // 診斷祿隨忌走循環
+  let luSuiJiZou: LuSuiJiZouDiagnosis | null = null;
+  const jiPalace = palaces.find(p => getAllStars(p).some(s => s.mutagen === '忌'));
+  const luPalace = palaces.find(p => getAllStars(p).some(s => s.mutagen === '祿'));
+
+  if (jiPalace && luPalace && jiPalace.index !== luPalace.index) {
+    const jiStar = getAllStars(jiPalace).find(s => s.mutagen === '忌')?.name || '主星';
+    const luStar = getAllStars(luPalace).find(s => s.mutagen === '祿')?.name || '主星';
+
+    luSuiJiZou = {
+      jiPalace: {
+        index: jiPalace.index,
+        name: jiPalace.name,
+        branch: jiPalace.earthlyBranch,
+        star: jiStar,
+        psychologicalVoid: `在【${jiPalace.name}】宮位容易感到不安全感、匱乏焦慮或難以滿足之執念。`
+      },
+      luPalace: {
+        index: luPalace.index,
+        name: luPalace.name,
+        branch: luPalace.earthlyBranch,
+        star: luStar,
+        desireProjection: `試圖藉由在【${luPalace.name}】宮位大量投注熱情、金錢或關係來填補心靈黑洞。`
+      },
+      interplaySummary: `生年化祿入【${luPalace.name}】，化忌落【${jiPalace.name}】。正統欽天四化指出：「祿為起因，忌為歸宿；祿隨忌走，吉凶同源。」當你在【${luPalace.name}】過度擴張欲望時，最終能量全數流向【${jiPalace.name}】承擔壓力考驗。`,
+      keRationalBoundary: '啟動命盤化科之理性智慧：在欲望起心動念時，設立清晰界線，客觀評估代價，不盲目填補黑洞。',
+      quanExecutionPower: '運用化權之邊界掌控力：親自定立規則與風控防線，把化忌的執念昇華為精專技術之深沉底力。'
     };
   }
 
-  const doubleMutagens = analyzeDoubleMutagensAndSpecialJi(palaces, _horoscope);
-
-  const overall = detected.length > 0 || doubleMutagens.length > 0
-    ? `命盤共成功偵測到 ${detected.length} 大核心格局與 ${doubleMutagens.length} 項欽天同宮雙象/飛星特殊忌格（涵蓋 ${detected.filter(d => d.category === 'auspicious').length + doubleMutagens.filter(d => d.category === 'auspicious').length} 吉格、${detected.filter(d => d.category === 'challenging').length + doubleMutagens.filter(d => d.category === 'challenging').length} 破局挑戰格）。命運不是宿命判決，而是原廠設定與行為棋局。善用吉格之風口，將煞忌之張力轉化為攻堅引擎，方為大師級改運之真諦。`
-    : `本命盤星曜配置趨於平衡隨和，無極端偏枯之重煞大格，亦無過度冒險之橫發暴跌。此乃「平淡是真、細水長流」之福氣命格，重在順應時運大限、穩中求進。`;
+  const overallSummary = detected.length > 0
+    ? `命盤共識別出 ${detected.length} 大核心古典格局（含 ${detected.filter(d => d.category === 'auspicious').length} 吉格、${detected.filter(d => d.category === 'challenging').length} 警示格）。古賦格局乃先天氣候器量之映照，配合後天現代知命修為，自能趨吉避凶、造命圓滿。`
+    : '命盤星曜配置平和流通，無極端偏枯之重格，一生穩健自主，最利依大運流年之引導順勢而為。';
 
   return {
     detectedPatterns: detected,
     doubleMutagens,
-    luSuiJiZou: luSuiJiZouResult,
-    overallBreakthroughSummary: overall
+    luSuiJiZou,
+    overallBreakthroughSummary: overallSummary
   };
 }

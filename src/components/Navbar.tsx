@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Moon, Sun, Calendar, FolderOpen, Compass, 
   Sparkles, Cloud, ArrowUpCircle, BookOpen, 
-  Menu, X
+  Menu, X, Heart
 } from 'lucide-react';
 import type { BirthInput } from '../types';
 import type { User } from 'firebase/auth';
@@ -15,6 +15,7 @@ interface NavbarProps {
   onOpenBirthModal: () => void;
   onOpenDatabase?: () => void;
   onOpenDivination?: () => void;
+  onOpenHeming?: () => void;
   onOpenKnowledgeBase?: () => void;
   onOpenAISettings?: () => void;
   onOpenCloudSync?: () => void;
@@ -32,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBirthModal,
   onOpenDatabase,
   onOpenDivination,
+  onOpenHeming,
   onOpenKnowledgeBase,
   onOpenAISettings,
   onOpenCloudSync,
@@ -195,6 +197,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Dual-Chart Synastry / Heming button */}
+          {onOpenHeming && (
+            <button
+              onClick={onOpenHeming}
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-serif font-bold transition border shadow-xs flex items-center gap-1.5
+                bg-rose-700 hover:bg-rose-800 text-white border-rose-900"
+              title="開啟紫微斗數雙人合盤 · 天命體用互看"
+            >
+              <Heart className="w-3.5 h-3.5 fill-rose-200 text-white" />
+              <span className="hidden md:inline">雙人合盤</span>
+            </button>
+          )}
+
           {/* Database shortcut button */}
           {onOpenDatabase && (
             <button
@@ -327,6 +342,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="text-[11px] font-bold text-[#8d271c] dark:text-[#ef5350] px-2.5 py-1 mb-1 border-b border-[#ece5d6] dark:border-[#262834]">
                 快捷功能導航
               </div>
+
+              {/* 雙人合盤 */}
+              {onOpenHeming && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenHeming();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs hover:bg-[#ede5d4] dark:hover:bg-[#222430] transition text-left"
+                >
+                  <Heart className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-bold">雙人合盤</div>
+                    <div className="text-[10px] text-[#787166] dark:text-[#959187]">天命體用互看 · 夫妻福德雙宮聯參</div>
+                  </div>
+                </button>
+              )}
 
               {/* 典籍智庫 */}
               {onOpenKnowledgeBase && (

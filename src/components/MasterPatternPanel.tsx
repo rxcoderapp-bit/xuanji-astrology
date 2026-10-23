@@ -297,6 +297,44 @@ export const MasterPatternPanel: React.FC<MasterPatternPanelProps> = ({
                   </div>
                 </div>
 
+                {/* Layered Conditions & Classical Source */}
+                {(pattern.conditions || pattern.source) && (
+                  <div className="p-2.5 rounded-xl bg-[#f8f5ee] dark:bg-[#15161f] border border-[#e8ded0] dark:border-[#272938] space-y-1.5 text-[11px]">
+                    <div className="flex items-center justify-between flex-wrap gap-1 text-[10px] text-[#706456] dark:text-[#a09a8f] font-mono">
+                      <span>【四維分層檢定標準】</span>
+                      {pattern.source && (
+                        <span className="px-1.5 py-0.2 rounded bg-amber-100/70 text-amber-900 dark:bg-amber-950/70 dark:text-amber-200 border border-amber-300/40 font-serif">
+                          典籍出處：{pattern.source}
+                        </span>
+                      )}
+                    </div>
+                    {pattern.conditions?.required && pattern.conditions.required.length > 0 && (
+                      <div className="flex items-start gap-1.5">
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 text-[10px] font-bold shrink-0">
+                          成格必備
+                        </span>
+                        <span className="text-[#444] dark:text-[#ccc]">{pattern.conditions.required.join('； ')}</span>
+                      </div>
+                    )}
+                    {pattern.conditions?.bonus && pattern.conditions.bonus.length > 0 && (
+                      <div className="flex items-start gap-1.5">
+                        <span className="px-1.5 py-0.2 rounded bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 text-[10px] font-bold shrink-0">
+                          吉化加分
+                        </span>
+                        <span className="text-sky-900 dark:text-sky-200">{pattern.conditions.bonus.join('； ')}</span>
+                      </div>
+                    )}
+                    {pattern.conditions?.breaking && pattern.conditions.breaking.length > 0 && (
+                      <div className="flex items-start gap-1.5">
+                        <span className="px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 text-[10px] font-bold shrink-0">
+                          破格警示
+                        </span>
+                        <span className="text-rose-900 dark:text-rose-200">{pattern.conditions.breaking.join('； ')}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Classical Quote */}
                 <div className="text-[11px] italic text-[#8d271c] dark:text-[#ef5350] bg-[#faf6ee] dark:bg-[#14151b] p-2 rounded-lg border border-[#eee4d4] dark:border-[#232532]">
                   {pattern.classicalQuote}
